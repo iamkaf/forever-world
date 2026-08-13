@@ -52,7 +52,7 @@ just verify
 
 1.1.1 is already on Maven. `just verify` checks that an export still matches that artifact. Don't overwrite it.
 
-`just pastel-install` sets up a Pastel server in `server/` from the export. `just pair` boots a dedicated server and a client together and runs `test/teakit/pair-smoke.test.ts`. TeaKit is only for that test. It never goes in the pack, and it doesn't bump Fabric Loader off 0.19.3.
+`just pastel-install` sets up a Pastel server in `server/` from the export. `just pair` boots a dedicated server and a client together and runs `test/teakit/startup.test.ts`. TeaKit is only for that test. It never goes in the pack, and it doesn't bump Fabric Loader off 0.19.3.
 
 ## License
 

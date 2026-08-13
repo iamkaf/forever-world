@@ -28,7 +28,6 @@ pub fn ensure_cached(root: &PackRoot, file: &FileSpec) -> Result<PathBuf> {
         fs::create_dir_all(parent)?;
     }
     let bytes = download_first(file)?;
-    verify_bytes(file, &bytes)?;
     let tmp = dest.with_extension("tmp");
     {
         let mut out = fs::File::create(&tmp)?;
@@ -42,7 +41,10 @@ fn download_first(file: &FileSpec) -> Result<Vec<u8>> {
     let mut last_error = None;
     for url in &file.downloads {
         match download(url) {
-            Ok(bytes) => return Ok(bytes),
+            Ok(bytes) => match verify_bytes(file, &bytes) {
+                Ok(()) => return Ok(bytes),
+                Err(error) => last_error = Some(error),
+            },
             Err(error) => last_error = Some(error),
         }
     }
@@ -81,4 +83,35 @@ fn verify_bytes(file: &FileSpec, bytes: &[u8]) -> Result<()> {
         return Err(format!("{} sha512 did not match pin {}", file.path, file.sha512).into());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::spec::{EnvSpec, SideRequirement};
+
+    #[test]
+    fn tries_the_next_mirror_after_invalid_bytes() {
+        let dir = tempfile::tempdir().expect("temporary directory");
+        let bad = dir.path().join("bad.jar");
+        let good = dir.path().join("good.jar");
+        fs::write(&bad, b"wrong").expect("bad mirror");
+        fs::write(&good, b"right").expect("good mirror");
+        let file = FileSpec {
+            path: "mods/example.jar".into(),
+            file_size: 5,
+            sha1: hash::sha1_hex(b"right"),
+            sha512: hash::sha512_hex(b"right"),
+            env: EnvSpec {
+                client: SideRequirement::Required,
+                server: SideRequirement::Required,
+            },
+            downloads: vec![
+                format!("file:{}", bad.display()),
+                format!("file:{}", good.display()),
+            ],
+        };
+
+        assert_eq!(download_first(&file).expect("valid mirror"), b"right");
+    }
 }

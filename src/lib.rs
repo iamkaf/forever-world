@@ -10,7 +10,7 @@ pub mod publish;
 pub mod spec;
 pub mod verify;
 
-pub const USER_AGENT: &str = "forever-world/1.1.1 (iamkaf)";
+pub const USER_AGENT: &str = "forever-world-pack (iamkaf)";
 
 #[derive(Debug)]
 pub struct Error(String);

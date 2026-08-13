@@ -75,8 +75,14 @@ impl PackSpec {
         if self.pack.version.trim().is_empty() {
             return Err("pack.version is required".into());
         }
+        if self.pack.group.trim().is_empty() {
+            return Err("pack.group is required".into());
+        }
         if self.pack.minecraft.trim().is_empty() {
             return Err("pack.minecraft is required".into());
+        }
+        if self.pack.loader_version.trim().is_empty() {
+            return Err("pack.loader_version is required".into());
         }
         if self.pack.loader != "fabric" {
             return Err(format!(
@@ -112,7 +118,13 @@ impl PackSpec {
     }
 
     pub fn mrpack_name(&self) -> String {
-        format!("{}-{}.mrpack", self.pack.slug, self.pack.version)
+        self.pack.mrpack_name()
+    }
+}
+
+impl PackMeta {
+    pub fn mrpack_name(&self) -> String {
+        format!("{}-{}.mrpack", self.slug, self.version)
     }
 }
 
@@ -138,6 +150,11 @@ impl Lockfile {
         if lock.version != 1 {
             return Err(format!("unsupported lock version {}", lock.version).into());
         }
+        PackSpec {
+            pack: lock.pack.clone(),
+            file: lock.file.clone(),
+        }
+        .validate()?;
         Ok(lock)
     }
 
@@ -155,6 +172,12 @@ pub fn check_pack_path(path: &str) -> Result<()> {
     }
     if path.starts_with('/') {
         return Err(format!("pack path `{path}` must not be absolute").into());
+    }
+    if path
+        .split('/')
+        .any(|component| component.is_empty() || component == "." || component == "..")
+    {
+        return Err(format!("pack path `{path}` must not contain empty, `.` or `..` parts").into());
     }
     let parsed = Path::new(path);
     if parsed.is_absolute() {
@@ -202,7 +225,39 @@ mod tests {
         assert!(check_pack_path("../mods/x.jar").is_err());
         assert!(check_pack_path("/mods/x.jar").is_err());
         assert!(check_pack_path("mods\\x.jar").is_err());
+        assert!(check_pack_path("mods//x.jar").is_err());
+        assert!(check_pack_path("mods/./x.jar").is_err());
+        assert!(check_pack_path("mods/x.jar/").is_err());
         assert!(check_pack_path("mods/sodium.jar").is_ok());
+    }
+
+    #[test]
+    fn lockfiles_receive_full_spec_validation() {
+        let lock = Lockfile {
+            version: 1,
+            pack: PackMeta {
+                name: "FOREVER WORLD".into(),
+                slug: "forever-world".into(),
+                version: "1.1.1".into(),
+                group: "com.iamkaf.modpacks".into(),
+                minecraft: "26.2".into(),
+                loader: "fabric".into(),
+                loader_version: "0.19.3".into(),
+            },
+            file: vec![FileSpec {
+                path: "world/level.dat".into(),
+                file_size: 1,
+                sha1: "a".repeat(40),
+                sha512: "b".repeat(128),
+                env: EnvSpec {
+                    client: SideRequirement::Required,
+                    server: SideRequirement::Required,
+                },
+                downloads: vec!["https://example.invalid/level.dat".into()],
+            }],
+        };
+        let text = lock.to_toml().expect("lock TOML");
+        assert!(Lockfile::parse(&text).is_err());
     }
 
     #[test]

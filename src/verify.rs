@@ -39,28 +39,39 @@ struct ParsedEnv {
 pub fn verify(root: &PackRoot, against: &str) -> Result<()> {
     let lock = crate::load_lock(root)?;
     let ours = index_from_lock(&lock)?;
-    let published = load_published_index(against)?;
+    let local_path = root.dist_dir().join(lock.pack.mrpack_name());
+    let local_bytes = fs::read(&local_path).map_err(|_| {
+        crate::Error::from(format!(
+            "missing {}; run `pack export` first",
+            local_path.display()
+        ))
+    })?;
+    let published_bytes = load_mrpack(against)?;
+    let published = index_from_mrpack_bytes(&published_bytes)?;
     compare(&ours, &published)?;
-    eprintln!("verified {} files against {against}", ours.files.len());
+    compare_archive_entries(&local_bytes, &published_bytes)?;
+    eprintln!(
+        "verified {} files and every archive entry against {against}",
+        ours.files.len()
+    );
     Ok(())
 }
 
-fn load_published_index(against: &str) -> Result<ParsedIndex> {
-    let bytes = if against.starts_with("https://") {
+fn load_mrpack(against: &str) -> Result<Vec<u8>> {
+    if against.starts_with("https://") {
         let client = reqwest::blocking::Client::builder()
             .user_agent(USER_AGENT)
             .timeout(Duration::from_secs(60))
             .build()?;
-        client
+        Ok(client
             .get(against)
             .send()?
             .error_for_status()?
             .bytes()?
-            .to_vec()
+            .to_vec())
     } else {
-        fs::read(against)?
-    };
-    index_from_mrpack_bytes(&bytes)
+        Ok(fs::read(against)?)
+    }
 }
 
 fn index_from_mrpack_bytes(bytes: &[u8]) -> Result<ParsedIndex> {
@@ -72,6 +83,49 @@ fn index_from_mrpack_bytes(bytes: &[u8]) -> Result<ParsedIndex> {
     let mut text = String::new();
     file.read_to_string(&mut text)?;
     Ok(serde_json::from_str(&text)?)
+}
+
+fn archive_entries(bytes: &[u8]) -> Result<BTreeMap<String, Vec<u8>>> {
+    let cursor = std::io::Cursor::new(bytes);
+    let mut archive = ZipArchive::new(cursor)?;
+    let mut entries = BTreeMap::new();
+    for index in 0..archive.len() {
+        let mut file = archive.by_index(index)?;
+        if file.is_dir() {
+            continue;
+        }
+        let name = file.name().to_string();
+        if name != "modrinth.index.json" {
+            crate::spec::check_pack_path(&name)?;
+        }
+        let mut contents = Vec::new();
+        file.read_to_end(&mut contents)?;
+        if entries.insert(name.clone(), contents).is_some() {
+            return Err(format!("archive contains duplicate entry {name}").into());
+        }
+    }
+    Ok(entries)
+}
+
+fn compare_archive_entries(ours: &[u8], published: &[u8]) -> Result<()> {
+    let ours = archive_entries(ours)?;
+    let published = archive_entries(published)?;
+    for name in ours.keys() {
+        if !published.contains_key(name) {
+            return Err(format!("published archive is missing {name}").into());
+        }
+    }
+    for name in published.keys() {
+        if !ours.contains_key(name) {
+            return Err(format!("published archive has extra entry {name}").into());
+        }
+    }
+    for (name, contents) in &ours {
+        if published.get(name) != Some(contents) {
+            return Err(format!("archive entry {name} differs").into());
+        }
+    }
+    Ok(())
 }
 
 fn compare(ours: &MrpackIndex, published: &ParsedIndex) -> Result<()> {
@@ -174,6 +228,20 @@ pub fn default_against_from_root(root: &PackRoot) -> Result<String> {
 mod tests {
     use super::*;
     use crate::spec::{EnvSpec, FileSpec, PackMeta, SideRequirement};
+    use std::io::Write;
+    use zip::ZipWriter;
+    use zip::write::SimpleFileOptions;
+
+    fn archive(entries: &[(&str, &[u8])]) -> Vec<u8> {
+        let cursor = std::io::Cursor::new(Vec::new());
+        let mut zip = ZipWriter::new(cursor);
+        for (name, contents) in entries {
+            zip.start_file(*name, SimpleFileOptions::default())
+                .expect("archive entry");
+            zip.write_all(contents).expect("archive contents");
+        }
+        zip.finish().expect("archive").into_inner()
+    }
 
     #[test]
     fn reports_env_mismatch() {
@@ -220,5 +288,33 @@ mod tests {
         };
         let error = compare(&ours, &published).expect_err("env mismatch");
         assert!(error.to_string().contains("server env"));
+    }
+
+    #[test]
+    fn compares_every_uncompressed_archive_entry() {
+        let ours = archive(&[
+            ("modrinth.index.json", b"{}"),
+            ("overrides/config/example.toml", b"enabled = true\n"),
+        ]);
+        let same_contents = archive(&[
+            ("modrinth.index.json", b"{}"),
+            ("overrides/config/example.toml", b"enabled = true\n"),
+        ]);
+        compare_archive_entries(&ours, &same_contents).expect("matching entries");
+
+        let changed = archive(&[
+            ("modrinth.index.json", b"{}"),
+            ("overrides/config/example.toml", b"enabled = false\n"),
+        ]);
+        let error = compare_archive_entries(&ours, &changed).expect_err("changed override");
+        assert!(error.to_string().contains("example.toml differs"));
+
+        let extra = archive(&[
+            ("modrinth.index.json", b"{}"),
+            ("overrides/config/example.toml", b"enabled = true\n"),
+            ("overrides/options.txt", b"extra"),
+        ]);
+        let error = compare_archive_entries(&ours, &extra).expect_err("extra entry");
+        assert!(error.to_string().contains("extra entry"));
     }
 }

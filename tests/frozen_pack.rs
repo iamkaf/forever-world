@@ -9,60 +9,46 @@ fn root() -> PackRoot {
     }
 }
 
-fn jar_stem(path: &str) -> &str {
-    path.rsplit('/')
-        .next()
-        .unwrap_or(path)
-        .trim_end_matches(".jar")
-}
-
-fn jar_family(path: &str) -> String {
-    let stem = jar_stem(path);
-    match stem.split_once(['-', '_', '+']) {
-        Some((family, _)) => family.to_ascii_lowercase(),
-        None => stem.to_ascii_lowercase(),
-    }
-}
-
 /// Jars allowed to load on the dedicated server. Anything that writes blocks
 /// into the save has to be a Kaf mod. Libraries and client-sync extras can sit
 /// here only if they do not add foreign blocks.
-const SERVER_FAMILIES: &[&str] = &[
-    "amber",
-    "appleskin",
-    "bonded",
-    "c2me",
-    "creativecore",
-    "fabric",
-    "ferritecore",
-    "forgeconfigapiport",
-    "happyghastimprovements",
-    "jei",
-    "kafvalentine",
-    "konfig",
-    "liteminer",
-    "lithium",
-    "mochila",
-    "mru",
-    "placeholder",
-    "puzzleslib",
-    "sit",
-    "snapshears",
-    "sound",
-    "torchtoss",
-    "yet",
+const SERVER_JARS: &[&str] = &[
+    "mods/CreativeCore_FABRIC_v2.14.16_mc26.2.jar",
+    "mods/ForgeConfigAPIPort-v26.2.1-mc26.2.x-Fabric.jar",
+    "mods/PuzzlesLib-v26.2.0-mc26.2.x-Fabric.jar",
+    "mods/amber-fabric-11.1.2+26.2.jar",
+    "mods/appleskin-fabric-mc26.2-3.0.10.jar",
+    "mods/bonded-fabric-4.1.0+26.2.jar",
+    "mods/c2me-fabric-mc26.2-0.4.2-alpha.0.13.jar",
+    "mods/fabric-api-0.154.2+26.2.jar",
+    "mods/fabric-language-kotlin-1.13.12+kotlin.2.4.0.jar",
+    "mods/ferritecore-9.0.0-fabric.jar",
+    "mods/happyghastimprovements-fabric-2.1.0+26.2.jar",
+    "mods/jei-26.2-fabric-30.9.0.57.jar",
+    "mods/kafvalentine-fabric-5.1.0+26.2.jar",
+    "mods/konfig-fabric-0.5.0+26.2.jar",
+    "mods/liteminer-fabric-4.1.1+26.2.jar",
+    "mods/lithium-fabric-0.25.2+mc26.2.jar",
+    "mods/mochila-fabric-6.1.0+26.2.jar",
+    "mods/mru-1.0.30+26.2-fabric.jar",
+    "mods/placeholder-api-3.1.0-beta.1+26.2.jar",
+    "mods/sit-fabric-26.1.1-1.5.1.jar",
+    "mods/snapshears-fabric-5.1.0+26.2.jar",
+    "mods/sound-physics-remastered-fabric-1.5.1+26.2.jar",
+    "mods/torchtoss-fabric-5.1.0+26.2.jar",
+    "mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar",
 ];
 
-const CONTENT_FAMILIES: &[&str] = &[
-    "amber",
-    "bonded",
-    "happyghastimprovements",
-    "kafvalentine",
-    "konfig",
-    "liteminer",
-    "mochila",
-    "snapshears",
-    "torchtoss",
+const PERSISTENT_CONTENT_JARS: &[&str] = &[
+    "mods/amber-fabric-11.1.2+26.2.jar",
+    "mods/bonded-fabric-4.1.0+26.2.jar",
+    "mods/happyghastimprovements-fabric-2.1.0+26.2.jar",
+    "mods/kafvalentine-fabric-5.1.0+26.2.jar",
+    "mods/konfig-fabric-0.5.0+26.2.jar",
+    "mods/liteminer-fabric-4.1.1+26.2.jar",
+    "mods/mochila-fabric-6.1.0+26.2.jar",
+    "mods/snapshears-fabric-5.1.0+26.2.jar",
+    "mods/torchtoss-fabric-5.1.0+26.2.jar",
 ];
 
 #[test]
@@ -87,26 +73,21 @@ fn published_1_1_1_stays_frozen() {
 #[test]
 fn only_allowed_jars_load_on_the_server() {
     let spec = load_spec(&root()).expect("pack.toml");
-    let allowed: BTreeSet<&str> = SERVER_FAMILIES.iter().copied().collect();
-    let mut server_families = BTreeSet::new();
-    for file in spec.file.iter().filter(|file| server_file(file)) {
+    let expected: BTreeSet<&str> = SERVER_JARS.iter().copied().collect();
+    let actual: BTreeSet<&str> = spec
+        .file
+        .iter()
+        .filter(|file| server_file(file))
+        .map(|file| file.path.as_str())
+        .collect();
+    assert_eq!(
+        actual, expected,
+        "the dedicated-server jar set changed; review every new jar against the save promise"
+    );
+    for path in PERSISTENT_CONTENT_JARS {
         assert!(
-            file.path.starts_with("mods/"),
-            "{} is server-side but not a mod jar",
-            file.path
-        );
-        let family = jar_family(&file.path);
-        assert!(
-            allowed.contains(family.as_str()),
-            "{} loaded on the server; that puts someone else's world content in the save",
-            file.path
-        );
-        server_families.insert(family);
-    }
-    for family in CONTENT_FAMILIES {
-        assert!(
-            server_families.iter().any(|found| found == family),
-            "{family} must load on the server; the save already contains it"
+            actual.contains(path),
+            "{path} must load on the server; the save already contains its content"
         );
     }
 }

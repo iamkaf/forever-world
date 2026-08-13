@@ -9,6 +9,7 @@ check:
     cargo fmt -- --check
     cargo clippy --all-targets -- -D warnings
     cargo test
+    ./teakitw typecheck --timeout 120
 
 fmt:
     cargo fmt
@@ -39,7 +40,7 @@ pastel:
 
 # Install the exported archive into this repo's server folder.
 pastel-install: export pastel
-    ./server/pastel install ./dist/forever-world-1.1.1.mrpack -dir server -yes
+    ./server/pastel install "./dist/$({{pack}} name)" -dir server -yes
     (cd server && ./pastel refresh -dry-run)
 
 # Dedicated server plus client, with TeaKit layered as a test extra.
@@ -48,9 +49,9 @@ pair: overlay
       --node 26.2-fabric \
       --modstage-config generated/modstage.toml \
       --modstage-instance forever-world-pair \
-      --test-file test/teakit/pair-smoke.test.ts \
+      --test-file test/teakit/startup.test.ts \
       --timeout 360 \
-      --report build/teakit/pair-smoke.json
+      --report build/teakit/startup.json
 
 publish-dry: export
     {{pack}} publish --dry-run
