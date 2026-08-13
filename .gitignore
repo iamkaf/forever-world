@@ -1,0 +1,17 @@
+/target
+/dist
+/.cache
+/generated
+/.teakit
+/build
+/server/pastel
+/server/pastel.exe
+/server/.pastel/
+/server/mods/
+/server/world/
+/server/logs/
+/server/libraries/
+/server/crash-reports/
+/server/*.jar
+/server/server.pastel
+.DS_Store

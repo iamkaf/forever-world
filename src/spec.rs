@@ -1,0 +1,237 @@
+use crate::{Error, Result};
+use serde::{Deserialize, Serialize};
+use std::path::{Component, Path};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum SideRequirement {
+    Required,
+    Optional,
+    Unsupported,
+}
+
+impl SideRequirement {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Required => "required",
+            Self::Optional => "optional",
+            Self::Unsupported => "unsupported",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct EnvSpec {
+    pub client: SideRequirement,
+    pub server: SideRequirement,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PackMeta {
+    pub name: String,
+    pub slug: String,
+    pub version: String,
+    #[serde(default = "default_group")]
+    pub group: String,
+    pub minecraft: String,
+    pub loader: String,
+    pub loader_version: String,
+}
+
+fn default_group() -> String {
+    "com.iamkaf.modpacks".to_string()
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct FileSpec {
+    pub path: String,
+    pub file_size: u64,
+    pub sha1: String,
+    pub sha512: String,
+    pub env: EnvSpec,
+    pub downloads: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PackSpec {
+    pub pack: PackMeta,
+    pub file: Vec<FileSpec>,
+}
+
+impl PackSpec {
+    pub fn parse(text: &str) -> Result<Self> {
+        let spec: Self = toml::from_str(text)?;
+        spec.validate()?;
+        Ok(spec)
+    }
+
+    pub fn validate(&self) -> Result<()> {
+        if self.pack.name.trim().is_empty() {
+            return Err("pack.name is required".into());
+        }
+        if self.pack.slug.trim().is_empty() {
+            return Err("pack.slug is required".into());
+        }
+        if self.pack.version.trim().is_empty() {
+            return Err("pack.version is required".into());
+        }
+        if self.pack.minecraft.trim().is_empty() {
+            return Err("pack.minecraft is required".into());
+        }
+        if self.pack.loader != "fabric" {
+            return Err(format!(
+                "pack.loader `{}` is not supported yet; Forever World is Fabric-only",
+                self.pack.loader
+            )
+            .into());
+        }
+        if self.file.is_empty() {
+            return Err("pack.toml has no [[file]] entries".into());
+        }
+        let mut seen = std::collections::BTreeSet::new();
+        for file in &self.file {
+            check_pack_path(&file.path)?;
+            if file.downloads.is_empty() {
+                return Err(format!("{} has no downloads", file.path).into());
+            }
+            for url in &file.downloads {
+                if !(url.starts_with("https://") || url.starts_with("file:")) {
+                    return Err(
+                        format!("{} download is not https or file: {url}", file.path).into(),
+                    );
+                }
+            }
+            if file.sha1.len() != 40 || file.sha512.len() != 128 {
+                return Err(format!("{} is missing a full sha1/sha512 pin", file.path).into());
+            }
+            if !seen.insert(file.path.clone()) {
+                return Err(format!("duplicate pack path {}", file.path).into());
+            }
+        }
+        Ok(())
+    }
+
+    pub fn mrpack_name(&self) -> String {
+        format!("{}-{}.mrpack", self.pack.slug, self.pack.version)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Lockfile {
+    pub version: u32,
+    pub pack: PackMeta,
+    pub file: Vec<FileSpec>,
+}
+
+impl Lockfile {
+    pub fn from_spec(spec: PackSpec) -> Self {
+        Self {
+            version: 1,
+            pack: spec.pack,
+            file: spec.file,
+        }
+    }
+
+    pub fn parse(text: &str) -> Result<Self> {
+        let lock: Self = toml::from_str(text)
+            .map_err(|error| Error::from(format!("pack.lock.toml: {error}")))?;
+        if lock.version != 1 {
+            return Err(format!("unsupported lock version {}", lock.version).into());
+        }
+        Ok(lock)
+    }
+
+    pub fn to_toml(&self) -> Result<String> {
+        Ok(toml::to_string_pretty(self)?)
+    }
+}
+
+pub fn check_pack_path(path: &str) -> Result<()> {
+    if path.is_empty() {
+        return Err("pack path is empty".into());
+    }
+    if path.contains('\0') || path.contains('\\') {
+        return Err(format!("pack path `{path}` must be a slash-separated relative path").into());
+    }
+    if path.starts_with('/') {
+        return Err(format!("pack path `{path}` must not be absolute").into());
+    }
+    let parsed = Path::new(path);
+    if parsed.is_absolute() {
+        return Err(format!("pack path `{path}` must not be absolute").into());
+    }
+    for component in parsed.components() {
+        match component {
+            Component::Normal(part) => {
+                if part.is_empty() {
+                    return Err(format!("pack path `{path}` has an empty component").into());
+                }
+            }
+            Component::CurDir | Component::ParentDir => {
+                return Err(format!("pack path `{path}` must not contain `.` or `..`").into());
+            }
+            _ => {
+                return Err(format!("pack path `{path}` is not a clean relative path").into());
+            }
+        }
+    }
+    let first = path.split('/').next().unwrap_or("");
+    if first == "world" {
+        return Err(format!("pack path `{path}` must not replace a server world").into());
+    }
+    Ok(())
+}
+
+pub fn server_file(file: &FileSpec) -> bool {
+    file.env.server != SideRequirement::Unsupported
+}
+
+pub fn client_file(file: &FileSpec) -> bool {
+    file.env.client != SideRequirement::Unsupported
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{PackRoot, load_spec};
+    use std::path::PathBuf;
+
+    #[test]
+    fn rejects_world_and_traversal() {
+        assert!(check_pack_path("world/level.dat").is_err());
+        assert!(check_pack_path("../mods/x.jar").is_err());
+        assert!(check_pack_path("/mods/x.jar").is_err());
+        assert!(check_pack_path("mods\\x.jar").is_err());
+        assert!(check_pack_path("mods/sodium.jar").is_ok());
+    }
+
+    #[test]
+    fn parses_published_1_1_1() {
+        let root = PackRoot {
+            path: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
+        };
+        let spec = load_spec(&root).expect("pack.toml");
+        assert_eq!(spec.pack.version, "1.1.1");
+        assert_eq!(spec.pack.minecraft, "26.2");
+        assert_eq!(spec.pack.loader_version, "0.19.3");
+        assert_eq!(spec.file.len(), 63);
+        let sodium = spec
+            .file
+            .iter()
+            .find(|file| file.path.starts_with("mods/sodium-"))
+            .expect("sodium");
+        assert_eq!(sodium.env.server, SideRequirement::Unsupported);
+        let amber = spec
+            .file
+            .iter()
+            .find(|file| file.path.starts_with("mods/amber-"))
+            .expect("amber");
+        assert_eq!(amber.env.server, SideRequirement::Required);
+        assert!(
+            spec.file
+                .iter()
+                .any(|file| file.path.starts_with("shaderpacks/")
+                    && file.env.server == SideRequirement::Unsupported)
+        );
+    }
+}
