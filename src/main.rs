@@ -75,6 +75,9 @@ fn curseforge_command(root: &PackRoot, args: &[String]) -> forever_world::Result
         [command] if command == "resolve" => {
             let report = curseforge::resolve(root)?;
             eprintln!("locked {} CurseForge files", report.resolved);
+            for path in &report.excluded {
+                eprintln!("excluded from CurseForge: {path}");
+            }
             for path in &report.unresolved {
                 eprintln!("unresolved: {path}");
             }

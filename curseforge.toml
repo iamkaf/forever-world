@@ -6,6 +6,8 @@ author = "iamkaf"
 # Packwiz's fingerprint detection handles ordinary JARs. These exact files
 # need explicit IDs because one is not a JAR and one was uploaded too recently
 # for fingerprint detection to recognize it.
+# Last edit: Aug 15, 2026
+
 [[add]]
 path = "mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar"
 project_id = 667299
@@ -15,3 +17,7 @@ file_id = 8307149
 path = "shaderpacks/ComplementaryUnbound_r5.7.1.zip"
 project_id = 385587
 file_id = 7574260
+
+[[exclude]]
+path = "mods/PresenceFootsteps-1.13.3+26.2.jar"
+reason = "No Minecraft 26.2 file is available on CurseForge."

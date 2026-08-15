@@ -26,7 +26,7 @@ Current pack is 1.1.1. Minecraft 26.2, Fabric Loader 0.19.3. Java 25 in the laun
 
 ## Play
 
-Import the [mrpack](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.1.1/forever-world-1.1.1.mrpack) in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance.
+Import the [mrpack](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.1.1/forever-world-1.1.1.mrpack) in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition does not include Presence Footsteps because there is no Minecraft 26.2 file for it on CurseForge.
 
 ## Host
 

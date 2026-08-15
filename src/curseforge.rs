@@ -1,6 +1,6 @@
 use crate::fetch;
 use crate::publish::PublishMode;
-use crate::spec::{CurseForgeFile, Lockfile, check_pack_path, client_file};
+use crate::spec::{CurseForgeFile, Lockfile, SideRequirement, check_pack_path, client_file};
 use crate::{PackRoot, Result, USER_AGENT, hash};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
@@ -20,6 +20,8 @@ struct Config {
     author: String,
     #[serde(default)]
     add: Vec<ExplicitFile>,
+    #[serde(default)]
+    exclude: Vec<ExcludedFile>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -27,6 +29,12 @@ struct ExplicitFile {
     path: String,
     project_id: u32,
     file_id: u32,
+}
+
+#[derive(Debug, Deserialize)]
+struct ExcludedFile {
+    path: String,
+    reason: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -59,12 +67,14 @@ struct PackwizCurseForge {
 #[derive(Debug, PartialEq, Eq)]
 pub struct ResolveReport {
     pub resolved: usize,
+    pub excluded: Vec<String>,
     pub unresolved: Vec<String>,
 }
 
 pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
     let config = load_config(root)?;
     let mut lock = crate::load_lock(root)?;
+    let excluded = validate_config(&config, &lock)?;
     let packwiz = std::env::var_os("PACKWIZ_BIN")
         .ok_or_else(|| crate::Error::from("set PACKWIZ_BIN to the pinned Packwiz binary"))?;
     verify_packwiz(&packwiz, &config.packwiz_commit)?;
@@ -72,7 +82,10 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
     initialise_packwiz(temp.path(), &lock)?;
 
     for file in lock.file.iter().filter(|file| {
-        client_file(file) && file.path.starts_with("mods/") && file.path.ends_with(".jar")
+        client_file(file)
+            && !excluded.contains(&file.path)
+            && file.path.starts_with("mods/")
+            && file.path.ends_with(".jar")
     }) {
         let source = fetch::ensure_cached(root, file)?;
         let destination = temp.path().join(&file.path);
@@ -133,14 +146,84 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
     let unresolved = lock
         .file
         .iter()
-        .filter(|file| client_file(file) && !mapped.contains(file.path.as_str()))
+        .filter(|file| {
+            client_file(file)
+                && !mapped.contains(file.path.as_str())
+                && !excluded.contains(&file.path)
+        })
         .map(|file| file.path.clone())
         .collect();
     fs::write(root.lock_toml(), lock.to_toml()?)?;
     Ok(ResolveReport {
         resolved: lock.curseforge.len(),
+        excluded: excluded.into_iter().collect(),
         unresolved,
     })
+}
+
+fn validate_config(config: &Config, lock: &Lockfile) -> Result<BTreeSet<String>> {
+    let client_files: BTreeMap<_, _> = lock
+        .file
+        .iter()
+        .filter(|file| client_file(file))
+        .map(|file| (file.path.as_str(), file))
+        .collect();
+    let mut additions = BTreeSet::new();
+    for file in &config.add {
+        check_pack_path(&file.path)?;
+        if !client_files.contains_key(file.path.as_str()) {
+            return Err(format!(
+                "curseforge.toml [[add]] path is not a locked client file: {}",
+                file.path
+            )
+            .into());
+        }
+        if file.project_id == 0 || file.file_id == 0 {
+            return Err(format!("curseforge.toml [[add]] has an invalid ID: {}", file.path).into());
+        }
+        if !additions.insert(file.path.as_str()) {
+            return Err(format!("duplicate curseforge.toml [[add]] path: {}", file.path).into());
+        }
+    }
+
+    let mut exclusions = BTreeSet::new();
+    for file in &config.exclude {
+        check_pack_path(&file.path)?;
+        let Some(locked) = client_files.get(file.path.as_str()) else {
+            return Err(format!(
+                "curseforge.toml [[exclude]] path is not a locked client file: {}",
+                file.path
+            )
+            .into());
+        };
+        if locked.env.server != SideRequirement::Unsupported {
+            return Err(format!(
+                "curseforge.toml may exclude only client-only files: {}",
+                file.path
+            )
+            .into());
+        }
+        if file.reason.trim().is_empty() {
+            return Err(format!(
+                "curseforge.toml [[exclude]] reason is required: {}",
+                file.path
+            )
+            .into());
+        }
+        if additions.contains(file.path.as_str()) {
+            return Err(format!(
+                "curseforge.toml cannot add and exclude the same file: {}",
+                file.path
+            )
+            .into());
+        }
+        if !exclusions.insert(file.path.clone()) {
+            return Err(
+                format!("duplicate curseforge.toml [[exclude]] path: {}", file.path).into(),
+            );
+        }
+    }
+    Ok(exclusions)
 }
 
 fn initialise_packwiz(dir: &Path, lock: &Lockfile) -> Result<()> {
@@ -307,7 +390,11 @@ pub struct ManifestFile {
     pub required: bool,
 }
 
-pub fn manifest_from_lock(lock: &Lockfile, author: &str) -> Result<Manifest> {
+fn manifest_from_lock(
+    lock: &Lockfile,
+    author: &str,
+    excluded: &BTreeSet<String>,
+) -> Result<Manifest> {
     let mappings: BTreeMap<_, _> = lock
         .curseforge
         .iter()
@@ -316,7 +403,11 @@ pub fn manifest_from_lock(lock: &Lockfile, author: &str) -> Result<Manifest> {
     let missing: Vec<_> = lock
         .file
         .iter()
-        .filter(|file| client_file(file) && !mappings.contains_key(file.path.as_str()))
+        .filter(|file| {
+            client_file(file)
+                && !excluded.contains(&file.path)
+                && !mappings.contains_key(file.path.as_str())
+        })
         .map(|file| file.path.as_str())
         .collect();
     if !missing.is_empty() {
@@ -329,7 +420,7 @@ pub fn manifest_from_lock(lock: &Lockfile, author: &str) -> Result<Manifest> {
     let mut files: Vec<_> = lock
         .file
         .iter()
-        .filter(|file| client_file(file))
+        .filter(|file| client_file(file) && !excluded.contains(&file.path))
         .map(|file| {
             let mapped = mappings[&file.path.as_str()];
             ManifestFile {
@@ -361,7 +452,8 @@ pub fn manifest_from_lock(lock: &Lockfile, author: &str) -> Result<Manifest> {
 pub fn export(root: &PackRoot) -> Result<PathBuf> {
     let lock = crate::load_lock(root)?;
     let config = load_config(root)?;
-    let manifest = manifest_from_lock(&lock, &config.author)?;
+    let excluded = validate_config(&config, &lock)?;
+    let manifest = manifest_from_lock(&lock, &config.author, &excluded)?;
     let mut manifest_bytes = serde_json::to_vec_pretty(&manifest)?;
     manifest_bytes.push(b'\n');
     let name = format!("{}-{}-curseforge.zip", lock.pack.slug, lock.pack.version);
@@ -473,11 +565,12 @@ pub fn publish(root: &PackRoot, mode: PublishMode) -> Result<String> {
         )
         .into());
     }
-    let name = format!("{}-{}-curseforge.zip", lock.pack.slug, lock.pack.version);
-    let archive = root.dist_dir().join(&name);
-    if !archive.is_file() {
-        return Err("missing CurseForge archive; run `pack curseforge export` first".into());
-    }
+    let archive = export(root)?;
+    let name = archive
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| crate::Error::from("CurseForge archive name is not valid UTF-8"))?
+        .to_string();
     let changelog = fs::read_to_string(root.path.join("CHANGELOG.md"))?;
     let metadata = UploadMetadata {
         changelog,
@@ -578,9 +671,14 @@ mod tests {
         }
     }
 
+    fn no_exclusions() -> BTreeSet<String> {
+        BTreeSet::new()
+    }
+
     #[test]
     fn manifest_uses_locked_ids_and_loader() {
-        let manifest = manifest_from_lock(&lock(true), "iamkaf").expect("manifest");
+        let manifest =
+            manifest_from_lock(&lock(true), "iamkaf", &no_exclusions()).expect("manifest");
         assert_eq!(manifest.files[0].project_id, 123);
         assert_eq!(manifest.files[0].file_id, 456);
         assert_eq!(manifest.minecraft.mod_loaders[0].id, "fabric-0.19.3");
@@ -592,10 +690,66 @@ mod tests {
 
     #[test]
     fn manifest_rejects_an_unresolved_client_file() {
-        let error = manifest_from_lock(&lock(false), "iamkaf")
+        let error = manifest_from_lock(&lock(false), "iamkaf", &no_exclusions())
             .expect_err("unresolved mapping")
             .to_string();
         assert!(error.contains("mods/example.jar"));
+    }
+
+    #[test]
+    fn manifest_omits_an_explicitly_excluded_file() {
+        let excluded = BTreeSet::from(["mods/example.jar".to_string()]);
+        let manifest =
+            manifest_from_lock(&lock(false), "iamkaf", &excluded).expect("manifest with exclusion");
+        assert!(manifest.files.is_empty());
+    }
+
+    #[test]
+    fn config_rejects_a_stale_exclusion() {
+        let config = Config {
+            packwiz_commit: "commit".into(),
+            author: "iamkaf".into(),
+            add: Vec::new(),
+            exclude: vec![ExcludedFile {
+                path: "mods/missing.jar".into(),
+                reason: "Unavailable".into(),
+            }],
+        };
+        let error = validate_config(&config, &lock(false))
+            .expect_err("stale exclusion")
+            .to_string();
+        assert!(error.contains("mods/missing.jar"));
+    }
+
+    #[test]
+    fn config_rejects_excluding_a_server_file() {
+        let config = Config {
+            packwiz_commit: "commit".into(),
+            author: "iamkaf".into(),
+            add: Vec::new(),
+            exclude: vec![ExcludedFile {
+                path: "mods/example.jar".into(),
+                reason: "Unavailable".into(),
+            }],
+        };
+        let error = validate_config(&config, &lock(false))
+            .expect_err("server file exclusion")
+            .to_string();
+        assert!(error.contains("client-only"));
+    }
+
+    #[test]
+    fn current_config_excludes_only_presence_footsteps() {
+        let root = PackRoot {
+            path: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
+        };
+        let config = load_config(&root).expect("curseforge.toml");
+        let lock = crate::load_lock(&root).expect("pack.lock.toml");
+        let excluded = validate_config(&config, &lock).expect("valid exclusions");
+        assert_eq!(
+            excluded,
+            BTreeSet::from(["mods/PresenceFootsteps-1.13.3+26.2.jar".to_string()])
+        );
     }
 
     #[test]
