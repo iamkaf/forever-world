@@ -52,22 +52,21 @@ const PERSISTENT_CONTENT_JARS: &[&str] = &[
 ];
 
 #[test]
-fn published_1_1_1_stays_frozen() {
+fn next_release_source_and_lockfile_stay_in_sync() {
     let spec = load_spec(&root()).expect("pack.toml");
     let lock = load_lock(&root()).expect("pack.lock.toml");
     assert_eq!(spec.pack.name, "FOREVER WORLD");
-    assert_eq!(spec.pack.version, "1.1.1");
+    assert_eq!(spec.pack.version, "1.2.0");
     assert_eq!(spec.pack.minecraft, "26.2");
     assert_eq!(spec.pack.loader, "fabric");
     assert_eq!(spec.pack.loader_version, "0.19.3");
-    assert_eq!(spec.file.len(), 63);
-    assert_eq!(
-        Lockfile::from_spec(PackSpec {
-            pack: spec.pack.clone(),
-            file: spec.file.clone(),
-        }),
-        lock
-    );
+    assert_eq!(spec.file.len(), 48);
+    let mut expected = Lockfile::from_spec(PackSpec {
+        pack: spec.pack.clone(),
+        file: spec.file.clone(),
+    });
+    expected.curseforge = lock.curseforge.clone();
+    assert_eq!(expected, lock);
 }
 
 #[test]
@@ -110,4 +109,35 @@ fn shaders_and_client_perf_stay_off_the_server() {
             );
         }
     }
+}
+
+#[test]
+fn complementary_unbound_is_the_only_bundled_shaderpack() {
+    let spec = load_spec(&root()).expect("pack.toml");
+    let shaders: Vec<&str> = spec
+        .file
+        .iter()
+        .filter(|file| file.path.starts_with("shaderpacks/"))
+        .map(|file| file.path.as_str())
+        .collect();
+    assert_eq!(shaders, ["shaderpacks/ComplementaryUnbound_r5.7.1.zip"]);
+}
+
+#[test]
+fn curseforge_lock_is_complete_except_for_presence_footsteps() {
+    let lock = load_lock(&root()).expect("pack.lock.toml");
+    let mapped: BTreeSet<_> = lock
+        .curseforge
+        .iter()
+        .map(|file| file.path.as_str())
+        .collect();
+    let unresolved: Vec<_> = lock
+        .file
+        .iter()
+        .filter(|file| file.env.client != SideRequirement::Unsupported)
+        .map(|file| file.path.as_str())
+        .filter(|path| !mapped.contains(path))
+        .collect();
+    assert_eq!(unresolved, ["mods/PresenceFootsteps-1.13.3+26.2.jar"]);
+    assert_eq!(lock.curseforge.len(), 47);
 }

@@ -3,7 +3,7 @@ version = 1
 [pack]
 name = "FOREVER WORLD"
 slug = "forever-world"
-version = "1.1.1"
+version = "1.2.0"
 group = "com.iamkaf.modpacks"
 minecraft = "26.2"
 loader = "fabric"
@@ -507,9 +507,9 @@ server = "required"
 [[file]]
 path = "mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar"
 file_size = 1121528
-sha1 = "e5d90b4f2cc508056097249d71fc9482ae73c111"
-sha512 = "bf709e5d1db2f104abb1e45d27dec39f10e0e2d546ec1e5df3a49b464c6f2b2daf39633e26e94e7869ae2a555258e5c4ee2d796c7d6d0e26300052a8de15052a"
-downloads = ["https://cdn.modrinth.com/data/1eAoo2KR/versions/LlSShNCR/yet_another_config_lib_v3-3.9.5%2B26.2-fabric.jar"]
+sha1 = "6d20eb99432557f8c58e4025a8f003d5037125b7"
+sha512 = "857082d79ddb6bf46036e4c2b43f3f2428e3233a849a3f1557f2f2769899e5174dbb97a0b3c803ce696bee19cef58d43eacc609e9fc7b3328674f4f29fd05b71"
+downloads = ["https://mediafilez.forgecdn.net/files/8307/149/yet_another_config_lib_v3-3.9.5%2B26.2-fabric.jar"]
 
 [file.env]
 client = "required"
@@ -527,50 +527,6 @@ client = "required"
 server = "unsupported"
 
 [[file]]
-path = "shaderpacks/1.3.0.zip"
-file_size = 184202
-sha1 = "90991a16804723e7a417e4b207e3257f795c0124"
-sha512 = "ecb689c5c90f24f1f8b2a870cfd532ec4717c5dd88f94d6c40ffbb3352cbebbec56aade4bb27e5bab2035d61836cde3472c4e739365027af2776c8f8749fac75"
-downloads = ["https://cdn.modrinth.com/data/gvVxbJat/versions/N9BLPyT7/1.5.0.zip"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-path = "shaderpacks/Aurora Fantasy.5.1.zip"
-file_size = 544291
-sha1 = "1dfff674b2aeccb4f8b70082af84d2cf8ccab609"
-sha512 = "9ee34b99a53dcee1ee2e203b1f00c385bd82210c294cc772bc5cb06a30a4e656bcf006ceea80f244bafeb6609c7e443595cc922090d34064e34337be999c9c29"
-downloads = ["https://cdn.modrinth.com/data/ZuJPfLHp/versions/3NhVo89w/Aurora%20Fantasy.5.1.zip"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-path = "shaderpacks/BSL_v10.1.3.zip"
-file_size = 1127026
-sha1 = "c2459c82c23dc7442eaf1976dade30c2c2f18a9f"
-sha512 = "3e68c8038e38b0860cf1258e5fc84bcd98007a70fb7ba49e306186be6e905187527b630b77cb9e8cc8ee80865606c0fb398c419a22f0076b2ed5c7d73748a9ba"
-downloads = ["https://cdn.modrinth.com/data/Q1vvjJYV/versions/hIibTfxn/BSL_v10.1.3.zip"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-path = "shaderpacks/Bliss_v2.1.2_(Chocapic13_Shaders_edit).zip"
-file_size = 1791406
-sha1 = "ded6c8a98305f8aff90ef781e7585b33b8452cfd"
-sha512 = "dafc60be4980ec40f40edc0f2625cb0976f3c9ce5ed86383146a120480826bb1de70ef5e38b7f1437294ed4d38c6ef3c82ebef0ae4e00b8cee165788c9c18280"
-downloads = ["https://cdn.modrinth.com/data/ZvMtQlho/versions/kC2Y8q1P/Bliss_v2.1.2_%28Chocapic13_Shaders_edit%29.zip"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
 path = "shaderpacks/ComplementaryUnbound_r5.7.1.zip"
 file_size = 522973
 sha1 = "95883b516298ff4cf1a67ff512086eb67aeedd98"
@@ -581,123 +537,284 @@ downloads = ["https://cdn.modrinth.com/data/R6NEzAwj/versions/d8rcvDTp/Complemen
 client = "required"
 server = "unsupported"
 
-[[file]]
-path = "shaderpacks/Cursed Fog - V1.0.8.zip"
-file_size = 67730
-sha1 = "f608b5c17230372fc5f447f6e9d028af939143a3"
-sha512 = "a89f3752536b3c9eea68b721838d0eaa5b9916b1ac80b27ebae50a8c2205e42e52adcae5b1f340deb8ec019ea4daa890731013f2e80333a8a6d0d0e1c4b3a27c"
-downloads = ["https://cdn.modrinth.com/data/sAZ9WsJP/versions/GdCtP4hx/Cursed%20Fog%20-%20V1.0.8.zip"]
+[[curseforge]]
+path = "mods/AmbientSounds_FABRIC_v6.3.6_mc26.2.jar"
+sha1 = "b4fa62c189907192933fae4853eeebeb6d57d836"
+project_id = 254284
+file_id = 8299375
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/Controlling-fabric-26.2-26.2.2.jar"
+sha1 = "23da84738f49e75b6318a75eb98fe18c284798ff"
+project_id = 250398
+file_id = 8268835
 
-[[file]]
-path = "shaderpacks/Lumina_Event_Horizon v1.2.2.zip"
-file_size = 530930
-sha1 = "bfb6b319e906570b68c0a30e92e8d520e9de9f8d"
-sha512 = "84394b64f8ef0bf53f872e2725b3ef3bf353027aa06a7632c1d9bd2a0de7ed697288f4a2a1abfde3aca93690991cf8b9aea4ff090a5aa322e31ddcb80e64a55a"
-downloads = ["https://cdn.modrinth.com/data/9gxVXUDr/versions/4pvLeJvr/Lumina_Event_Horizon%20v1.2.2.zip"]
+[[curseforge]]
+path = "mods/CreativeCore_FABRIC_v2.14.16_mc26.2.jar"
+sha1 = "c9189bb8b0f760d3b84e73b77cf81ca809399c3d"
+project_id = 257814
+file_id = 8299367
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/CutThrough-v26.2.0-mc26.2.x-Fabric.jar"
+sha1 = "fa4ca6a3945d23bd1bb98dde10db5e9b002974df"
+project_id = 969423
+file_id = 8269326
 
-[[file]]
-path = "shaderpacks/Pollution-2035-Shaders-1.0.2b.zip"
-file_size = 54256
-sha1 = "38899651c1008968669f995fbaf7efd03ece4d66"
-sha512 = "af484448cded6f24f7a5a10945bf227b8e6f0137d4ccd89ecd79803f9edd17bc5613a54555a31e19bcd8781d30abf2a8b11ff43539f7cd3e0311ddafc0900dc6"
-downloads = ["https://cdn.modrinth.com/data/6OQgclAX/versions/AiE5Yuj3/Pollution-2035-Shaders-1.0.2b.zip"]
+[[curseforge]]
+path = "mods/ForgeConfigAPIPort-v26.2.1-mc26.2.x-Fabric.jar"
+sha1 = "a4083de0d8e0c19b993d21f7a576216efb5ceb23"
+project_id = 547434
+file_id = 8292030
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/ImmediatelyFast-Fabric-1.16.1+26.2.jar"
+sha1 = "ef9347d232ede4c97799fa5dd3a6d2b5be9d7bd8"
+project_id = 686911
+file_id = 8327973
 
-[[file]]
-path = "shaderpacks/Reflectify RT - Realistic Rain Reflections and Mirror Ice (SSR and God Rays).zip"
-file_size = 102873
-sha1 = "f599ed379ce1d7eb404c12c54945b33726ded9cb"
-sha512 = "93041fcc637e590460dc0dd3465fec9d3f5cba3801ddabed4b877444def2a0f6f0ad7bc0d2d6566529d7cc2949dc91e9a5a4939a4b46b83da07a097620910168"
-downloads = ["https://cdn.modrinth.com/data/9ItvIfRa/versions/iuH2dPn2/Reflectify%20RT%20-%20Realistic%20Rain%20Reflections%20and%20Mirror%20Ice%20%28SSR%20and%20God%20Rays%29.zip"]
+[[curseforge]]
+path = "mods/MouseTweaks-fabric-mc26.2-2.31.jar"
+sha1 = "ad5b7e4ad6dc734152d41f05902b65aedb448d64"
+project_id = 60089
+file_id = 8260318
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/ParticleEffects-1.5.0+26.2+fabric.jar"
+sha1 = "80634b799b693044dfbddaf46fa139f1f98492a2"
+project_id = 1120746
+file_id = 8325468
 
-[[file]]
-path = "shaderpacks/Spooklementary_v2.0.4.zip"
-file_size = 558206
-sha1 = "38651af0c334b9a5d454b903c982ccb24db0869a"
-sha512 = "64d6e2442253bbe016ba88cb347884b34e261deed846b96185d33dd9e9c3e79706a3ef4aa6b563793951e02edfff6349a3fb7f72c9574b49f3e7a07f39eaa6f9"
-downloads = ["https://cdn.modrinth.com/data/6uJCfiCH/versions/rcr90eRP/Spooklementary_v2.0.4.zip"]
+[[curseforge]]
+path = "mods/PuzzlesLib-v26.2.0-mc26.2.x-Fabric.jar"
+sha1 = "0b116d3b84970ece52d7e42a3b1cabf831b5e6df"
+project_id = 495476
+file_id = 8269329
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/Searchables-fabric-26.2-1.0.1.jar"
+sha1 = "73c1917f4ff056254c95f50a5acb18d16384139a"
+project_id = 858542
+file_id = 8262513
 
-[[file]]
-path = "shaderpacks/Tricked Shaders.zip"
-file_size = 644460
-sha1 = "dee15ce0482aed9a7663ac0eaa2cf790d17a3ad5"
-sha512 = "2bdd7228f617f64ff53345a2642f29ccc98f973f11028d654eb7ef74337c1d5f3a34ef27912681965f429fd40de918c3da1735514a4e4b1d2bd789aeda472332"
-downloads = ["https://cdn.modrinth.com/data/ZhCRyz0a/versions/Pwum5YKh/Tricked%20Shaders.zip"]
+[[curseforge]]
+path = "mods/amber-fabric-11.1.2+26.2.jar"
+sha1 = "c7a271f2207f04414b9558a063288118418e092a"
+project_id = 1139910
+file_id = 8396148
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/appleskin-fabric-mc26.2-3.0.10.jar"
+sha1 = "03a635bae2c5a5e66825a35ff130242752054b32"
+project_id = 248787
+file_id = 8271985
 
-[[file]]
-path = "shaderpacks/Verlixia.zip"
-file_size = 2223625
-sha1 = "4d6c536df44cd8df83614fe497dd72f7b79ab3b4"
-sha512 = "8637d58cfe29e139d73bfe0f619028c28dae563b84bf78b98458bdee3abd95a325b3a26777589dcf8f74b317b0fd280903c07b88d6fe792b174ab7c18940d1f6"
-downloads = ["https://cdn.modrinth.com/data/pB0H8J2Y/versions/WYeX5iz1/Verlixia.zip"]
+[[curseforge]]
+path = "mods/bobby-5.2.14+mc26.2.jar"
+sha1 = "0a57a358795280386f8a20aad1de35efe4e5e5d1"
+project_id = 409301
+file_id = 8284769
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/bonded-fabric-4.1.0+26.2.jar"
+sha1 = "2af685d57a1f2774cd2305c6dfa3b48c54e47e0b"
+project_id = 1144849
+file_id = 8391414
 
-[[file]]
-path = "shaderpacks/Zayko V7.3.zip"
-file_size = 1185624
-sha1 = "97e9e7c96d1da5ff7b2f86dd54624bdb530cae84"
-sha512 = "f5771fecfea10ba5e908f172446d66d7b154b9348e91d4db458e02d2768f69c1a80daa7eed27243f494d5b6c93c08aa5bbc69b733ec75cacf6976a080cf6e1cc"
-downloads = ["https://cdn.modrinth.com/data/FFaD08BY/versions/dJbmD4wf/Zayko%20V7.3.zip"]
+[[curseforge]]
+path = "mods/c2me-fabric-mc26.2-0.4.2-alpha.0.13.jar"
+sha1 = "f531fb2c8774fd30c9fbeedc2d4a60bf9f59995f"
+project_id = 533097
+file_id = 8405041
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/chat_heads-1.2.4-fabric-26.1.jar"
+sha1 = "4a529510d0690adfa94df8e359fa444e2251a657"
+project_id = 407206
+file_id = 8174615
 
-[[file]]
-path = "shaderpacks/photon_v1.3b.zip"
-file_size = 3800987
-sha1 = "d975d25c9686de5f10e8b86c8518613cdf3f040a"
-sha512 = "40bcbac9c656f2965f543e4b35cd0698723b2db8b67662f1b53c14223cfbef7d60d7fbf0176f73fcadd0d1e19ba60d951ed77e9eece8c8df7dca4d2be6315309"
-downloads = ["https://cdn.modrinth.com/data/lLqFfGNs/versions/gUv7fBPN/photon_v1.3b.zip"]
+[[curseforge]]
+path = "mods/cwb-4.1.0+26.2.jar"
+sha1 = "9420614dd8f95a9ca1e1b2371f342e92855bb354"
+project_id = 975120
+file_id = 8294489
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/entityculling-fabric-1.10.5-mc26.2.jar"
+sha1 = "f66f9d8cbb1f76466aaf45e46fb11b18207e3aef"
+project_id = 448233
+file_id = 8287118
 
-[[file]]
-path = "shaderpacks/§f§lSC§c§k§lA§f§lN§f - §8A0.0.1.zip"
-file_size = 16970
-sha1 = "d59dac14b9e0bc5df07ac7bcf15b5d7ff7f46fc2"
-sha512 = "3dd0bf463f66d90a7283aa7a0255eb06b06d6e37f6a2b7e2e42b2cde1b48c0056775bcaa68807c3f1c23472abd3b2365fe7f9a8c9d58fe0fad2dc6d3bf060dd1"
-downloads = ["https://cdn.modrinth.com/data/8co1yEDN/versions/RfQ5WCMO/%C2%A7f%C2%A7lSC%C2%A7c%C2%A7k%C2%A7lA%C2%A7f%C2%A7lN%C2%A7f%20-%20%C2%A78A0.0.1.zip"]
+[[curseforge]]
+path = "mods/fabric-api-0.154.2+26.2.jar"
+sha1 = "3b877ba08c963948290098cb4ab718046b011987"
+project_id = 306612
+file_id = 8385873
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/fabric-language-kotlin-1.13.12+kotlin.2.4.0.jar"
+sha1 = "2bc17bb4275cc70a12e4ac35d139a71a30845720"
+project_id = 308769
+file_id = 8190687
 
-[[file]]
-path = "shaderpacks/春 v2 260416.zip"
-file_size = 8875574
-sha1 = "b21b2685c62968efdefcb6426438ad6e8fb745c6"
-sha512 = "050590b17aa356cb176a591b48ba68628544e1a102b1bcecd254fdb0b6b2718eb2b48d81b5dc840872eb3c6f37ac2b0072cd89e8b50e413bfb5adab86a23d731"
-downloads = ["https://cdn.modrinth.com/data/68DAChCV/versions/wbg6Woxz/%E6%98%A5%20v2%20260416.zip"]
+[[curseforge]]
+path = "mods/ferritecore-9.0.0-fabric.jar"
+sha1 = "eac76ff0f3753422c61b2c44487d0d195d88d4bc"
+project_id = 459857
+file_id = 7806040
 
-[file.env]
-client = "required"
-server = "unsupported"
+[[curseforge]]
+path = "mods/gentlehurtcam-fabric-2.1.0+26.2.jar"
+sha1 = "5f3807d8affeb07e8f56ffdfd84499919a7e28a5"
+project_id = 1450022
+file_id = 8263531
+
+[[curseforge]]
+path = "mods/happyghastimprovements-fabric-2.1.0+26.2.jar"
+sha1 = "f77d715d65d432166ff8824b956cdef9cc2a9a99"
+project_id = 1449981
+file_id = 8263524
+
+[[curseforge]]
+path = "mods/iris-fabric-1.11.2+mc26.2.jar"
+sha1 = "f7d526b1062c4bfe2567113cf933d1de26eddd3f"
+project_id = 455508
+file_id = 8396841
+
+[[curseforge]]
+path = "mods/jei-26.2-fabric-30.9.0.57.jar"
+sha1 = "a69f5cd0855fefc7a6d341e3d2d8122c2473bdbd"
+project_id = 238222
+file_id = 8407106
+
+[[curseforge]]
+path = "mods/kafhud-fabric-6.1.0+26.2.jar"
+sha1 = "16381505d7a19699c0242487ea89cac0331f8fff"
+project_id = 1145891
+file_id = 8263518
+
+[[curseforge]]
+path = "mods/kafvalentine-fabric-5.1.0+26.2.jar"
+sha1 = "f72248ce1f232e297aca41243b564723dc5381d4"
+project_id = 974853
+file_id = 8263527
+
+[[curseforge]]
+path = "mods/konfig-fabric-0.5.0+26.2.jar"
+sha1 = "722132d107f56729e61affdff629935c5a3d963d"
+project_id = 1479633
+file_id = 8308820
+
+[[curseforge]]
+path = "mods/lambdynamiclights-4.12.2+26.2.jar"
+sha1 = "0667b3e1d203a54a0fcede02d97fc3b9f384711c"
+project_id = 393442
+file_id = 8286188
+
+[[curseforge]]
+path = "mods/libIPN-fabric-26.2-6.8.2.jar"
+sha1 = "0915dc94c81044025f43a1ab2118b2c6c8a97710"
+project_id = 679177
+file_id = 8346005
+
+[[curseforge]]
+path = "mods/liteminer-fabric-4.1.1+26.2.jar"
+sha1 = "da27851c83d0b59042e69ca5aa2be727b0783f6e"
+project_id = 1133225
+file_id = 8313140
+
+[[curseforge]]
+path = "mods/lithium-fabric-0.25.2+mc26.2.jar"
+sha1 = "3bcc94183d7068395de08915fd5fce8d199aaa50"
+project_id = 360438
+file_id = 8409186
+
+[[curseforge]]
+path = "mods/mochila-fabric-6.1.0+26.2.jar"
+sha1 = "30a3941c0b9065374f9f052d607856265994125e"
+project_id = 1140343
+file_id = 8263516
+
+[[curseforge]]
+path = "mods/modmenu-20.0.1.jar"
+sha1 = "8562dee49eae1a6bdd14b026be1b300aedb5ce0f"
+project_id = 308702
+file_id = 8402669
+
+[[curseforge]]
+path = "mods/mru-1.0.30+26.2-fabric.jar"
+sha1 = "42f17ea11eb2d71ae7aefe7173772427f86e3ae5"
+project_id = 669659
+file_id = 8378877
+
+[[curseforge]]
+path = "mods/placeholder-api-3.1.0-beta.1+26.2.jar"
+sha1 = "99b57ccc1d4323c4ef71887828dac25ce4ce2103"
+project_id = 1037459
+file_id = 8271471
+
+[[curseforge]]
+path = "mods/rrls-5.2.7+mc.26.2.jar"
+sha1 = "81916517dcf9f2e9f015ef727b09b2f7c90b311c"
+project_id = 833233
+file_id = 8271763
+
+[[curseforge]]
+path = "mods/sit-fabric-26.1.1-1.5.1.jar"
+sha1 = "9a60018b802781eadd45eb073328bfb8c2b3348f"
+project_id = 328163
+file_id = 7886688
+
+[[curseforge]]
+path = "mods/skinlayers3d-fabric-1.11.2-mc26.2.jar"
+sha1 = "7c8a66d009051bab26f7489e1edef8b3c64f7b0e"
+project_id = 521480
+file_id = 8274848
+
+[[curseforge]]
+path = "mods/snapshears-fabric-5.1.0+26.2.jar"
+sha1 = "a321a99fbabba383af08434adf32b74abd02466c"
+project_id = 1275720
+file_id = 8263522
+
+[[curseforge]]
+path = "mods/sodium-fabric-0.9.1+mc26.2.jar"
+sha1 = "14f3388694fa77f870d28262f74562de67eabcbe"
+project_id = 394468
+file_id = 8396428
+
+[[curseforge]]
+path = "mods/sound-physics-remastered-fabric-1.5.1+26.2.jar"
+sha1 = "63657ef05768d2a7a102549bc8ef5f5fc04e2fc4"
+project_id = 535489
+file_id = 8271003
+
+[[curseforge]]
+path = "mods/sounds-2.5.1+edge+26.2-fabric.jar"
+sha1 = "557183656b2a09545c7348507880c5f59293d16b"
+project_id = 925889
+file_id = 8343098
+
+[[curseforge]]
+path = "mods/torchtoss-fabric-5.1.0+26.2.jar"
+sha1 = "0c24bdcf770d87f5e2e87e7d5f1b4cde15167bd7"
+project_id = 1191803
+file_id = 8263520
+
+[[curseforge]]
+path = "mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar"
+sha1 = "6d20eb99432557f8c58e4025a8f003d5037125b7"
+project_id = 667299
+file_id = 8307149
+
+[[curseforge]]
+path = "mods/zoomify-2.16.1+26.2.jar"
+sha1 = "3303552e44587bb10c1d1c91b038dc7ace0fa376"
+project_id = 574741
+file_id = 8301179
+
+[[curseforge]]
+path = "shaderpacks/ComplementaryUnbound_r5.7.1.zip"
+sha1 = "95883b516298ff4cf1a67ff512086eb67aeedd98"
+project_id = 385587
+file_id = 7574260

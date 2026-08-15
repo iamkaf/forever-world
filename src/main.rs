@@ -1,5 +1,5 @@
 use forever_world::spec::Lockfile;
-use forever_world::{PackRoot, export, fetch, overlay, publish, verify};
+use forever_world::{PackRoot, curseforge, export, fetch, overlay, publish, verify};
 use std::env;
 use std::fs;
 use std::process::ExitCode;
@@ -29,6 +29,7 @@ fn run(args: Vec<String>) -> forever_world::Result<()> {
             Ok(())
         }
         "export" => {
+            require_no_args(&args, "export")?;
             let dest = export::export(&root)?;
             eprintln!("wrote {}", dest.display());
             Ok(())
@@ -60,11 +61,41 @@ fn run(args: Vec<String>) -> forever_world::Result<()> {
             }
             Ok(())
         }
+        "curseforge" => curseforge_command(&root, &args),
         "-h" | "--help" | "help" => {
             print_help();
             Ok(())
         }
         other => Err(format!("unknown command `{other}`").into()),
+    }
+}
+
+fn curseforge_command(root: &PackRoot, args: &[String]) -> forever_world::Result<()> {
+    match args {
+        [command] if command == "resolve" => {
+            let report = curseforge::resolve(root)?;
+            eprintln!("locked {} CurseForge files", report.resolved);
+            for path in &report.unresolved {
+                eprintln!("unresolved: {path}");
+            }
+            if report.unresolved.is_empty() {
+                Ok(())
+            } else {
+                Err("CurseForge mappings are incomplete".into())
+            }
+        }
+        [command] if command == "export" => {
+            let destination = curseforge::export(root)?;
+            eprintln!("wrote {}", destination.display());
+            Ok(())
+        }
+        [command, rest @ ..] if command == "publish" => {
+            let version = forever_world::load_lock(root)?.pack.version;
+            let mode = parse_publish_mode(rest, &version)?;
+            println!("{}", curseforge::publish(root, mode)?);
+            Ok(())
+        }
+        _ => Err("use `pack curseforge resolve`, `export`, or `publish`".into()),
     }
 }
 
@@ -108,7 +139,11 @@ fn resolve(root: &PackRoot) -> forever_world::Result<Lockfile> {
         eprintln!("[{}/{}] {}", index + 1, total, file.path);
         fetch::ensure_cached(root, file)?;
     }
-    let lock = Lockfile::from_spec(spec);
+    let previous = forever_world::load_lock(root).ok();
+    let mut lock = Lockfile::from_spec(spec);
+    if let Some(previous) = previous {
+        lock.retain_curseforge_from(&previous);
+    }
     fs::write(root.lock_toml(), lock.to_toml()?)?;
     Ok(lock)
 }
@@ -136,6 +171,11 @@ pack — Forever World pack tool
   pack publish --dry-run    Show release upload keys
   pack publish --confirm <version>
                             Publish to the release repository
+  pack curseforge resolve  Use Packwiz to lock CurseForge project/file IDs
+  pack curseforge export   Write dist/<slug>-<version>-curseforge.zip
+  pack curseforge publish --dry-run
+  pack curseforge publish --confirm <version>
+                            Upload the CurseForge archive
 "
     );
 }
@@ -151,17 +191,17 @@ mod tests {
     #[test]
     fn publishing_requires_an_exact_mode_and_version() {
         assert_eq!(
-            parse_publish_mode(&args(&["--dry-run"]), "1.1.2").expect("dry run"),
+            parse_publish_mode(&args(&["--dry-run"]), "1.2.0").expect("dry run"),
             publish::PublishMode::DryRun
         );
         assert_eq!(
-            parse_publish_mode(&args(&["--confirm", "1.1.2"]), "1.1.2").expect("confirmed publish"),
+            parse_publish_mode(&args(&["--confirm", "1.2.0"]), "1.2.0").expect("confirmed publish"),
             publish::PublishMode::Confirmed {
-                version: "1.1.2".into()
+                version: "1.2.0".into()
             }
         );
-        assert!(parse_publish_mode(&[], "1.1.2").is_err());
-        assert!(parse_publish_mode(&args(&["--dry-rnu"]), "1.1.2").is_err());
-        assert!(parse_publish_mode(&args(&["--confirm", "1.1.1"]), "1.1.2").is_err());
+        assert!(parse_publish_mode(&[], "1.2.0").is_err());
+        assert!(parse_publish_mode(&args(&["--dry-rnu"]), "1.2.0").is_err());
+        assert!(parse_publish_mode(&args(&["--confirm", "1.1.1"]), "1.2.0").is_err());
     }
 }

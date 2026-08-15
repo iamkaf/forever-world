@@ -133,6 +133,16 @@ pub struct Lockfile {
     pub version: u32,
     pub pack: PackMeta,
     pub file: Vec<FileSpec>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub curseforge: Vec<CurseForgeFile>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CurseForgeFile {
+    pub path: String,
+    pub sha1: String,
+    pub project_id: u32,
+    pub file_id: u32,
 }
 
 impl Lockfile {
@@ -141,7 +151,22 @@ impl Lockfile {
             version: 1,
             pack: spec.pack,
             file: spec.file,
+            curseforge: Vec::new(),
         }
+    }
+
+    pub fn retain_curseforge_from(&mut self, previous: &Self) {
+        let pins: std::collections::BTreeSet<_> = self
+            .file
+            .iter()
+            .map(|file| (file.path.as_str(), file.sha1.as_str()))
+            .collect();
+        self.curseforge = previous
+            .curseforge
+            .iter()
+            .filter(|file| pins.contains(&(file.path.as_str(), file.sha1.as_str())))
+            .cloned()
+            .collect();
     }
 
     pub fn parse(text: &str) -> Result<Self> {
@@ -155,6 +180,24 @@ impl Lockfile {
             file: lock.file.clone(),
         }
         .validate()?;
+        let pins: std::collections::BTreeSet<_> = lock
+            .file
+            .iter()
+            .map(|file| (file.path.as_str(), file.sha1.as_str()))
+            .collect();
+        let mut seen = std::collections::BTreeSet::new();
+        for file in &lock.curseforge {
+            check_pack_path(&file.path)?;
+            if file.project_id == 0 || file.file_id == 0 {
+                return Err(format!("{} has an invalid CurseForge ID", file.path).into());
+            }
+            if !pins.contains(&(file.path.as_str(), file.sha1.as_str())) {
+                return Err(format!("{} has a stale CurseForge mapping", file.path).into());
+            }
+            if !seen.insert(file.path.as_str()) {
+                return Err(format!("duplicate CurseForge mapping for {}", file.path).into());
+            }
+        }
         Ok(lock)
     }
 
@@ -255,21 +298,22 @@ mod tests {
                 },
                 downloads: vec!["https://example.invalid/level.dat".into()],
             }],
+            curseforge: Vec::new(),
         };
         let text = lock.to_toml().expect("lock TOML");
         assert!(Lockfile::parse(&text).is_err());
     }
 
     #[test]
-    fn parses_published_1_1_1() {
+    fn parses_current_pack() {
         let root = PackRoot {
             path: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
         };
         let spec = load_spec(&root).expect("pack.toml");
-        assert_eq!(spec.pack.version, "1.1.1");
+        assert_eq!(spec.pack.version, "1.2.0");
         assert_eq!(spec.pack.minecraft, "26.2");
         assert_eq!(spec.pack.loader_version, "0.19.3");
-        assert_eq!(spec.file.len(), 63);
+        assert_eq!(spec.file.len(), 48);
         let sodium = spec
             .file
             .iter()

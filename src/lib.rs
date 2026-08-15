@@ -2,6 +2,7 @@ use std::fmt;
 use std::io;
 use std::path::{Path, PathBuf};
 
+pub mod curseforge;
 pub mod export;
 pub mod fetch;
 pub mod hash;

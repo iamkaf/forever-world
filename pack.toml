@@ -1,9 +1,9 @@
-# Published 1.1.1 baseline. Do not bump file versions until the next pack release.
+# Unreleased 1.2.0 pack. Published 1.1.1 remains immutable.
 
 [pack]
 name = "FOREVER WORLD"
 slug = "forever-world"
-version = "1.1.1"
+version = "1.2.0"
 group = "com.iamkaf.modpacks"
 minecraft = "26.2"
 loader = "fabric"
@@ -417,11 +417,11 @@ downloads = ['https://cdn.modrinth.com/data/AIYW9sHq/versions/QmbMtXgL/torchtoss
 [[file]]
 path = 'mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar'
 file_size = 1121528
-sha1 = 'e5d90b4f2cc508056097249d71fc9482ae73c111'
-sha512 = 'bf709e5d1db2f104abb1e45d27dec39f10e0e2d546ec1e5df3a49b464c6f2b2daf39633e26e94e7869ae2a555258e5c4ee2d796c7d6d0e26300052a8de15052a'
+sha1 = '6d20eb99432557f8c58e4025a8f003d5037125b7'
+sha512 = '857082d79ddb6bf46036e4c2b43f3f2428e3233a849a3f1557f2f2769899e5174dbb97a0b3c803ce696bee19cef58d43eacc609e9fc7b3328674f4f29fd05b71'
 env.client = 'required'
 env.server = 'required'
-downloads = ['https://cdn.modrinth.com/data/1eAoo2KR/versions/LlSShNCR/yet_another_config_lib_v3-3.9.5%2B26.2-fabric.jar']
+downloads = ['https://mediafilez.forgecdn.net/files/8307/149/yet_another_config_lib_v3-3.9.5%2B26.2-fabric.jar']
 
 [[file]]
 path = 'mods/zoomify-2.16.1+26.2.jar'
@@ -433,42 +433,6 @@ env.server = 'unsupported'
 downloads = ['https://cdn.modrinth.com/data/w7ThoJFB/versions/QWTzJNJY/zoomify-2.16.1%2B26.2.jar']
 
 [[file]]
-path = 'shaderpacks/1.3.0.zip'
-file_size = 184202
-sha1 = '90991a16804723e7a417e4b207e3257f795c0124'
-sha512 = 'ecb689c5c90f24f1f8b2a870cfd532ec4717c5dd88f94d6c40ffbb3352cbebbec56aade4bb27e5bab2035d61836cde3472c4e739365027af2776c8f8749fac75'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/gvVxbJat/versions/N9BLPyT7/1.5.0.zip']
-
-[[file]]
-path = 'shaderpacks/Aurora Fantasy.5.1.zip'
-file_size = 544291
-sha1 = '1dfff674b2aeccb4f8b70082af84d2cf8ccab609'
-sha512 = '9ee34b99a53dcee1ee2e203b1f00c385bd82210c294cc772bc5cb06a30a4e656bcf006ceea80f244bafeb6609c7e443595cc922090d34064e34337be999c9c29'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/ZuJPfLHp/versions/3NhVo89w/Aurora%20Fantasy.5.1.zip']
-
-[[file]]
-path = 'shaderpacks/BSL_v10.1.3.zip'
-file_size = 1127026
-sha1 = 'c2459c82c23dc7442eaf1976dade30c2c2f18a9f'
-sha512 = '3e68c8038e38b0860cf1258e5fc84bcd98007a70fb7ba49e306186be6e905187527b630b77cb9e8cc8ee80865606c0fb398c419a22f0076b2ed5c7d73748a9ba'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/Q1vvjJYV/versions/hIibTfxn/BSL_v10.1.3.zip']
-
-[[file]]
-path = 'shaderpacks/Bliss_v2.1.2_(Chocapic13_Shaders_edit).zip'
-file_size = 1791406
-sha1 = 'ded6c8a98305f8aff90ef781e7585b33b8452cfd'
-sha512 = 'dafc60be4980ec40f40edc0f2625cb0976f3c9ce5ed86383146a120480826bb1de70ef5e38b7f1437294ed4d38c6ef3c82ebef0ae4e00b8cee165788c9c18280'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/ZvMtQlho/versions/kC2Y8q1P/Bliss_v2.1.2_%28Chocapic13_Shaders_edit%29.zip']
-
-[[file]]
 path = 'shaderpacks/ComplementaryUnbound_r5.7.1.zip'
 file_size = 522973
 sha1 = '95883b516298ff4cf1a67ff512086eb67aeedd98'
@@ -476,102 +440,3 @@ sha512 = '207ad92ab354e1be002e1ccce978da3860af69532ddcdecbc2a943ffe1ff7ac5eec6b0
 env.client = 'required'
 env.server = 'unsupported'
 downloads = ['https://cdn.modrinth.com/data/R6NEzAwj/versions/d8rcvDTp/ComplementaryUnbound_r5.7.1.zip']
-
-[[file]]
-path = 'shaderpacks/Cursed Fog - V1.0.8.zip'
-file_size = 67730
-sha1 = 'f608b5c17230372fc5f447f6e9d028af939143a3'
-sha512 = 'a89f3752536b3c9eea68b721838d0eaa5b9916b1ac80b27ebae50a8c2205e42e52adcae5b1f340deb8ec019ea4daa890731013f2e80333a8a6d0d0e1c4b3a27c'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/sAZ9WsJP/versions/GdCtP4hx/Cursed%20Fog%20-%20V1.0.8.zip']
-
-[[file]]
-path = 'shaderpacks/Lumina_Event_Horizon v1.2.2.zip'
-file_size = 530930
-sha1 = 'bfb6b319e906570b68c0a30e92e8d520e9de9f8d'
-sha512 = '84394b64f8ef0bf53f872e2725b3ef3bf353027aa06a7632c1d9bd2a0de7ed697288f4a2a1abfde3aca93690991cf8b9aea4ff090a5aa322e31ddcb80e64a55a'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/9gxVXUDr/versions/4pvLeJvr/Lumina_Event_Horizon%20v1.2.2.zip']
-
-[[file]]
-path = 'shaderpacks/Pollution-2035-Shaders-1.0.2b.zip'
-file_size = 54256
-sha1 = '38899651c1008968669f995fbaf7efd03ece4d66'
-sha512 = 'af484448cded6f24f7a5a10945bf227b8e6f0137d4ccd89ecd79803f9edd17bc5613a54555a31e19bcd8781d30abf2a8b11ff43539f7cd3e0311ddafc0900dc6'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/6OQgclAX/versions/AiE5Yuj3/Pollution-2035-Shaders-1.0.2b.zip']
-
-[[file]]
-path = 'shaderpacks/Reflectify RT - Realistic Rain Reflections and Mirror Ice (SSR and God Rays).zip'
-file_size = 102873
-sha1 = 'f599ed379ce1d7eb404c12c54945b33726ded9cb'
-sha512 = '93041fcc637e590460dc0dd3465fec9d3f5cba3801ddabed4b877444def2a0f6f0ad7bc0d2d6566529d7cc2949dc91e9a5a4939a4b46b83da07a097620910168'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/9ItvIfRa/versions/iuH2dPn2/Reflectify%20RT%20-%20Realistic%20Rain%20Reflections%20and%20Mirror%20Ice%20%28SSR%20and%20God%20Rays%29.zip']
-
-[[file]]
-path = 'shaderpacks/Spooklementary_v2.0.4.zip'
-file_size = 558206
-sha1 = '38651af0c334b9a5d454b903c982ccb24db0869a'
-sha512 = '64d6e2442253bbe016ba88cb347884b34e261deed846b96185d33dd9e9c3e79706a3ef4aa6b563793951e02edfff6349a3fb7f72c9574b49f3e7a07f39eaa6f9'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/6uJCfiCH/versions/rcr90eRP/Spooklementary_v2.0.4.zip']
-
-[[file]]
-path = 'shaderpacks/Tricked Shaders.zip'
-file_size = 644460
-sha1 = 'dee15ce0482aed9a7663ac0eaa2cf790d17a3ad5'
-sha512 = '2bdd7228f617f64ff53345a2642f29ccc98f973f11028d654eb7ef74337c1d5f3a34ef27912681965f429fd40de918c3da1735514a4e4b1d2bd789aeda472332'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/ZhCRyz0a/versions/Pwum5YKh/Tricked%20Shaders.zip']
-
-[[file]]
-path = 'shaderpacks/Verlixia.zip'
-file_size = 2223625
-sha1 = '4d6c536df44cd8df83614fe497dd72f7b79ab3b4'
-sha512 = '8637d58cfe29e139d73bfe0f619028c28dae563b84bf78b98458bdee3abd95a325b3a26777589dcf8f74b317b0fd280903c07b88d6fe792b174ab7c18940d1f6'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/pB0H8J2Y/versions/WYeX5iz1/Verlixia.zip']
-
-[[file]]
-path = 'shaderpacks/Zayko V7.3.zip'
-file_size = 1185624
-sha1 = '97e9e7c96d1da5ff7b2f86dd54624bdb530cae84'
-sha512 = 'f5771fecfea10ba5e908f172446d66d7b154b9348e91d4db458e02d2768f69c1a80daa7eed27243f494d5b6c93c08aa5bbc69b733ec75cacf6976a080cf6e1cc'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/FFaD08BY/versions/dJbmD4wf/Zayko%20V7.3.zip']
-
-[[file]]
-path = 'shaderpacks/photon_v1.3b.zip'
-file_size = 3800987
-sha1 = 'd975d25c9686de5f10e8b86c8518613cdf3f040a'
-sha512 = '40bcbac9c656f2965f543e4b35cd0698723b2db8b67662f1b53c14223cfbef7d60d7fbf0176f73fcadd0d1e19ba60d951ed77e9eece8c8df7dca4d2be6315309'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/lLqFfGNs/versions/gUv7fBPN/photon_v1.3b.zip']
-
-[[file]]
-path = 'shaderpacks/§f§lSC§c§k§lA§f§lN§f - §8A0.0.1.zip'
-file_size = 16970
-sha1 = 'd59dac14b9e0bc5df07ac7bcf15b5d7ff7f46fc2'
-sha512 = '3dd0bf463f66d90a7283aa7a0255eb06b06d6e37f6a2b7e2e42b2cde1b48c0056775bcaa68807c3f1c23472abd3b2365fe7f9a8c9d58fe0fad2dc6d3bf060dd1'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/8co1yEDN/versions/RfQ5WCMO/%C2%A7f%C2%A7lSC%C2%A7c%C2%A7k%C2%A7lA%C2%A7f%C2%A7lN%C2%A7f%20-%20%C2%A78A0.0.1.zip']
-
-[[file]]
-path = 'shaderpacks/春 v2 260416.zip'
-file_size = 8875574
-sha1 = 'b21b2685c62968efdefcb6426438ad6e8fb745c6'
-sha512 = '050590b17aa356cb176a591b48ba68628544e1a102b1bcecd254fdb0b6b2718eb2b48d81b5dc840872eb3c6f37ac2b0072cd89e8b50e413bfb5adab86a23d731'
-env.client = 'required'
-env.server = 'unsupported'
-downloads = ['https://cdn.modrinth.com/data/68DAChCV/versions/wbg6Woxz/%E6%98%A5%20v2%20260416.zip']

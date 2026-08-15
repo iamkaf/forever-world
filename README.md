@@ -26,7 +26,7 @@ Current pack is 1.1.1. Minecraft 26.2, Fabric Loader 0.19.3. Java 25 in the laun
 
 ## Play
 
-Import the [mrpack](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.1.1/forever-world-1.1.1.mrpack) in Prism or whatever else eats Modrinth packs. Open Iris and pick a shader. They're all already in the instance.
+Import the [mrpack](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.1.1/forever-world-1.1.1.mrpack) in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance.
 
 ## Host
 
@@ -51,6 +51,18 @@ just verify
 ```
 
 1.1.1 is already on Maven. `just verify` checks that an export still matches that artifact. Don't overwrite it.
+
+### Versioning
+
+Forever World versions describe what changed in the pack:
+
+- Major: a Minecraft version bump.
+- Minor: any mod, resource pack, or shader change.
+- Patch: fixes to the glue that do not change those inputs.
+
+CurseForge IDs are resolved with Packwiz and pinned in `pack.lock.toml`. Build Packwiz at the commit recorded in `curseforge.toml`, set `PACKWIZ_BIN`, then run `just curseforge-resolve`. The resolver verifies the binary's Go build metadata, and the exporter refuses to build while any client file is unresolved.
+
+After creating the CurseForge project, set `CURSEFORGE_PROJECT_ID` and `CURSEFORGE_TOKEN`. `just curseforge-publish-dry` prepares and describes the upload. A real upload requires `pack curseforge publish --confirm <version>`.
 
 `just pastel-install` sets up a Pastel server in `server/` from the export. `just pair` boots a dedicated server and a client together and runs `test/teakit/startup.test.ts`. TeaKit is only for that test. It never goes in the pack, and it doesn't bump Fabric Loader off 0.19.3.
 

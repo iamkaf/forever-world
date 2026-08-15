@@ -55,3 +55,12 @@ pair: overlay
 
 publish-dry: export
     {{pack}} publish --dry-run
+
+curseforge-resolve: resolve
+    {{pack}} curseforge resolve
+
+curseforge-export: curseforge-resolve
+    {{pack}} curseforge export
+
+curseforge-publish-dry: curseforge-export
+    {{pack}} curseforge publish --dry-run

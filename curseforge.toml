@@ -1,0 +1,17 @@
+# Packwiz has no tagged releases. Build this exact upstream commit and set
+# PACKWIZ_BIN to the resulting binary before refreshing CurseForge mappings.
+packwiz_commit = "dfd8b68a4796c763e25bad50265ea1f1233e24f1"
+author = "iamkaf"
+
+# Packwiz's fingerprint detection handles ordinary JARs. These exact files
+# need explicit IDs because one is not a JAR and one was uploaded too recently
+# for fingerprint detection to recognize it.
+[[add]]
+path = "mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar"
+project_id = 667299
+file_id = 8307149
+
+[[add]]
+path = "shaderpacks/ComplementaryUnbound_r5.7.1.zip"
+project_id = 385587
+file_id = 7574260

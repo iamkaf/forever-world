@@ -227,6 +227,7 @@ mod tests {
                     downloads: vec!["https://cdn.modrinth.com/a.jar".into()],
                 },
             ],
+            curseforge: Vec::new(),
         };
         let index = index_from_lock(&lock).expect("index");
         assert_eq!(index.files[0].path, "mods/a.jar");

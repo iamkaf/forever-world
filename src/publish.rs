@@ -253,21 +253,22 @@ mod tests {
             pack: PackMeta {
                 name: "FOREVER WORLD".into(),
                 slug: "forever-world".into(),
-                version: "1.1.2".into(),
+                version: "1.2.0".into(),
                 group: "com.iamkaf.modpacks".into(),
                 minecraft: "26.2".into(),
                 loader: "fabric".into(),
                 loader_version: "0.19.3".into(),
             },
             file: vec![],
+            curseforge: Vec::new(),
         }
     }
 
     #[test]
     fn metadata_keeps_older_versions() {
-        let metadata = metadata_xml(&lock(), "1.1.2", &["1.1.1".into(), "1.1.2".into()]);
+        let metadata = metadata_xml(&lock(), "1.2.0", &["1.1.1".into(), "1.2.0".into()]);
         assert!(metadata.contains("<version>1.1.1</version>"));
-        assert!(metadata.contains("<version>1.1.2</version>"));
-        assert!(metadata.contains("<latest>1.1.2</latest>"));
+        assert!(metadata.contains("<version>1.2.0</version>"));
+        assert!(metadata.contains("<latest>1.2.0</latest>"));
     }
 }

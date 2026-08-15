@@ -267,6 +267,7 @@ mod tests {
                 },
                 downloads: vec!["https://example.invalid/a.jar".into()],
             }],
+            curseforge: Vec::new(),
         })
         .expect("index");
         let published = ParsedIndex {

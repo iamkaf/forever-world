@@ -191,6 +191,7 @@ mod tests {
                     "cc".repeat(64),
                 ),
             ],
+            curseforge: Vec::new(),
         }
     }
 
