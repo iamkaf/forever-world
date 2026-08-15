@@ -15,6 +15,11 @@ use zip::write::SimpleFileOptions;
 const UPLOAD_BASE: &str = "https://minecraft.curseforge.com/api/projects";
 
 #[derive(Debug, Deserialize)]
+struct Platforms {
+    curseforge: Config,
+}
+
+#[derive(Debug, Deserialize)]
 struct Config {
     packwiz_commit: String,
     author: String,
@@ -173,16 +178,24 @@ fn validate_config(config: &Config, lock: &Lockfile) -> Result<BTreeSet<String>>
         check_pack_path(&file.path)?;
         if !client_files.contains_key(file.path.as_str()) {
             return Err(format!(
-                "curseforge.toml [[add]] path is not a locked client file: {}",
+                "platforms.toml [[curseforge.add]] path is not a locked client file: {}",
                 file.path
             )
             .into());
         }
         if file.project_id == 0 || file.file_id == 0 {
-            return Err(format!("curseforge.toml [[add]] has an invalid ID: {}", file.path).into());
+            return Err(format!(
+                "platforms.toml [[curseforge.add]] has an invalid ID: {}",
+                file.path
+            )
+            .into());
         }
         if !additions.insert(file.path.as_str()) {
-            return Err(format!("duplicate curseforge.toml [[add]] path: {}", file.path).into());
+            return Err(format!(
+                "duplicate platforms.toml [[curseforge.add]] path: {}",
+                file.path
+            )
+            .into());
         }
     }
 
@@ -191,36 +204,38 @@ fn validate_config(config: &Config, lock: &Lockfile) -> Result<BTreeSet<String>>
         check_pack_path(&file.path)?;
         let Some(locked) = client_files.get(file.path.as_str()) else {
             return Err(format!(
-                "curseforge.toml [[exclude]] path is not a locked client file: {}",
+                "platforms.toml [[curseforge.exclude]] path is not a locked client file: {}",
                 file.path
             )
             .into());
         };
         if locked.env.server != SideRequirement::Unsupported {
             return Err(format!(
-                "curseforge.toml may exclude only client-only files: {}",
+                "platforms.toml may exclude only client-only files: {}",
                 file.path
             )
             .into());
         }
         if file.reason.trim().is_empty() {
             return Err(format!(
-                "curseforge.toml [[exclude]] reason is required: {}",
+                "platforms.toml [[curseforge.exclude]] reason is required: {}",
                 file.path
             )
             .into());
         }
         if additions.contains(file.path.as_str()) {
             return Err(format!(
-                "curseforge.toml cannot add and exclude the same file: {}",
+                "platforms.toml cannot add and exclude the same file: {}",
                 file.path
             )
             .into());
         }
         if !exclusions.insert(file.path.clone()) {
-            return Err(
-                format!("duplicate curseforge.toml [[exclude]] path: {}", file.path).into(),
-            );
+            return Err(format!(
+                "duplicate platforms.toml [[curseforge.exclude]] path: {}",
+                file.path
+            )
+            .into());
         }
     }
     Ok(exclusions)
@@ -620,10 +635,12 @@ pub fn publish(root: &PackRoot, mode: PublishMode) -> Result<String> {
 }
 
 fn load_config(root: &PackRoot) -> Result<Config> {
-    let path = root.path.join("curseforge.toml");
+    let path = root.path.join("platforms.toml");
     let text = fs::read_to_string(&path)
         .map_err(|error| crate::Error::from(format!("{}: {error}", path.display())))?;
-    toml::from_str(&text).map_err(crate::Error::from_display)
+    let platforms: Platforms = toml::from_str(&text)
+        .map_err(|error| crate::Error::from(format!("platforms.toml: {error}")))?;
+    Ok(platforms.curseforge)
 }
 
 fn toml_string(value: &str) -> String {
@@ -743,7 +760,7 @@ mod tests {
         let root = PackRoot {
             path: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
         };
-        let config = load_config(&root).expect("curseforge.toml");
+        let config = load_config(&root).expect("platforms.toml");
         let lock = crate::load_lock(&root).expect("pack.lock.toml");
         let excluded = validate_config(&config, &lock).expect("valid exclusions");
         assert_eq!(

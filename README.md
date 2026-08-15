@@ -60,7 +60,7 @@ Forever World versions describe what changed in the pack:
 - Minor: any mod, resource pack, or shader change.
 - Patch: fixes to the glue that do not change those inputs.
 
-CurseForge IDs are resolved with Packwiz and pinned in `pack.lock.toml`. Build Packwiz at the commit recorded in `curseforge.toml`, set `PACKWIZ_BIN`, then run `just curseforge-resolve`. The resolver verifies the binary's Go build metadata, and the exporter refuses to build while any client file is unresolved.
+CurseForge IDs are resolved with Packwiz and pinned in `pack.lock.toml`. Build Packwiz at the commit recorded in `platforms.toml`, set `PACKWIZ_BIN`, then run `just curseforge-resolve`. The resolver verifies the binary's Go build metadata, and the exporter refuses to build while any client file is unresolved.
 
 After creating the CurseForge project, set `CURSEFORGE_PROJECT_ID` and `CURSEFORGE_TOKEN`. `just curseforge-publish-dry` prepares and describes the upload. A real upload requires `pack curseforge publish --confirm <version>`.
 
