@@ -16,7 +16,7 @@ mod modrinth_adapter;
 use crate::hash;
 use crate::spec::Lockfile;
 use crate::{PackRoot, Result, USER_AGENT};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de};
 use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -37,7 +37,7 @@ pub struct PublishConfig {
     pub changelog: Option<String>,
     #[serde(default)]
     pub modrinth: Option<ModrinthConfig>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_curseforge")]
     pub curseforge: Option<CurseForgeConfig>,
     #[serde(default)]
     pub github: Option<GitHubConfig>,
@@ -61,8 +61,6 @@ pub struct ModrinthConfig {
 #[serde(deny_unknown_fields)]
 pub struct CurseForgeConfig {
     pub project: u64,
-    #[serde(default = "default_author")]
-    pub author: String,
     #[serde(default)]
     pub game_versions: Vec<String>,
 }
@@ -87,8 +85,23 @@ fn default_release_type() -> String {
     "release".into()
 }
 
-fn default_author() -> String {
-    "iamkaf".into()
+fn deserialize_curseforge<'de, D>(
+    deserializer: D,
+) -> std::result::Result<Option<CurseForgeConfig>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value = toml::Value::deserialize(deserializer)?;
+    match value {
+        toml::Value::Boolean(false) => Ok(None),
+        toml::Value::Table(_) => value.try_into().map(Some).map_err(de::Error::custom),
+        toml::Value::Boolean(true) => Err(de::Error::custom(
+            "publish.curseforge must be false or a table with a project ID",
+        )),
+        _ => Err(de::Error::custom(
+            "publish.curseforge must be false or a table with a project ID",
+        )),
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -525,6 +538,20 @@ mod tests {
         assert_eq!(
             compare_pack_versions("1.10.0", "1.9.0"),
             std::cmp::Ordering::Greater
+        );
+    }
+
+    #[test]
+    fn curseforge_can_be_explicitly_unconfigured() {
+        let disabled: PublishConfig =
+            toml::from_str("curseforge = false\n").expect("disabled CurseForge target");
+        assert!(disabled.curseforge.is_none());
+
+        let enabled: PublishConfig =
+            toml::from_str("[curseforge]\nproject = 123\n").expect("configured CurseForge target");
+        assert_eq!(
+            enabled.curseforge.as_ref().map(|config| config.project),
+            Some(123)
         );
     }
 }

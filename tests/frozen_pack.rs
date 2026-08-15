@@ -136,7 +136,7 @@ fn complementary_unbound_is_the_only_bundled_shaderpack() {
 }
 
 #[test]
-fn curseforge_lock_omits_the_platform_exclusion() {
+fn curseforge_lock_omits_the_configured_exclusion() {
     let lock = load_lock(&root()).expect("pack.lock.toml");
     let mapped: BTreeSet<_> = lock
         .curseforge

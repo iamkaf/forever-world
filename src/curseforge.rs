@@ -10,29 +10,22 @@ use std::process::Command;
 use zip::ZipWriter;
 use zip::write::SimpleFileOptions;
 
+const PACKWIZ_COMMIT: &str = "dfd8b68a4796c763e25bad50265ea1f1233e24f1";
+const CURSEFORGE_AUTHOR: &str = "iamkaf";
+
 #[derive(Debug, Deserialize)]
-struct Platforms {
+#[serde(deny_unknown_fields)]
+struct Overrides {
     curseforge: Config,
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct Config {
-    #[serde(default = "default_packwiz_commit")]
-    packwiz_commit: String,
-    #[serde(default = "default_author")]
-    author: String,
     #[serde(default)]
     add: Vec<ExplicitFile>,
     #[serde(default)]
     exclude: Vec<ExcludedFile>,
-}
-
-fn default_packwiz_commit() -> String {
-    "dfd8b68a4796c763e25bad50265ea1f1233e24f1".into()
-}
-
-fn default_author() -> String {
-    "iamkaf".into()
 }
 
 #[derive(Debug, Deserialize)]
@@ -107,7 +100,7 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
     let excluded = validate_config(&config, &lock)?;
     let packwiz = std::env::var_os("PACKWIZ_BIN")
         .ok_or_else(|| crate::Error::from("set PACKWIZ_BIN to the pinned Packwiz binary"))?;
-    verify_packwiz(&packwiz, &config.packwiz_commit)?;
+    verify_packwiz(&packwiz, PACKWIZ_COMMIT)?;
     let temp = tempfile::tempdir()?;
     initialise_packwiz(temp.path(), &lock)?;
 
@@ -129,7 +122,7 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
         &packwiz,
         temp.path(),
         &["--yes", "curseforge", "detect"],
-        &config.packwiz_commit,
+        PACKWIZ_COMMIT,
     )?;
     for file in &config.add {
         let locked = lock
@@ -160,7 +153,7 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
                 "--file-id",
                 &file_id,
             ],
-            &config.packwiz_commit,
+            PACKWIZ_COMMIT,
         )?;
     }
 
@@ -201,21 +194,21 @@ fn validate_config(config: &Config, lock: &Lockfile) -> Result<BTreeSet<String>>
     for file in &config.add {
         if !client_files.contains_key(file.id.as_str()) {
             return Err(format!(
-                "platforms.toml [[curseforge.add]] ID is not a locked client file: {}",
+                "overrides.toml [[curseforge.add]] ID is not a locked client file: {}",
                 file.id
             )
             .into());
         }
         if file.project_id == 0 || file.file_id == 0 {
             return Err(format!(
-                "platforms.toml [[curseforge.add]] has an invalid ID: {}",
+                "overrides.toml [[curseforge.add]] has an invalid ID: {}",
                 file.id
             )
             .into());
         }
         if !additions.insert(file.id.as_str()) {
             return Err(format!(
-                "duplicate platforms.toml [[curseforge.add]] ID: {}",
+                "duplicate overrides.toml [[curseforge.add]] ID: {}",
                 file.id
             )
             .into());
@@ -226,35 +219,35 @@ fn validate_config(config: &Config, lock: &Lockfile) -> Result<BTreeSet<String>>
     for file in &config.exclude {
         let Some(locked) = client_files.get(file.id.as_str()) else {
             return Err(format!(
-                "platforms.toml [[curseforge.exclude]] ID is not a locked client file: {}",
+                "overrides.toml [[curseforge.exclude]] ID is not a locked client file: {}",
                 file.id
             )
             .into());
         };
         if locked.env.server != SideRequirement::Unsupported {
             return Err(format!(
-                "platforms.toml may exclude only client-only files: {}",
+                "overrides.toml may exclude only client-only files: {}",
                 file.id
             )
             .into());
         }
         if file.reason.trim().is_empty() {
             return Err(format!(
-                "platforms.toml [[curseforge.exclude]] reason is required: {}",
+                "overrides.toml [[curseforge.exclude]] reason is required: {}",
                 file.id
             )
             .into());
         }
         if additions.contains(file.id.as_str()) {
             return Err(format!(
-                "platforms.toml cannot add and exclude the same file: {}",
+                "overrides.toml cannot add and exclude the same file: {}",
                 file.id
             )
             .into());
         }
         if !exclusions.insert(locked.path.clone()) {
             return Err(format!(
-                "duplicate platforms.toml [[curseforge.exclude]] ID: {}",
+                "duplicate overrides.toml [[curseforge.exclude]] ID: {}",
                 file.id
             )
             .into());
@@ -490,7 +483,7 @@ pub fn export(root: &PackRoot) -> Result<PathBuf> {
     let lock = crate::load_lock(root)?;
     let config = load_config(root)?;
     let excluded = validate_config(&config, &lock)?;
-    let manifest = manifest_from_lock(&lock, &config.author, &excluded)?;
+    let manifest = manifest_from_lock(&lock, CURSEFORGE_AUTHOR, &excluded)?;
     let mut manifest_bytes = serde_json::to_vec_pretty(&manifest)?;
     manifest_bytes.push(b'\n');
     let name = format!("{}-{}-curseforge.zip", lock.pack.slug, lock.pack.version);
@@ -577,12 +570,12 @@ fn collect_override_dir(
 }
 
 fn load_config(root: &PackRoot) -> Result<Config> {
-    let path = root.path.join("platforms.toml");
+    let path = root.path.join("overrides.toml");
     let text = fs::read_to_string(&path)
         .map_err(|error| crate::Error::from(format!("{}: {error}", path.display())))?;
-    let platforms: Platforms = toml::from_str(&text)
-        .map_err(|error| crate::Error::from(format!("platforms.toml: {error}")))?;
-    Ok(platforms.curseforge)
+    let overrides: Overrides = toml::from_str(&text)
+        .map_err(|error| crate::Error::from(format!("overrides.toml: {error}")))?;
+    Ok(overrides.curseforge)
 }
 
 fn toml_string(value: &str) -> String {
@@ -669,8 +662,6 @@ mod tests {
     #[test]
     fn config_rejects_a_stale_exclusion() {
         let config = Config {
-            packwiz_commit: "commit".into(),
-            author: "iamkaf".into(),
             add: Vec::new(),
             exclude: vec![ExcludedFile {
                 id: "missing".into(),
@@ -686,8 +677,6 @@ mod tests {
     #[test]
     fn config_rejects_excluding_a_server_file() {
         let config = Config {
-            packwiz_commit: "commit".into(),
-            author: "iamkaf".into(),
             add: Vec::new(),
             exclude: vec![ExcludedFile {
                 id: "example".into(),
@@ -705,7 +694,7 @@ mod tests {
         let root = PackRoot {
             path: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
         };
-        let config = load_config(&root).expect("platforms.toml");
+        let config = load_config(&root).expect("overrides.toml");
         let lock = crate::load_lock(&root).expect("pack.lock.toml");
         let excluded = validate_config(&config, &lock).expect("valid exclusions");
         assert_eq!(

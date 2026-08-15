@@ -65,6 +65,7 @@ complementary-unbound = "r5.7.1"
 
 [publish]
 changelog = "CHANGELOG.md"
+curseforge = false
 
 [publish.modrinth]
 project = "forever-world"

@@ -1,9 +1,4 @@
 [curseforge]
-# Packwiz has no tagged releases. Build this exact upstream commit and set
-# PACKWIZ_BIN to the resulting binary before refreshing CurseForge mappings.
-packwiz_commit = "dfd8b68a4796c763e25bad50265ea1f1233e24f1"
-author = "iamkaf"
-
 # Packwiz's fingerprint detector scans JARs, so non-JAR files need exact IDs.
 [[curseforge.add]]
 id = "complementary-unbound"
