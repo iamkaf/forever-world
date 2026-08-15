@@ -202,6 +202,9 @@ mod tests {
         sha512: String,
     ) -> FileSpec {
         FileSpec {
+            id: path.to_string(),
+            provider: crate::spec::SourceProvider::Direct,
+            requested_version: "1.0.0".into(),
             path: path.into(),
             file_size: 1,
             sha1: "a".repeat(40),

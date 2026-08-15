@@ -257,6 +257,9 @@ mod tests {
                 loader_version: "0.19.3".into(),
             },
             file: vec![FileSpec {
+                id: "a".into(),
+                provider: crate::spec::SourceProvider::Direct,
+                requested_version: "1.0.0".into(),
                 path: "mods/a.jar".into(),
                 file_size: 1,
                 sha1: "a".repeat(40),

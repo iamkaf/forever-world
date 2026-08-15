@@ -42,7 +42,18 @@ Pastel leaves the client-only stuff off the dedicated server. It'll fetch Java i
 
 ## Building it
 
-This repo is the source for `com.iamkaf.modpacks:forever-world`. `pack.toml` pins every download. The `pack` tool fetches those pins, writes `pack.lock.toml`, and exports the `.mrpack`.
+This repo is the source for `com.iamkaf.modpacks:forever-world`. `pack.toml` names each project, exact version, and side. `pack resolve` asks Modrinth for the files and writes their names, URLs, sizes, and hashes to `pack.lock.toml`. The exporters read only that lock.
+
+Most entries are this small:
+
+```toml
+[[mod]]
+modrinth = "sodium"
+version = "mc26.2-0.9.1-fabric"
+side = "client"
+```
+
+Content loads on both sides when `side` is omitted. Direct URLs are the escape hatch for files that cannot be resolved through Modrinth.
 
 ```bash
 just check
@@ -60,7 +71,7 @@ Forever World versions describe what changed in the pack:
 - Minor: any mod, resource pack, or shader change.
 - Patch: fixes to the glue that do not change those inputs.
 
-CurseForge IDs are resolved with Packwiz and pinned in `pack.lock.toml`. Build Packwiz at the commit recorded in `platforms.toml`, set `PACKWIZ_BIN`, then run `just curseforge-resolve`. The resolver verifies the binary's Go build metadata, and the exporter refuses to build while any client file is unresolved.
+CurseForge IDs are resolved with Packwiz and pinned in `pack.lock.toml`. Platform exceptions in `platforms.toml` refer to the stable content IDs from `pack.toml`, not filenames. Build Packwiz at the commit recorded there, set `PACKWIZ_BIN`, then run `just curseforge-resolve`. The resolver verifies the binary's Go build metadata, and the exporter refuses to build while any client file is unresolved.
 
 After creating the CurseForge project, set `CURSEFORGE_PROJECT_ID` and `CURSEFORGE_TOKEN`. `just curseforge-publish-dry` prepares and describes the upload. A real upload requires `pack curseforge publish --confirm <version>`.
 

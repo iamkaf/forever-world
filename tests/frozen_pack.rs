@@ -1,4 +1,4 @@
-use forever_world::spec::{Lockfile, PackSpec, SideRequirement, server_file};
+use forever_world::spec::{ContentSource, SideRequirement, server_file};
 use forever_world::{PackRoot, load_lock, load_spec};
 use std::collections::BTreeSet;
 use std::path::PathBuf;
@@ -60,20 +60,32 @@ fn next_release_source_and_lockfile_stay_in_sync() {
     assert_eq!(spec.pack.minecraft, "26.2");
     assert_eq!(spec.pack.loader, "fabric");
     assert_eq!(spec.pack.loader_version, "0.19.3");
-    assert_eq!(spec.file.len(), 48);
-    let mut expected = Lockfile::from_spec(PackSpec {
-        pack: spec.pack.clone(),
-        file: spec.file.clone(),
-    });
-    expected.curseforge = lock.curseforge.clone();
-    assert_eq!(expected, lock);
+    assert_eq!(spec.content_count(), 48);
+    assert_eq!(lock.version, 2);
+    assert_eq!(spec.pack, lock.pack);
+    assert_eq!(lock.file.len(), spec.content_count());
+    for (kind, content) in spec.content() {
+        let file = lock
+            .file
+            .iter()
+            .find(|file| file.id == content.source.id())
+            .unwrap_or_else(|| panic!("{} is missing from the lock", content.source.id()));
+        assert_eq!(file.provider, content.source.provider());
+        assert_eq!(file.requested_version, content.source.version());
+        assert_eq!(file.env, content.side.env());
+        assert!(file.path.starts_with(&format!("{}/", kind.folder())));
+        if let ContentSource::Direct { filename, url, .. } = &content.source {
+            assert_eq!(file.path, format!("{}/{filename}", kind.folder()));
+            assert_eq!(file.downloads.as_slice(), std::slice::from_ref(url));
+        }
+    }
 }
 
 #[test]
 fn only_allowed_jars_load_on_the_server() {
-    let spec = load_spec(&root()).expect("pack.toml");
+    let lock = load_lock(&root()).expect("pack.lock.toml");
     let expected: BTreeSet<&str> = SERVER_JARS.iter().copied().collect();
-    let actual: BTreeSet<&str> = spec
+    let actual: BTreeSet<&str> = lock
         .file
         .iter()
         .filter(|file| server_file(file))
@@ -93,8 +105,8 @@ fn only_allowed_jars_load_on_the_server() {
 
 #[test]
 fn shaders_and_client_perf_stay_off_the_server() {
-    let spec = load_spec(&root()).expect("pack.toml");
-    for file in &spec.file {
+    let lock = load_lock(&root()).expect("pack.lock.toml");
+    for file in &lock.file {
         if file.path.starts_with("shaderpacks/")
             || file.path.contains("sodium")
             || file.path.contains("iris-")
@@ -113,8 +125,8 @@ fn shaders_and_client_perf_stay_off_the_server() {
 
 #[test]
 fn complementary_unbound_is_the_only_bundled_shaderpack() {
-    let spec = load_spec(&root()).expect("pack.toml");
-    let shaders: Vec<&str> = spec
+    let lock = load_lock(&root()).expect("pack.lock.toml");
+    let shaders: Vec<&str> = lock
         .file
         .iter()
         .filter(|file| file.path.starts_with("shaderpacks/"))

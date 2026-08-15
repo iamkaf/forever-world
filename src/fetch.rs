@@ -24,14 +24,20 @@ pub fn ensure_cached(root: &PackRoot, file: &FileSpec) -> Result<PathBuf> {
         verify_bytes(file, &bytes)?;
         return Ok(dest);
     }
+    let bytes = download_first(file)?;
+    cache_bytes(root, file, &bytes)
+}
+
+pub(crate) fn cache_bytes(root: &PackRoot, file: &FileSpec, bytes: &[u8]) -> Result<PathBuf> {
+    verify_bytes(file, bytes)?;
+    let dest = cached_file(root, file);
     if let Some(parent) = dest.parent() {
         fs::create_dir_all(parent)?;
     }
-    let bytes = download_first(file)?;
     let tmp = dest.with_extension("tmp");
     {
         let mut out = fs::File::create(&tmp)?;
-        out.write_all(&bytes)?;
+        out.write_all(bytes)?;
     }
     fs::rename(tmp, &dest)?;
     Ok(dest)
@@ -51,7 +57,7 @@ fn download_first(file: &FileSpec) -> Result<Vec<u8>> {
     Err(last_error.unwrap_or_else(|| format!("{} had no usable download", file.path).into()))
 }
 
-fn download(url: &str) -> Result<Vec<u8>> {
+pub(crate) fn download(url: &str) -> Result<Vec<u8>> {
     if let Some(path) = url.strip_prefix("file:") {
         let path = path.trim_start_matches("//");
         return Ok(fs::read(path)?);
@@ -98,6 +104,9 @@ mod tests {
         fs::write(&bad, b"wrong").expect("bad mirror");
         fs::write(&good, b"right").expect("good mirror");
         let file = FileSpec {
+            id: "example".into(),
+            provider: crate::spec::SourceProvider::Direct,
+            requested_version: "1.0.0".into(),
             path: "mods/example.jar".into(),
             file_size: 5,
             sha1: hash::sha1_hex(b"right"),

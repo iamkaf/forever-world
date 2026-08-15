@@ -1,5 +1,5 @@
 use forever_world::spec::Lockfile;
-use forever_world::{PackRoot, curseforge, export, fetch, overlay, publish, verify};
+use forever_world::{PackRoot, curseforge, export, fetch, overlay, publish, resolve, verify};
 use std::env;
 use std::fs;
 use std::process::ExitCode;
@@ -137,13 +137,18 @@ fn parse_publish_mode(
 
 fn resolve(root: &PackRoot) -> forever_world::Result<Lockfile> {
     let spec = forever_world::load_spec(root)?;
-    let total = spec.file.len();
-    for (index, file) in spec.file.iter().enumerate() {
-        eprintln!("[{}/{}] {}", index + 1, total, file.path);
-        fetch::ensure_cached(root, file)?;
+    let resolver = resolve::Resolver::new()?;
+    let total = spec.content_count();
+    let mut files = Vec::with_capacity(total);
+    for (index, (kind, content)) in spec.content().enumerate() {
+        eprintln!("[{}/{}] {}", index + 1, total, content.source.id());
+        let file = resolver.resolve(root, &spec.pack, kind, content)?;
+        file.validate()?;
+        fetch::ensure_cached(root, &file)?;
+        files.push(file);
     }
     let previous = forever_world::load_lock(root).ok();
-    let mut lock = Lockfile::from_spec(spec);
+    let mut lock = Lockfile::new(spec.pack, files);
     if let Some(previous) = previous {
         lock.retain_curseforge_from(&previous);
     }
@@ -166,7 +171,7 @@ fn print_help() {
         "\
 pack — Forever World pack tool
 
-  pack resolve              Download and hash-verify pinned files, write pack.lock.toml
+  pack resolve              Resolve exact project versions and write pack.lock.toml
   pack export               Write dist/<slug>-<version>.mrpack from the lock
   pack name                 Print the exported archive name from the lock
   pack verify [--against]   Compare the full archive to a published artifact

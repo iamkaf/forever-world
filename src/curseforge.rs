@@ -31,14 +31,14 @@ struct Config {
 
 #[derive(Debug, Deserialize)]
 struct ExplicitFile {
-    path: String,
+    id: String,
     project_id: u32,
     file_id: u32,
 }
 
 #[derive(Debug, Deserialize)]
 struct ExcludedFile {
-    path: String,
+    id: String,
     reason: String,
 }
 
@@ -107,19 +107,18 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
         &config.packwiz_commit,
     )?;
     for file in &config.add {
-        check_pack_path(&file.path)?;
         let locked = lock
             .file
             .iter()
-            .find(|candidate| candidate.path == file.path)
-            .ok_or_else(|| format!("{} is not in pack.lock.toml", file.path))?;
+            .find(|candidate| candidate.id == file.id)
+            .ok_or_else(|| format!("{} is not in pack.lock.toml", file.id))?;
         if !client_file(locked) {
-            return Err(format!("{} is not a client file", file.path).into());
+            return Err(format!("{} is not a client file", file.id).into());
         }
-        let folder = Path::new(&file.path)
+        let folder = Path::new(&locked.path)
             .parent()
             .and_then(Path::to_str)
-            .ok_or_else(|| format!("{} has no metadata folder", file.path))?;
+            .ok_or_else(|| format!("{} has no metadata folder", locked.path))?;
         let project_id = file.project_id.to_string();
         let file_id = file.file_id.to_string();
         run_packwiz(
@@ -171,29 +170,28 @@ fn validate_config(config: &Config, lock: &Lockfile) -> Result<BTreeSet<String>>
         .file
         .iter()
         .filter(|file| client_file(file))
-        .map(|file| (file.path.as_str(), file))
+        .map(|file| (file.id.as_str(), file))
         .collect();
     let mut additions = BTreeSet::new();
     for file in &config.add {
-        check_pack_path(&file.path)?;
-        if !client_files.contains_key(file.path.as_str()) {
+        if !client_files.contains_key(file.id.as_str()) {
             return Err(format!(
-                "platforms.toml [[curseforge.add]] path is not a locked client file: {}",
-                file.path
+                "platforms.toml [[curseforge.add]] ID is not a locked client file: {}",
+                file.id
             )
             .into());
         }
         if file.project_id == 0 || file.file_id == 0 {
             return Err(format!(
                 "platforms.toml [[curseforge.add]] has an invalid ID: {}",
-                file.path
+                file.id
             )
             .into());
         }
-        if !additions.insert(file.path.as_str()) {
+        if !additions.insert(file.id.as_str()) {
             return Err(format!(
-                "duplicate platforms.toml [[curseforge.add]] path: {}",
-                file.path
+                "duplicate platforms.toml [[curseforge.add]] ID: {}",
+                file.id
             )
             .into());
         }
@@ -201,39 +199,38 @@ fn validate_config(config: &Config, lock: &Lockfile) -> Result<BTreeSet<String>>
 
     let mut exclusions = BTreeSet::new();
     for file in &config.exclude {
-        check_pack_path(&file.path)?;
-        let Some(locked) = client_files.get(file.path.as_str()) else {
+        let Some(locked) = client_files.get(file.id.as_str()) else {
             return Err(format!(
-                "platforms.toml [[curseforge.exclude]] path is not a locked client file: {}",
-                file.path
+                "platforms.toml [[curseforge.exclude]] ID is not a locked client file: {}",
+                file.id
             )
             .into());
         };
         if locked.env.server != SideRequirement::Unsupported {
             return Err(format!(
                 "platforms.toml may exclude only client-only files: {}",
-                file.path
+                file.id
             )
             .into());
         }
         if file.reason.trim().is_empty() {
             return Err(format!(
                 "platforms.toml [[curseforge.exclude]] reason is required: {}",
-                file.path
+                file.id
             )
             .into());
         }
-        if additions.contains(file.path.as_str()) {
+        if additions.contains(file.id.as_str()) {
             return Err(format!(
                 "platforms.toml cannot add and exclude the same file: {}",
-                file.path
+                file.id
             )
             .into());
         }
-        if !exclusions.insert(file.path.clone()) {
+        if !exclusions.insert(locked.path.clone()) {
             return Err(format!(
-                "duplicate platforms.toml [[curseforge.exclude]] path: {}",
-                file.path
+                "duplicate platforms.toml [[curseforge.exclude]] ID: {}",
+                file.id
             )
             .into());
         }
@@ -654,6 +651,9 @@ mod tests {
 
     fn lock(mapped: bool) -> Lockfile {
         let file = FileSpec {
+            id: "example".into(),
+            provider: crate::spec::SourceProvider::Direct,
+            requested_version: "1.0.0".into(),
             path: "mods/example.jar".into(),
             file_size: 1,
             sha1: "a".repeat(40),
@@ -728,14 +728,14 @@ mod tests {
             author: "iamkaf".into(),
             add: Vec::new(),
             exclude: vec![ExcludedFile {
-                path: "mods/missing.jar".into(),
+                id: "missing".into(),
                 reason: "Unavailable".into(),
             }],
         };
         let error = validate_config(&config, &lock(false))
             .expect_err("stale exclusion")
             .to_string();
-        assert!(error.contains("mods/missing.jar"));
+        assert!(error.contains("missing"));
     }
 
     #[test]
@@ -745,7 +745,7 @@ mod tests {
             author: "iamkaf".into(),
             add: Vec::new(),
             exclude: vec![ExcludedFile {
-                path: "mods/example.jar".into(),
+                id: "example".into(),
                 reason: "Unavailable".into(),
             }],
         };

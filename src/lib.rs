@@ -8,6 +8,7 @@ pub mod fetch;
 pub mod hash;
 pub mod overlay;
 pub mod publish;
+pub mod resolve;
 pub mod spec;
 pub mod verify;
 

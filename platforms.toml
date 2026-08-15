@@ -6,10 +6,10 @@ author = "iamkaf"
 
 # Packwiz's fingerprint detector scans JARs, so non-JAR files need exact IDs.
 [[curseforge.add]]
-path = "shaderpacks/ComplementaryUnbound_r5.7.1.zip"
+id = "complementary-unbound"
 project_id = 385587
 file_id = 7574260
 
 [[curseforge.exclude]]
-path = "mods/PresenceFootsteps-1.13.3+26.2.jar"
+id = "presence-footsteps"
 reason = "No Minecraft 26.2 file is available on CurseForge."

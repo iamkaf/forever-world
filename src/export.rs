@@ -205,6 +205,9 @@ mod tests {
             },
             file: vec![
                 FileSpec {
+                    id: "b".into(),
+                    provider: crate::spec::SourceProvider::Modrinth,
+                    requested_version: "1.0.0".into(),
                     path: "mods/b.jar".into(),
                     file_size: 1,
                     sha1: "a".repeat(40),
@@ -216,6 +219,9 @@ mod tests {
                     downloads: vec!["https://cdn.modrinth.com/b.jar".into()],
                 },
                 FileSpec {
+                    id: "a".into(),
+                    provider: crate::spec::SourceProvider::Modrinth,
+                    requested_version: "1.0.0".into(),
                     path: "mods/a.jar".into(),
                     file_size: 1,
                     sha1: "a".repeat(40),
