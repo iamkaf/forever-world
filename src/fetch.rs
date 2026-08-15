@@ -28,6 +28,21 @@ pub fn ensure_cached(root: &PackRoot, file: &FileSpec) -> Result<PathBuf> {
     cache_bytes(root, file, &bytes)
 }
 
+pub fn check_cached(root: &PackRoot, file: &FileSpec) -> Result<PathBuf> {
+    check_pack_path(&file.path)?;
+    let path = cached_file(root, file);
+    if !path.is_file() {
+        return Err(format!(
+            "{} is not installed; run `pack install` before running the pack",
+            file.path
+        )
+        .into());
+    }
+    let bytes = fs::read(&path)?;
+    verify_bytes(file, &bytes)?;
+    Ok(path)
+}
+
 pub(crate) fn cache_bytes(root: &PackRoot, file: &FileSpec, bytes: &[u8]) -> Result<PathBuf> {
     verify_bytes(file, bytes)?;
     let dest = cached_file(root, file);

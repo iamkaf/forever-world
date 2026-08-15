@@ -641,13 +641,13 @@ server = "required"
 
 [[file]]
 id = "yacl"
-provider = "direct"
+provider = "modrinth"
 requested_version = "3.9.5+26.2-fabric"
 path = "mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar"
 file_size = 1121528
-sha1 = "6d20eb99432557f8c58e4025a8f003d5037125b7"
-sha512 = "857082d79ddb6bf46036e4c2b43f3f2428e3233a849a3f1557f2f2769899e5174dbb97a0b3c803ce696bee19cef58d43eacc609e9fc7b3328674f4f29fd05b71"
-downloads = ["https://mediafilez.forgecdn.net/files/8307/149/yet_another_config_lib_v3-3.9.5%2B26.2-fabric.jar"]
+sha1 = "e5d90b4f2cc508056097249d71fc9482ae73c111"
+sha512 = "bf709e5d1db2f104abb1e45d27dec39f10e0e2d546ec1e5df3a49b464c6f2b2daf39633e26e94e7869ae2a555258e5c4ee2d796c7d6d0e26300052a8de15052a"
+downloads = ["https://cdn.modrinth.com/data/1eAoo2KR/versions/LlSShNCR/yet_another_config_lib_v3-3.9.5%2B26.2-fabric.jar"]
 
 [file.env]
 client = "required"
@@ -947,7 +947,7 @@ file_id = 8263520
 
 [[curseforge]]
 path = "mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar"
-sha1 = "6d20eb99432557f8c58e4025a8f003d5037125b7"
+sha1 = "e5d90b4f2cc508056097249d71fc9482ae73c111"
 project_id = 667299
 file_id = 8307149
 

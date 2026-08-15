@@ -9,223 +9,68 @@ minecraft = "26.2"
 loader = "fabric"
 loader_version = "0.19.3"
 
-# Content loads on both sides unless `side = "client"` says otherwise.
+[mods]
+amber = "11.1.2+26.2"
+appleskin = "3.0.10+mc26.2"
+bl4cks-sit = "v1.5.1"
+bonded = "4.1.0+26.2"
+c2me-fabric = "0.4.2-alpha.0.13+26.2"
+creativecore = "2.14.16"
+fabric-api = "0.154.2+26.2"
+fabric-language-kotlin = "1.13.12+kotlin.2.4.0"
+ferrite-core = "9.0.0-fabric"
+forge-config-api-port = "26.2.1"
+happyghastimprovements = "2.1.0+26.2"
+jei = "30.9.0.57"
+kafs-valentine-special = "5.1.0+26.2"
+konfig = "0.5.0+26.2"
+liteminer = "4.1.1+26.2"
+lithium = "mc26.2-0.25.2-fabric"
+mochila = "6.1.0+26.2"
+mru = "1.0.30+26.2-fabric"
+placeholder-api = "3.1.0-beta.1+26.2"
+puzzles-lib = "26.2.0"
+snapshears = "5.1.0+26.2"
+sound-physics-remastered = "fabric-1.5.1+26.2"
+torch-toss = "5.1.0+26.2"
+yacl = "3.9.5+26.2-fabric"
 
-[[mod]]
-modrinth = "ambientsounds"
-version = "6.3.6"
-side = "client"
+[client_mods]
+3dskinlayers = "1.11.2"
+ambientsounds = "6.3.6"
+bobby = "5.2.14+mc26.2"
+chat-heads = "1.2.4"
+controlling = "26.2.2"
+cubes-without-borders = "4.1.0+26.2"
+cut-through = "26.2.0"
+entityculling = "1.10.5"
+gentlehurtcam = "2.1.0+26.2"
+immediatelyfast = "1.16.1+26.2-fabric"
+iris = "1.11.2+26.2-fabric"
+kaf-hud = "6.1.0+26.2"
+lambdynamiclights = "4.12.2+26.2"
+libipn = "fabric-26.2-6.8.2"
+modmenu = "20.0.1"
+mouse-tweaks = "26.2-2.31-fabric"
+particle-effects = "1.5.0+26.2+fabric"
+presence-footsteps = "1.13.3+26.2"
+rrls = "5.2.7+mc26.2"
+searchables = "1.0.1"
+sodium = "mc26.2-0.9.1-fabric"
+sound = "2.5.1+edge+26.2-fabric"
+zoomify = "2.16.1+26.2"
 
-[[mod]]
-modrinth = "controlling"
-version = "26.2.2"
-side = "client"
+[shaders]
+complementary-unbound = "r5.7.1"
 
-[[mod]]
-modrinth = "creativecore"
-version = "2.14.16"
+[publish]
+changelog = "CHANGELOG.md"
 
-[[mod]]
-modrinth = "cut-through"
-version = "26.2.0"
-side = "client"
+[publish.modrinth]
+project = "forever-world"
 
-[[mod]]
-modrinth = "forge-config-api-port"
-version = "26.2.1"
+[publish.github]
+repository = "iamkaf/forever-world"
 
-[[mod]]
-modrinth = "immediatelyfast"
-version = "1.16.1+26.2-fabric"
-side = "client"
-
-[[mod]]
-modrinth = "mouse-tweaks"
-version = "26.2-2.31-fabric"
-side = "client"
-
-[[mod]]
-modrinth = "particle-effects"
-version = "1.5.0+26.2+fabric"
-side = "client"
-
-[[mod]]
-modrinth = "presence-footsteps"
-version = "1.13.3+26.2"
-side = "client"
-
-[[mod]]
-modrinth = "puzzles-lib"
-version = "26.2.0"
-
-[[mod]]
-modrinth = "searchables"
-version = "1.0.1"
-side = "client"
-
-[[mod]]
-modrinth = "amber"
-version = "11.1.2+26.2"
-
-[[mod]]
-modrinth = "appleskin"
-version = "3.0.10+mc26.2"
-
-[[mod]]
-modrinth = "bobby"
-version = "5.2.14+mc26.2"
-side = "client"
-
-[[mod]]
-modrinth = "bonded"
-version = "4.1.0+26.2"
-
-[[mod]]
-modrinth = "c2me-fabric"
-version = "0.4.2-alpha.0.13+26.2"
-
-[[mod]]
-modrinth = "chat-heads"
-version = "1.2.4"
-side = "client"
-
-[[mod]]
-modrinth = "cubes-without-borders"
-version = "4.1.0+26.2"
-side = "client"
-
-[[mod]]
-modrinth = "entityculling"
-version = "1.10.5"
-side = "client"
-
-[[mod]]
-modrinth = "fabric-api"
-version = "0.154.2+26.2"
-
-[[mod]]
-modrinth = "fabric-language-kotlin"
-version = "1.13.12+kotlin.2.4.0"
-
-[[mod]]
-modrinth = "ferrite-core"
-version = "9.0.0-fabric"
-
-[[mod]]
-modrinth = "gentlehurtcam"
-version = "2.1.0+26.2"
-side = "client"
-
-[[mod]]
-modrinth = "happyghastimprovements"
-version = "2.1.0+26.2"
-
-[[mod]]
-modrinth = "iris"
-version = "1.11.2+26.2-fabric"
-side = "client"
-
-[[mod]]
-modrinth = "jei"
-version = "30.9.0.57"
-
-[[mod]]
-modrinth = "kaf-hud"
-version = "6.1.0+26.2"
-side = "client"
-
-[[mod]]
-modrinth = "kafs-valentine-special"
-version = "5.1.0+26.2"
-
-[[mod]]
-modrinth = "konfig"
-version = "0.5.0+26.2"
-
-[[mod]]
-modrinth = "lambdynamiclights"
-version = "4.12.2+26.2"
-side = "client"
-
-[[mod]]
-modrinth = "libipn"
-version = "fabric-26.2-6.8.2"
-side = "client"
-
-[[mod]]
-modrinth = "liteminer"
-version = "4.1.1+26.2"
-
-[[mod]]
-modrinth = "lithium"
-version = "mc26.2-0.25.2-fabric"
-
-[[mod]]
-modrinth = "mochila"
-version = "6.1.0+26.2"
-
-[[mod]]
-modrinth = "modmenu"
-version = "20.0.1"
-side = "client"
-
-[[mod]]
-modrinth = "mru"
-version = "1.0.30+26.2-fabric"
-
-[[mod]]
-modrinth = "placeholder-api"
-version = "3.1.0-beta.1+26.2"
-
-[[mod]]
-modrinth = "rrls"
-version = "5.2.7+mc26.2"
-side = "client"
-
-[[mod]]
-modrinth = "bl4cks-sit"
-version = "v1.5.1"
-
-[[mod]]
-modrinth = "3dskinlayers"
-version = "1.11.2"
-side = "client"
-
-[[mod]]
-modrinth = "snapshears"
-version = "5.1.0+26.2"
-
-[[mod]]
-modrinth = "sodium"
-version = "mc26.2-0.9.1-fabric"
-side = "client"
-
-[[mod]]
-modrinth = "sound-physics-remastered"
-version = "fabric-1.5.1+26.2"
-
-[[mod]]
-modrinth = "sound"
-version = "2.5.1+edge+26.2-fabric"
-side = "client"
-
-[[mod]]
-modrinth = "torch-toss"
-version = "5.1.0+26.2"
-
-# CurseForge and Modrinth publish different YACL binaries for this version.
-[[mod]]
-id = "yacl"
-version = "3.9.5+26.2-fabric"
-filename = "yet_another_config_lib_v3-3.9.5+26.2-fabric.jar"
-url = "https://mediafilez.forgecdn.net/files/8307/149/yet_another_config_lib_v3-3.9.5%2B26.2-fabric.jar"
-
-[[mod]]
-modrinth = "zoomify"
-version = "2.16.1+26.2"
-side = "client"
-
-[[shader]]
-modrinth = "complementary-unbound"
-version = "r5.7.1"
-side = "client"
+[publish.maven]
+repository = "https://z.kaf.sh/snapshots"

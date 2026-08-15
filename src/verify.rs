@@ -8,6 +8,47 @@ use std::io::Read;
 use std::time::Duration;
 use zip::ZipArchive;
 
+/// Verify every byte that a publishing adapter may upload.
+pub fn verify_prepared_release(release: &crate::publish::PreparedRelease) -> Result<()> {
+    for artifact in &release.artifacts {
+        let bytes = fs::read(&artifact.path)?;
+        if bytes.len() as u64 != artifact.bytes {
+            return Err(format!("{} changed after preparation", artifact.name).into());
+        }
+        let digest = crate::hash::sha512_hex(&bytes);
+        if digest != artifact.sha512 {
+            return Err(format!("{} changed after preparation", artifact.name).into());
+        }
+        verify_checksum_file(&artifact.checksum, &artifact.name, &digest)?;
+    }
+    let manifest_name = release
+        .manifest
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| crate::Error::from("invalid release manifest filename"))?;
+    let manifest_bytes = fs::read(&release.manifest)?;
+    let manifest_digest = crate::hash::sha512_hex(&manifest_bytes);
+    verify_checksum_file(
+        &release
+            .manifest
+            .with_file_name(format!("{manifest_name}.sha512")),
+        manifest_name,
+        &manifest_digest,
+    )?;
+    serde_json::from_slice::<serde_json::Value>(&manifest_bytes)
+        .map_err(|error| crate::Error::from(format!("release manifest: {error}")))?;
+    Ok(())
+}
+
+fn verify_checksum_file(path: &std::path::Path, name: &str, digest: &str) -> Result<()> {
+    let text = fs::read_to_string(path)?;
+    let expected = format!("{digest}  {name}\n");
+    if text != expected {
+        return Err(format!("checksum file {} does not match {}", path.display(), name).into());
+    }
+    Ok(())
+}
+
 #[derive(Debug, Deserialize)]
 struct ParsedIndex {
     #[serde(rename = "formatVersion")]

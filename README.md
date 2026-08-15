@@ -22,7 +22,7 @@ Sodium, Iris, Lithium, the sound mods, the shader folder, C2ME, JEI, all of that
 
 ![Two players sitting on a garden bench by a campfire.](images/together.webp)
 
-Current pack is 1.1.1. Minecraft 26.2, Fabric Loader 0.19.3. Java 25 in the launcher.
+The latest published pack is 1.1.1. Minecraft 26.2, Fabric Loader 0.19.3. Java 25 in the launcher.
 
 ## Play
 
@@ -30,7 +30,9 @@ Import the [mrpack](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.1.1
 
 ## Host
 
-[Pastel](https://kaf.sh/pastel) lives in the server folder. From an empty directory:
+For a persistent dedicated server, use [Pastel](https://kaf.sh/pastel). It verifies the server files, installs Fabric and Java, and keeps Minecraft running. `pack run server` is for working on this repository. Pastel is for running the published pack.
+
+From an empty server directory:
 
 ```bash
 curl -fsSL https://kaf.sh/pastel/install.sh | sh
@@ -38,30 +40,35 @@ curl -fsSL https://kaf.sh/pastel/install.sh | sh
 ./pastel run
 ```
 
-Pastel leaves the client-only stuff off the dedicated server. It'll fetch Java if the machine doesn't already have something new enough. Running the server means you agree to [Minecraft's EULA](https://aka.ms/MinecraftEULA).
+Pastel leaves client-only files off the dedicated server. Running the server means you agree to [Minecraft's EULA](https://aka.ms/MinecraftEULA).
 
 ## Building it
 
-This repo is the source for `com.iamkaf.modpacks:forever-world`. `pack.toml` names each project, exact version, and side. `pack resolve` asks Modrinth for the files and writes their names, URLs, sizes, and hashes to `pack.lock.toml`. The exporters read only that lock.
+This repo is the source for `com.iamkaf.modpacks:forever-world`. `pack.toml` describes the pack. The lockfile records the exact files that were installed, including their hashes and download URLs.
 
-Most entries are this small:
+Most entries are one line:
 
 ```toml
-[[mod]]
-modrinth = "sodium"
-version = "mc26.2-0.9.1-fabric"
-side = "client"
+[client_mods]
+sodium = "mc26.2-0.9.1-fabric"
 ```
 
-Content loads on both sides when `side` is omitted. Direct URLs are the escape hatch for files that cannot be resolved through Modrinth.
+`[mods]` loads on both sides. `[client_mods]` stays off the server. `[shaders]` contains client shader packs.
+
+```bash
+pack install
+pack run client
+pack run server
+pack run pair
+```
+
+`pack install` resolves and downloads the locked files. The run commands use those installed files. `pack run pair` starts the local client and dedicated server together for TeaKit checks.
+
+To check the project without launching Minecraft:
 
 ```bash
 just check
-just export
-just verify
 ```
-
-1.1.1 is already on Maven. `just verify` checks that an export still matches that artifact. Don't overwrite it.
 
 ### Versioning
 
@@ -71,11 +78,13 @@ Forever World versions describe what changed in the pack:
 - Minor: any mod, resource pack, or shader change.
 - Patch: fixes to the glue that do not change those inputs.
 
-CurseForge IDs are resolved with Packwiz and pinned in `pack.lock.toml`. Platform exceptions in `platforms.toml` refer to the stable content IDs from `pack.toml`, not filenames. Build Packwiz at the commit recorded there, set `PACKWIZ_BIN`, then run `just curseforge-resolve`. The resolver verifies the binary's Go build metadata, and the exporter refuses to build while any client file is unresolved.
+CurseForge files are resolved with Packwiz and pinned in `pack.lock.toml`. Platform exceptions in `platforms.toml` refer to the stable content IDs from `pack.toml`, not filenames. `pack install` reuses complete mappings and asks for the pinned `PACKWIZ_BIN` only when a changed pack needs new CurseForge mappings.
 
-After creating the CurseForge project, set `CURSEFORGE_PROJECT_ID` and `CURSEFORGE_TOKEN`. `just curseforge-publish-dry` prepares and describes the upload. A real upload requires `pack curseforge publish --confirm <version>`.
+Publishing reads its destinations from `pack.toml`. `pack publish --dry-run` builds the configured artifacts and shows what would be uploaded. `pack publish` uploads those same bytes to Modrinth, GitHub Releases, and the Maven snapshots repository. Add `[publish.curseforge]` with the CurseForge project ID once the project exists. Credentials stay in environment variables.
 
-`just pastel-install` sets up a Pastel server in `server/` from the export. `just pair` boots a dedicated server and a client together and runs `test/teakit/startup.test.ts`. TeaKit is only for that test. It never goes in the pack, and it doesn't bump Fabric Loader off 0.19.3.
+Use `MODRINTH_TOKEN`, `CURSEFORGE_TOKEN`, `GITHUB_TOKEN`, `MAVEN_PUBLISH_USERNAME`, and `MAVEN_PUBLISH_PASSWORD` for the configured targets. CurseForge's author API cannot verify an existing upload before creating one; after an ambiguous network failure, inspect the project before retrying.
+
+TeaKit is only for the pair check. It never goes in the pack, and it does not change Fabric Loader 0.19.3.
 
 ## License
 

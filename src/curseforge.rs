@@ -1,18 +1,14 @@
 use crate::fetch;
-use crate::publish::PublishMode;
 use crate::spec::{CurseForgeFile, Lockfile, SideRequirement, check_pack_path, client_file};
-use crate::{PackRoot, Result, USER_AGENT, hash};
+use crate::{PackRoot, Result, hash};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::{self, File};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::time::Duration;
 use zip::ZipWriter;
 use zip::write::SimpleFileOptions;
-
-const UPLOAD_BASE: &str = "https://minecraft.curseforge.com/api/projects";
 
 #[derive(Debug, Deserialize)]
 struct Platforms {
@@ -21,12 +17,22 @@ struct Platforms {
 
 #[derive(Debug, Deserialize)]
 struct Config {
+    #[serde(default = "default_packwiz_commit")]
     packwiz_commit: String,
+    #[serde(default = "default_author")]
     author: String,
     #[serde(default)]
     add: Vec<ExplicitFile>,
     #[serde(default)]
     exclude: Vec<ExcludedFile>,
+}
+
+fn default_packwiz_commit() -> String {
+    "dfd8b68a4796c763e25bad50265ea1f1233e24f1".into()
+}
+
+fn default_author() -> String {
+    "iamkaf".into()
 }
 
 #[derive(Debug, Deserialize)]
@@ -74,6 +80,25 @@ pub struct ResolveReport {
     pub resolved: usize,
     pub excluded: Vec<String>,
     pub unresolved: Vec<String>,
+}
+
+pub fn resolution_is_complete(root: &PackRoot) -> Result<bool> {
+    let config = load_config(root)?;
+    let lock = crate::load_lock(root)?;
+    let excluded = validate_config(&config, &lock)?;
+    let mapped: BTreeSet<_> = lock
+        .curseforge
+        .iter()
+        .map(|file| (file.path.as_str(), file.sha1.as_str()))
+        .collect();
+    Ok(lock
+        .file
+        .iter()
+        .filter(|file| client_file(file))
+        .all(|file| {
+            excluded.contains(&file.path)
+                || mapped.contains(&(file.path.as_str(), file.sha1.as_str()))
+        }))
 }
 
 pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
@@ -424,7 +449,7 @@ fn manifest_from_lock(
         .collect();
     if !missing.is_empty() {
         return Err(format!(
-            "CurseForge has no locked file for: {}; run `pack curseforge resolve` and do not publish until every client file resolves",
+            "CurseForge has no locked file for: {}; run `pack install` with PACKWIZ_BIN set before publishing",
             missing.join(", ")
         )
         .into());
@@ -549,86 +574,6 @@ fn collect_override_dir(
         }
     }
     Ok(())
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct UploadMetadata {
-    changelog: String,
-    changelog_type: String,
-    display_name: String,
-    game_version_names: Vec<String>,
-    release_type: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct UploadResponse {
-    id: u64,
-}
-
-pub fn publish(root: &PackRoot, mode: PublishMode) -> Result<String> {
-    let lock = crate::load_lock(root)?;
-    if let PublishMode::Confirmed { version } = &mode
-        && version != &lock.pack.version
-    {
-        return Err(format!(
-            "publish confirmation `{version}` does not match `{}`",
-            lock.pack.version
-        )
-        .into());
-    }
-    let archive = export(root)?;
-    let name = archive
-        .file_name()
-        .and_then(|name| name.to_str())
-        .ok_or_else(|| crate::Error::from("CurseForge archive name is not valid UTF-8"))?
-        .to_string();
-    let changelog = fs::read_to_string(root.path.join("CHANGELOG.md"))?;
-    let metadata = UploadMetadata {
-        changelog,
-        changelog_type: "markdown".into(),
-        display_name: format!("{} {}", lock.pack.name, lock.pack.version),
-        game_version_names: vec!["Fabric".into(), lock.pack.minecraft.clone()],
-        release_type: "release".into(),
-    };
-    let metadata_json = serde_json::to_string(&metadata)?;
-    if mode == PublishMode::DryRun {
-        let project = std::env::var("CURSEFORGE_PROJECT_ID").unwrap_or_else(|_| "<unset>".into());
-        return Ok(format!(
-            "DRY {UPLOAD_BASE}/{project}/upload-file {name}\n{metadata_json}"
-        ));
-    }
-    let project_id = std::env::var("CURSEFORGE_PROJECT_ID")
-        .map_err(|_| crate::Error::from("set CURSEFORGE_PROJECT_ID"))?;
-    project_id
-        .parse::<u64>()
-        .map_err(|_| crate::Error::from("CURSEFORGE_PROJECT_ID must be a positive integer"))?;
-    let token = std::env::var("CURSEFORGE_TOKEN")
-        .map_err(|_| crate::Error::from("set CURSEFORGE_TOKEN"))?;
-    let url = format!("{UPLOAD_BASE}/{project_id}/upload-file");
-    let archive_bytes = fs::read(&archive)?;
-    let form = reqwest::blocking::multipart::Form::new()
-        .text("metadata", metadata_json)
-        .part(
-            "file",
-            reqwest::blocking::multipart::Part::bytes(archive_bytes).file_name(name),
-        );
-    let client = reqwest::blocking::Client::builder()
-        .user_agent(USER_AGENT)
-        .timeout(Duration::from_secs(300))
-        .build()?;
-    let response = client
-        .post(&url)
-        .header("X-Api-Token", token)
-        .multipart(form)
-        .send()?;
-    let status = response.status();
-    if !status.is_success() {
-        let body = response.text().unwrap_or_default();
-        return Err(format!("CurseForge upload failed: {status}: {}", body.trim()).into());
-    }
-    let uploaded: UploadResponse = serde_json::from_str(&response.text()?)?;
-    Ok(format!("uploaded CurseForge file {}", uploaded.id))
 }
 
 fn load_config(root: &PackRoot) -> Result<Config> {

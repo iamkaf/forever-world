@@ -1,7 +1,5 @@
-use forever_world::spec::Lockfile;
-use forever_world::{PackRoot, curseforge, export, fetch, overlay, publish, resolve, verify};
+use forever_world::{PackRoot, authoring, publish};
 use std::env;
-use std::fs;
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
@@ -23,82 +21,62 @@ fn run(args: Vec<String>) -> forever_world::Result<()> {
     let command = args.remove(0);
     let root = PackRoot::discover(&env::current_dir()?)?;
     match command.as_str() {
-        "resolve" => {
-            let lock = resolve(&root)?;
-            eprintln!("locked {} files", lock.file.len());
+        "add" => {
+            let (query, version, options) = parse_add_args(&args)?;
+            let project = authoring::add(&root, &query, version.as_deref(), options)?;
+            let report = authoring::install(&root)?;
+            eprintln!("added {project} and installed {} files", report.files);
             Ok(())
         }
-        "export" => {
-            require_no_args(&args, "export")?;
-            let dest = export::export(&root)?;
-            eprintln!("wrote {}", dest.display());
+        "remove" => {
+            if args.len() != 1 {
+                return Err("usage: pack remove <project>".into());
+            }
+            authoring::remove(&root, &args[0])?;
+            let report = authoring::install(&root)?;
+            eprintln!("removed {} and installed {} files", args[0], report.files);
             Ok(())
         }
-        "name" => {
-            require_no_args(&args, "name")?;
-            println!("{}", forever_world::load_lock(&root)?.pack.mrpack_name());
+        "install" => {
+            require_no_args(&args, "install")?;
+            let report = authoring::install(&root)?;
+            eprintln!(
+                "installed {} files and generated {}",
+                report.files,
+                report.generated.display()
+            );
             Ok(())
         }
-        "verify" => {
-            let against = flag_value(&args, "--against")
-                .map(ToOwned::to_owned)
-                .map(Ok)
-                .unwrap_or_else(|| verify::default_against_from_root(&root))?;
-            verify::verify(&root, &against)
-        }
-        "overlay" => {
-            let dest = overlay::overlay(&root)?;
-            eprintln!("wrote {}", dest.display());
-            Ok(())
+        "run" => {
+            if args.len() != 1 {
+                return Err("usage: pack run client|server|pair".into());
+            }
+            let target = match args[0].as_str() {
+                "client" => authoring::RunTarget::Client,
+                "server" => authoring::RunTarget::Server,
+                "pair" => authoring::RunTarget::Pair,
+                target => {
+                    return Err(format!(
+                        "unknown run target `{target}`; use client, server, or pair"
+                    )
+                    .into());
+                }
+            };
+            authoring::run(&root, target)
         }
         "publish" => {
-            let lock = forever_world::load_lock(&root)?;
-            let version = lock.pack.version.clone();
-            let mode = parse_publish_mode(&args, &version)?;
+            let mode = parse_publish_mode(&args)?;
             let uploaded = publish::publish(&root, mode)?;
             for item in uploaded {
                 println!("{item}");
             }
             Ok(())
         }
-        "curseforge" => curseforge_command(&root, &args),
         "-h" | "--help" | "help" => {
             print_help();
             Ok(())
         }
         other => Err(format!("unknown command `{other}`").into()),
-    }
-}
-
-fn curseforge_command(root: &PackRoot, args: &[String]) -> forever_world::Result<()> {
-    match args {
-        [command] if command == "resolve" => {
-            let report = curseforge::resolve(root)?;
-            eprintln!("locked {} CurseForge files", report.resolved);
-            for path in &report.excluded {
-                eprintln!("excluded from CurseForge: {path}");
-            }
-            for path in &report.unresolved {
-                eprintln!("unresolved: {path}");
-            }
-            if report.unresolved.is_empty() {
-                Ok(())
-            } else {
-                Err("CurseForge mappings are incomplete".into())
-            }
-        }
-        [command] if command == "export" => {
-            let destination = curseforge::export(root)?;
-            eprintln!("wrote {}", destination.display());
-            Ok(())
-        }
-        [command, rest @ ..] if command == "publish" => {
-            let version = forever_world::load_lock(root)?.pack.version;
-            let mode = parse_publish_mode(rest, &version)?;
-            println!("{}", curseforge::publish(root, mode)?);
-            Ok(())
-        }
-        _ => Err("use `pack curseforge resolve`, `export`, or `publish`".into()),
     }
 }
 
@@ -110,60 +88,91 @@ fn require_no_args(args: &[String], command: &str) -> forever_world::Result<()> 
     }
 }
 
-fn parse_publish_mode(
-    args: &[String],
-    expected_version: &str,
-) -> forever_world::Result<publish::PublishMode> {
+fn parse_publish_mode(args: &[String]) -> forever_world::Result<publish::PublishMode> {
     match args {
         [flag] if flag == "--dry-run" => Ok(publish::PublishMode::DryRun),
-        [flag, version] if flag == "--confirm" && version == expected_version => {
-            Ok(publish::PublishMode::Confirmed {
-                version: version.clone(),
-            })
+        [] => Ok(publish::PublishMode::Publish),
+        _ => {
+            Err("invalid publish arguments; use `pack publish` or `pack publish --dry-run`".into())
         }
-        [flag, version] if flag == "--confirm" => Err(format!(
-            "publish confirmation `{version}` does not match `{expected_version}`"
-        )
-        .into()),
-        [] => {
-            Err(format!("publishing requires `--dry-run` or `--confirm {expected_version}`").into())
-        }
-        _ => Err(format!(
-            "invalid publish arguments; use `--dry-run` or `--confirm {expected_version}`"
-        )
-        .into()),
     }
 }
 
-fn resolve(root: &PackRoot) -> forever_world::Result<Lockfile> {
-    let spec = forever_world::load_spec(root)?;
-    let resolver = resolve::Resolver::new()?;
-    let total = spec.content_count();
-    let mut files = Vec::with_capacity(total);
-    for (index, (kind, content)) in spec.content().enumerate() {
-        eprintln!("[{}/{}] {}", index + 1, total, content.source.id());
-        let file = resolver.resolve(root, &spec.pack, kind, content)?;
-        file.validate()?;
-        fetch::ensure_cached(root, &file)?;
-        files.push(file);
+fn parse_add_args(
+    args: &[String],
+) -> forever_world::Result<(String, Option<String>, authoring::AddOptions)> {
+    let mut query = None;
+    let mut version = None;
+    let mut options = authoring::AddOptions::default();
+    let mut requested_kind = None;
+    let mut requested_side = None;
+    let mut index = 0;
+    while index < args.len() {
+        match args[index].as_str() {
+            "--client" => select_option(
+                &mut requested_side,
+                forever_world::spec::ContentSide::Client,
+                "--client and --server cannot be used together",
+            )?,
+            "--server" => select_option(
+                &mut requested_side,
+                forever_world::spec::ContentSide::Server,
+                "--client and --server cannot be used together",
+            )?,
+            "--shader" => select_option(
+                &mut requested_kind,
+                forever_world::spec::ContentKind::Shader,
+                "--shader and --mod cannot be used together",
+            )?,
+            "--mod" => select_option(
+                &mut requested_kind,
+                forever_world::spec::ContentKind::Mod,
+                "--shader and --mod cannot be used together",
+            )?,
+            "--version" => {
+                index += 1;
+                version = Some(args.get(index).ok_or("--version requires a value")?.clone());
+            }
+            value if value.starts_with("--version=") => {
+                version = Some(value[10..].to_string());
+            }
+            value if value.starts_with('-') => {
+                return Err(format!("unknown add option `{value}`").into());
+            }
+            value if query.is_none() => {
+                if let Some((project, requested)) = value.split_once('@') {
+                    query = Some(project.to_string());
+                    if version.is_none() {
+                        version = Some(requested.to_string());
+                    }
+                } else {
+                    query = Some(value.to_string());
+                }
+            }
+            value => return Err(format!("unexpected add argument `{value}`").into()),
+        }
+        index += 1;
     }
-    let previous = forever_world::load_lock(root).ok();
-    let mut lock = Lockfile::new(spec.pack, files);
-    if let Some(previous) = previous {
-        lock.retain_curseforge_from(&previous);
+    let query = query
+        .ok_or("usage: pack add <project> [--version <version>] [--client|--server|--shader]")?;
+    options.kind = requested_kind.unwrap_or(options.kind);
+    options.side = requested_side;
+    if options.kind == forever_world::spec::ContentKind::Shader {
+        options.side = Some(forever_world::spec::ContentSide::Client);
     }
-    fs::write(root.lock_toml(), lock.to_toml()?)?;
-    Ok(lock)
+    Ok((query, version, options))
 }
 
-fn flag_value<'a>(args: &'a [String], name: &str) -> Option<&'a str> {
-    args.windows(2).find_map(|window| {
-        if window[0] == name {
-            Some(window[1].as_str())
-        } else {
-            None
-        }
-    })
+fn select_option<T: Copy + PartialEq>(
+    slot: &mut Option<T>,
+    value: T,
+    error: &str,
+) -> forever_world::Result<()> {
+    if slot.is_some_and(|selected| selected != value) {
+        return Err(error.into());
+    }
+    *slot = Some(value);
+    Ok(())
 }
 
 fn print_help() {
@@ -171,19 +180,14 @@ fn print_help() {
         "\
 pack — Forever World pack tool
 
-  pack resolve              Resolve exact project versions and write pack.lock.toml
-  pack export               Write dist/<slug>-<version>.mrpack from the lock
-  pack name                 Print the exported archive name from the lock
-  pack verify [--against]   Compare the full archive to a published artifact
-  pack overlay              Write generated/modstage.toml for client and server boots
-  pack publish --dry-run    Show release upload keys
-  pack publish --confirm <version>
-                            Publish to the release repository
-  pack curseforge resolve  Use Packwiz to lock CurseForge project/file IDs
-  pack curseforge export   Write dist/<slug>-<version>-curseforge.zip
-  pack curseforge publish --dry-run
-  pack curseforge publish --confirm <version>
-                            Upload the CurseForge archive
+  pack add <project>       Add a Modrinth mod or shader and install it
+  pack remove <project>    Remove a mod or shader and install the pack
+  pack install              Resolve, download, verify, and prepare the pack
+  pack run client           Run the installed client
+  pack run server           Run the installed dedicated server
+  pack run pair             Run the installed client/server TeaKit pair
+  pack publish --dry-run    Show release upload details without uploading
+  pack publish               Publish the prepared release to configured targets
 "
     );
 }
@@ -197,19 +201,21 @@ mod tests {
     }
 
     #[test]
-    fn publishing_requires_an_exact_mode_and_version() {
+    fn publishing_accepts_dry_run_or_publish() {
         assert_eq!(
-            parse_publish_mode(&args(&["--dry-run"]), "1.2.0").expect("dry run"),
+            parse_publish_mode(&args(&["--dry-run"])).expect("dry run"),
             publish::PublishMode::DryRun
         );
         assert_eq!(
-            parse_publish_mode(&args(&["--confirm", "1.2.0"]), "1.2.0").expect("confirmed publish"),
-            publish::PublishMode::Confirmed {
-                version: "1.2.0".into()
-            }
+            parse_publish_mode(&[]).expect("publish"),
+            publish::PublishMode::Publish
         );
-        assert!(parse_publish_mode(&[], "1.2.0").is_err());
-        assert!(parse_publish_mode(&args(&["--dry-rnu"]), "1.2.0").is_err());
-        assert!(parse_publish_mode(&args(&["--confirm", "1.1.1"]), "1.2.0").is_err());
+        assert!(parse_publish_mode(&args(&["--dry-rnu"])).is_err());
+    }
+
+    #[test]
+    fn add_rejects_conflicting_content_options() {
+        assert!(parse_add_args(&args(&["sodium", "--client", "--server"])).is_err());
+        assert!(parse_add_args(&args(&["sodium", "--mod", "--shader"])).is_err());
     }
 }

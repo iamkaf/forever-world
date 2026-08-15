@@ -2,6 +2,7 @@ use std::fmt;
 use std::io;
 use std::path::{Path, PathBuf};
 
+pub mod authoring;
 pub mod curseforge;
 pub mod export;
 pub mod fetch;
@@ -140,6 +141,6 @@ pub fn load_spec(root: &PackRoot) -> Result<spec::PackSpec> {
 pub fn load_lock(root: &PackRoot) -> Result<spec::Lockfile> {
     let path = root.lock_toml();
     let text = std::fs::read_to_string(&path)
-        .map_err(|_| format!("missing {}; run `pack resolve` first", path.display()))?;
+        .map_err(|_| format!("missing {}; run `pack install` first", path.display()))?;
     spec::Lockfile::parse(&text)
 }

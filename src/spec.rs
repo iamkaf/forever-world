@@ -82,6 +82,14 @@ pub enum ContentSide {
 }
 
 impl ContentSide {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Both => "both",
+            Self::Client => "client",
+            Self::Server => "server",
+        }
+    }
+
     pub fn env(self) -> EnvSpec {
         match self {
             Self::Both => EnvSpec {
@@ -107,6 +115,13 @@ pub enum ContentKind {
 }
 
 impl ContentKind {
+    pub fn section(self) -> &'static str {
+        match self {
+            Self::Mod => "mods",
+            Self::Shader => "shaders",
+        }
+    }
+
     pub fn folder(self) -> &'static str {
         match self {
             Self::Mod => "mods",
@@ -175,9 +190,32 @@ impl PackSpec {
         let value: toml::Value =
             toml::from_str(text).map_err(|error| Error::from(format!("pack.toml: {error}")))?;
         validate_source_keys(&value)?;
-        let spec: Self = value
+        let mut legacy_value = value.clone();
+        let mods = legacy_value
+            .as_table_mut()
+            .and_then(|root| root.remove("mods"));
+        let client_mods = legacy_value
+            .as_table_mut()
+            .and_then(|root| root.remove("client_mods"));
+        let shaders = legacy_value
+            .as_table_mut()
+            .and_then(|root| root.remove("shaders"));
+        let mut spec: Self = legacy_value
             .try_into()
             .map_err(|error| Error::from(format!("pack.toml: {error}")))?;
+        append_map_entries(&mut spec.mods, mods, ContentSide::Both, ContentKind::Mod)?;
+        append_map_entries(
+            &mut spec.mods,
+            client_mods,
+            ContentSide::Client,
+            ContentKind::Mod,
+        )?;
+        append_map_entries(
+            &mut spec.shader,
+            shaders,
+            ContentSide::Client,
+            ContentKind::Shader,
+        )?;
         spec.validate()?;
         Ok(spec)
     }
@@ -188,7 +226,7 @@ impl PackSpec {
         }
         validate_pack_meta(&self.pack)?;
         if self.mods.is_empty() && self.shader.is_empty() {
-            return Err("pack.toml has no [[mod]] or [[shader]] entries".into());
+            return Err("pack.toml has no mods or shaders".into());
         }
         let mut seen = std::collections::BTreeSet::new();
         for (kind, content) in self.content() {
@@ -230,7 +268,20 @@ fn validate_source_keys(value: &toml::Value) -> Result<()> {
     let root = value
         .as_table()
         .ok_or_else(|| Error::from("pack.toml must contain a TOML table"))?;
-    reject_unknown_keys(root, &["format", "pack", "mod", "shader"], "pack.toml")?;
+    reject_unknown_keys(
+        root,
+        &[
+            "format",
+            "pack",
+            "mod",
+            "shader",
+            "mods",
+            "client_mods",
+            "shaders",
+            "publish",
+        ],
+        "pack.toml",
+    )?;
     if let Some(pack) = root.get("pack").and_then(toml::Value::as_table) {
         reject_unknown_keys(
             pack,
@@ -266,6 +317,49 @@ fn validate_source_keys(value: &toml::Value) -> Result<()> {
             )?;
         }
     }
+    for section in ["mods", "client_mods", "shaders"] {
+        let Some(entries) = root.get(section).and_then(toml::Value::as_table) else {
+            continue;
+        };
+        for (id, version) in entries {
+            check_content_id(id)?;
+            if !version.is_str() {
+                return Err(
+                    format!("pack.toml [{section}] `{id}` must be a version string").into(),
+                );
+            }
+        }
+    }
+    Ok(())
+}
+
+fn append_map_entries(
+    destination: &mut Vec<ContentSpec>,
+    value: Option<toml::Value>,
+    side: ContentSide,
+    kind: ContentKind,
+) -> Result<()> {
+    let Some(table) = value else {
+        return Ok(());
+    };
+    let Some(table) = table.as_table() else {
+        return Err(format!("pack.toml [{}] must be a table", kind.section()).into());
+    };
+    for (id, version) in table {
+        let version = version.as_str().ok_or_else(|| {
+            format!(
+                "pack.toml [{}] `{id}` must be a version string",
+                kind.section()
+            )
+        })?;
+        destination.push(ContentSpec {
+            side,
+            source: ContentSource::Modrinth {
+                modrinth: id.clone(),
+                version: version.to_string(),
+            },
+        });
+    }
     Ok(())
 }
 
@@ -287,12 +381,15 @@ fn validate_pack_meta(pack: &PackMeta) -> Result<()> {
     if pack.slug.trim().is_empty() {
         return Err("pack.slug is required".into());
     }
+    check_coordinate_part("pack.slug", &pack.slug, false)?;
     if pack.version.trim().is_empty() {
         return Err("pack.version is required".into());
     }
+    check_coordinate_part("pack.version", &pack.version, true)?;
     if pack.group.trim().is_empty() {
         return Err("pack.group is required".into());
     }
+    check_coordinate_part("pack.group", &pack.group, true)?;
     if pack.minecraft.trim().is_empty() {
         return Err("pack.minecraft is required".into());
     }
@@ -303,6 +400,27 @@ fn validate_pack_meta(pack: &PackMeta) -> Result<()> {
         return Err(format!(
             "pack.loader `{}` is not supported yet; Forever World is Fabric-only",
             pack.loader
+        )
+        .into());
+    }
+    Ok(())
+}
+
+fn check_coordinate_part(name: &str, value: &str, allow_dots: bool) -> Result<()> {
+    let valid = !value.is_empty()
+        && value.bytes().all(|byte| {
+            byte.is_ascii_alphanumeric()
+                || matches!(byte, b'-' | b'_')
+                || (allow_dots && byte == b'.')
+        })
+        && (!allow_dots
+            || value
+                .split('.')
+                .all(|component| !component.is_empty() && component != "." && component != ".."));
+    if !valid {
+        return Err(format!(
+            "{name} `{value}` must use only ASCII letters, digits, `-`, `_`{}",
+            if allow_dots { " or separated `.`" } else { "" }
         )
         .into());
     }
@@ -510,6 +628,16 @@ mod tests {
         assert!(check_pack_path("mods/./x.jar").is_err());
         assert!(check_pack_path("mods/x.jar/").is_err());
         assert!(check_pack_path("mods/sodium.jar").is_ok());
+    }
+
+    #[test]
+    fn pack_coordinates_cannot_escape_distribution_paths() {
+        assert!(check_coordinate_part("pack.slug", "forever-world", false).is_ok());
+        assert!(check_coordinate_part("pack.version", "1.2.0", true).is_ok());
+        assert!(check_coordinate_part("pack.group", "com.iamkaf.modpacks", true).is_ok());
+        assert!(check_coordinate_part("pack.slug", "../elsewhere", false).is_err());
+        assert!(check_coordinate_part("pack.version", "../1.2.0", true).is_err());
+        assert!(check_coordinate_part("pack.group", "com..modpacks", true).is_err());
     }
 
     #[test]
