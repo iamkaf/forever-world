@@ -10,7 +10,6 @@ use std::process::Command;
 use zip::ZipWriter;
 use zip::write::SimpleFileOptions;
 
-const PACKWIZ_COMMIT: &str = "dfd8b68a4796c763e25bad50265ea1f1233e24f1";
 const CURSEFORGE_AUTHOR: &str = "iamkaf";
 
 #[derive(Debug, Deserialize)]
@@ -98,9 +97,7 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
     let config = load_config(root)?;
     let mut lock = crate::load_lock(root)?;
     let excluded = validate_config(&config, &lock)?;
-    let packwiz = std::env::var_os("PACKWIZ_BIN")
-        .ok_or_else(|| crate::Error::from("set PACKWIZ_BIN to the pinned Packwiz binary"))?;
-    verify_packwiz(&packwiz, PACKWIZ_COMMIT)?;
+    let packwiz = std::env::var_os("PACKWIZ_BIN").unwrap_or_else(|| "packwiz".into());
     let temp = tempfile::tempdir()?;
     initialise_packwiz(temp.path(), &lock)?;
 
@@ -118,12 +115,7 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
         fs::copy(source, destination)?;
     }
 
-    run_packwiz(
-        &packwiz,
-        temp.path(),
-        &["--yes", "curseforge", "detect"],
-        PACKWIZ_COMMIT,
-    )?;
+    run_packwiz(&packwiz, temp.path(), &["--yes", "curseforge", "detect"])?;
     for file in &config.add {
         let locked = lock
             .file
@@ -153,7 +145,6 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
                 "--file-id",
                 &file_id,
             ],
-            PACKWIZ_COMMIT,
         )?;
     }
 
@@ -269,44 +260,14 @@ fn initialise_packwiz(dir: &Path, lock: &Lockfile) -> Result<()> {
     Ok(())
 }
 
-fn run_packwiz(
-    binary: &std::ffi::OsStr,
-    dir: &Path,
-    args: &[&str],
-    expected_commit: &str,
-) -> Result<()> {
+fn run_packwiz(binary: &std::ffi::OsStr, dir: &Path, args: &[&str]) -> Result<()> {
     let status = Command::new(binary)
         .current_dir(dir)
         .args(args)
         .status()
-        .map_err(|error| {
-            crate::Error::from(format!(
-                "could not run Packwiz: {error}; build commit {expected_commit} and set PACKWIZ_BIN"
-            ))
-        })?;
+        .map_err(|error| crate::Error::from(format!("could not run Packwiz: {error}")))?;
     if !status.success() {
         return Err(format!("Packwiz exited with {status}").into());
-    }
-    Ok(())
-}
-
-fn verify_packwiz(binary: &std::ffi::OsStr, expected_commit: &str) -> Result<()> {
-    let output = Command::new("go")
-        .args([
-            std::ffi::OsStr::new("version"),
-            std::ffi::OsStr::new("-m"),
-            binary,
-        ])
-        .output()
-        .map_err(|error| crate::Error::from(format!("could not inspect Packwiz build: {error}")))?;
-    if !output.status.success() {
-        return Err("could not inspect Packwiz build metadata with `go version -m`".into());
-    }
-    let metadata = String::from_utf8_lossy(&output.stdout);
-    if !metadata.contains("github.com/packwiz/packwiz") || !metadata.contains(expected_commit) {
-        return Err(
-            format!("PACKWIZ_BIN was not built from pinned commit {expected_commit}").into(),
-        );
     }
     Ok(())
 }

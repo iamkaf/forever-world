@@ -78,7 +78,7 @@ Forever World versions describe what changed in the pack:
 - Minor: any mod, resource pack, or shader change.
 - Patch: fixes to the glue that do not change those inputs.
 
-CurseForge files are resolved with Packwiz and pinned in `pack.lock.toml`. Content exceptions in `overrides.toml` refer to the stable content IDs from `pack.toml`, not filenames. `pack install` reuses complete mappings and asks for `PACKWIZ_BIN` only when a changed pack needs new CurseForge mappings.
+CurseForge files are resolved with Packwiz and pinned in `pack.lock.toml`. Content exceptions in `overrides.toml` refer to the stable content IDs from `pack.toml`, not filenames. `pack install` runs `packwiz` from `PATH` only when a changed pack needs new CurseForge mappings. `PACKWIZ_BIN` can override the command.
 
 Publishing reads its destinations from `pack.toml`. `pack publish --dry-run` builds the configured artifacts and shows what would be uploaded. `pack publish` uploads those same bytes to Modrinth, GitHub Releases, and the Maven snapshots repository. Add `[publish.curseforge]` with the CurseForge project ID once the project exists. Credentials stay in environment variables.
 
