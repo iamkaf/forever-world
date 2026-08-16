@@ -1,4 +1,4 @@
-use super::{ArtifactKind, PreparedRelease, Result, artifact_bytes, http_client};
+use super::{ArtifactKind, PreparedRelease, Result, http_client};
 use serde::{Deserialize, Serialize};
 
 const API_BASE: &str = "https://api.modrinth.com/v2";
@@ -73,22 +73,14 @@ pub fn publish(release: &PreparedRelease, root: &crate::PackRoot) -> Result<Vec<
         return Ok(vec![message]);
     }
 
-    let loaders = if config.loaders.is_empty() {
-        vec![release.lock.pack.loader.clone()]
-    } else {
-        config.loaders.clone()
-    };
-    let game_versions = if config.game_versions.is_empty() {
-        vec![release.lock.pack.minecraft.clone()]
-    } else {
-        config.game_versions.clone()
-    };
+    let loaders = vec![release.lock.pack.loader.clone()];
+    let game_versions = vec![release.lock.pack.minecraft.clone()];
     let changelog = release.changelog(root)?;
     let data = serde_json::to_string(&VersionData {
         name: &format!("{} {}", release.lock.pack.name, release.lock.pack.version),
         version_number: &release.lock.pack.version,
         changelog: &changelog,
-        version_type: &config.release_type,
+        version_type: "release",
         loaders: &loaders,
         game_versions: &game_versions,
         featured: true,
@@ -97,12 +89,12 @@ pub fn publish(release: &PreparedRelease, root: &crate::PackRoot) -> Result<Vec<
         file_parts: vec!["file".into()],
         primary_file: "file".into(),
     })?;
-    let bytes = artifact_bytes(artifact)?;
     let form = reqwest::blocking::multipart::Form::new()
         .text("data", data)
         .part(
             "file",
-            reqwest::blocking::multipart::Part::bytes(bytes).file_name(artifact.name.clone()),
+            reqwest::blocking::multipart::Part::bytes(artifact.bytes.clone())
+                .file_name(artifact.name.clone()),
         );
     let response = client
         .post(create_version_url())

@@ -1,6 +1,7 @@
-use forever_world::spec::{ContentSource, SideRequirement, server_file};
+use forever_world::spec::{SideRequirement, server_file};
 use forever_world::{PackRoot, load_lock, load_spec};
 use std::collections::BTreeSet;
+use std::fs;
 use std::path::PathBuf;
 
 fn root() -> PackRoot {
@@ -64,20 +65,26 @@ fn next_release_source_and_lockfile_stay_in_sync() {
     assert_eq!(lock.version, 2);
     assert_eq!(spec.pack, lock.pack);
     assert_eq!(lock.file.len(), spec.content_count());
-    for (kind, content) in spec.content() {
+
+    let teakit: toml::Value =
+        toml::from_str(&fs::read_to_string(root().path.join("teakit.toml")).expect("teakit.toml"))
+            .expect("valid teakit.toml");
+    let nodes = teakit["nodes"].as_table().expect("TeaKit nodes");
+    let node = format!("{}-{}", spec.pack.minecraft, spec.pack.loader);
+    assert_eq!(nodes.len(), 1);
+    assert!(nodes.contains_key(&node));
+    for content in spec.content() {
         let file = lock
             .file
             .iter()
-            .find(|file| file.id == content.source.id())
-            .unwrap_or_else(|| panic!("{} is missing from the lock", content.source.id()));
-        assert_eq!(file.provider, content.source.provider());
-        assert_eq!(file.requested_version, content.source.version());
+            .find(|file| file.id == content.id)
+            .unwrap_or_else(|| panic!("{} is missing from the lock", content.id));
+        assert_eq!(file.requested_version, content.version);
         assert_eq!(file.env, content.side.env());
-        assert!(file.path.starts_with(&format!("{}/", kind.folder())));
-        if let ContentSource::Direct { filename, url, .. } = &content.source {
-            assert_eq!(file.path, format!("{}/{filename}", kind.folder()));
-            assert_eq!(file.downloads.as_slice(), std::slice::from_ref(url));
-        }
+        assert!(
+            file.path
+                .starts_with(&format!("{}/", content.kind.folder()))
+        );
     }
 }
 

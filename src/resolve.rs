@@ -1,5 +1,5 @@
-use crate::spec::{ContentKind, ContentSource, ContentSpec, FileSpec, PackMeta, SourceProvider};
-use crate::{PackRoot, Result, USER_AGENT, fetch, hash, load_lock, load_spec};
+use crate::spec::{ContentKind, ContentSpec, FileSpec, PackMeta};
+use crate::{PackRoot, Result, USER_AGENT, fetch, load_lock, load_spec};
 use reqwest::blocking::Client;
 use serde::Deserialize;
 use std::fs;
@@ -21,40 +21,8 @@ impl Resolver {
         })
     }
 
-    pub fn resolve(
-        &self,
-        root: &PackRoot,
-        pack: &PackMeta,
-        kind: ContentKind,
-        content: &ContentSpec,
-    ) -> Result<FileSpec> {
-        match &content.source {
-            ContentSource::Modrinth { modrinth, version } => {
-                self.resolve_modrinth(pack, kind, content, modrinth, version)
-            }
-            ContentSource::Direct {
-                id,
-                version,
-                filename,
-                url,
-            } => {
-                let bytes = fetch::download(url)
-                    .map_err(|error| format!("could not download direct content {id}: {error}"))?;
-                let file = FileSpec {
-                    id: id.to_string(),
-                    provider: SourceProvider::Direct,
-                    requested_version: version.to_string(),
-                    path: format!("{}/{}", kind.folder(), filename),
-                    file_size: bytes.len() as u64,
-                    sha1: hash::sha1_hex(&bytes),
-                    sha512: hash::sha512_hex(&bytes),
-                    env: content.side.env(),
-                    downloads: vec![url.to_string()],
-                };
-                fetch::cache_bytes(root, &file, &bytes)?;
-                Ok(file)
-            }
-        }
+    pub fn resolve(&self, pack: &PackMeta, content: &ContentSpec) -> Result<FileSpec> {
+        self.resolve_modrinth(pack, content)
     }
 
     /// Resolve a project name to a Modrinth slug. Exact slugs win; a search
@@ -141,13 +109,15 @@ impl Resolver {
             )
             .into());
         }
-        Ok(
-            match (project.client_side.as_str(), project.server_side.as_str()) {
-                (_, "unsupported") => crate::spec::ContentSide::Client,
-                ("unsupported", _) => crate::spec::ContentSide::Server,
-                _ => crate::spec::ContentSide::Both,
-            },
-        )
+        match (project.client_side.as_str(), project.server_side.as_str()) {
+            (_, "unsupported") => Ok(crate::spec::ContentSide::Client),
+            ("unsupported", _) => Err(format!(
+                "Modrinth project {} is server-only; Forever World has no server-only content section",
+                project.slug
+            )
+            .into()),
+            _ => Ok(crate::spec::ContentSide::Both),
+        }
     }
 
     pub fn latest_version(
@@ -187,17 +157,12 @@ impl Resolver {
             })
     }
 
-    fn resolve_modrinth(
-        &self,
-        pack: &PackMeta,
-        kind: ContentKind,
-        content: &ContentSpec,
-        project: &str,
-        requested_version: &str,
-    ) -> Result<FileSpec> {
+    fn resolve_modrinth(&self, pack: &PackMeta, content: &ContentSpec) -> Result<FileSpec> {
+        let project = &content.id;
+        let requested_version = &content.version;
         let url = format!("{MODRINTH_API}/project/{project}/version");
         let request = self.client.get(&url);
-        let request = match kind {
+        let request = match content.kind {
             ContentKind::Mod => request.query(&[
                 ("loaders", serde_json::to_string(&[pack.loader.as_str()])?),
                 (
@@ -223,9 +188,8 @@ impl Resolver {
         let file = primary_file(project, requested_version, &version.files)?;
         Ok(FileSpec {
             id: project.to_string(),
-            provider: SourceProvider::Modrinth,
             requested_version: requested_version.to_string(),
-            path: format!("{}/{}", kind.folder(), file.filename),
+            path: format!("{}/{}", content.kind.folder(), file.filename),
             file_size: file.size,
             sha1: file.hashes.sha1.clone(),
             sha512: file.hashes.sha512.clone(),
@@ -268,13 +232,13 @@ pub fn resolve_pack(root: &PackRoot) -> Result<crate::spec::Lockfile> {
     let resolver = Resolver::new()?;
     let total = spec.content_count();
     let mut files = Vec::with_capacity(total);
-    for (index, (kind, content)) in spec.content().enumerate() {
-        eprintln!("[{}/{}] {}", index + 1, total, content.source.id());
-        let file = resolver.resolve(root, &spec.pack, kind, content)?;
+    for (index, content) in spec.content().enumerate() {
+        eprintln!("[{}/{}] {}", index + 1, total, content.id);
+        let file = resolver.resolve(&spec.pack, content)?;
         file.validate()?;
-        fetch::ensure_cached(root, &file)?;
         files.push(file);
     }
+    fetch::ensure_all(root, &files)?;
     let previous = load_lock(root).ok();
     let mut lock = crate::spec::Lockfile::new(spec.pack, files);
     if let Some(previous) = previous {
@@ -288,21 +252,15 @@ pub fn lock_matches_spec(spec: &crate::spec::PackSpec, lock: &crate::spec::Lockf
     if spec.pack != lock.pack || spec.content_count() != lock.file.len() {
         return false;
     }
-    spec.content().all(|(kind, content)| {
-        let Some(file) = lock.file.iter().find(|file| file.id == content.source.id()) else {
+    spec.content().all(|content| {
+        let Some(file) = lock.file.iter().find(|file| file.id == content.id) else {
             return false;
         };
-        file.provider == content.source.provider()
-            && file.requested_version == content.source.version()
+        file.requested_version == content.version
             && file.env == content.side.env()
-            && file.path.starts_with(&format!("{}/", kind.folder()))
-            && match &content.source {
-                ContentSource::Modrinth { .. } => true,
-                ContentSource::Direct { filename, url, .. } => {
-                    file.path == format!("{}/{filename}", kind.folder())
-                        && file.downloads == [url.clone()]
-                }
-            }
+            && file
+                .path
+                .starts_with(&format!("{}/", content.kind.folder()))
     })
 }
 

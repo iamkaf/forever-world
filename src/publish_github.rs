@@ -1,4 +1,4 @@
-use super::{Artifact, PreparedRelease, Result, artifact_bytes, http_client};
+use super::{Artifact, PreparedRelease, Result, http_client};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256, Sha512};
 
@@ -47,22 +47,12 @@ pub fn dry_run(release: &PreparedRelease) -> Result<Vec<String>> {
             "DRY GitHub {API_BASE}/repos/{}/releases/{}/assets <- {} ({})",
             config.repository, release.lock.pack.version, artifact.name, artifact.sha512
         ));
-        let checksum = super::artifact_checksum(artifact)?;
+        let checksum = super::artifact_checksum(artifact);
         output.push(format!(
             "DRY GitHub {API_BASE}/repos/{}/releases/{}/assets <- {} ({})",
             config.repository, release.lock.pack.version, checksum.name, checksum.sha512
         ));
     }
-    let manifest = super::artifact(&release.manifest, super::ArtifactKind::Manifest)?;
-    output.push(format!(
-        "DRY GitHub {API_BASE}/repos/{}/releases/{}/assets <- {} ({})",
-        config.repository, release.lock.pack.version, manifest.name, manifest.sha512
-    ));
-    let checksum = super::artifact_checksum(&manifest)?;
-    output.push(format!(
-        "DRY GitHub {API_BASE}/repos/{}/releases/{}/assets <- {} ({})",
-        config.repository, release.lock.pack.version, checksum.name, checksum.sha512
-    ));
     Ok(output)
 }
 
@@ -77,22 +67,18 @@ pub fn publish(release: &PreparedRelease, root: &crate::PackRoot) -> Result<Vec<
         .or_else(|_| std::env::var("GH_TOKEN"))
         .map_err(|_| crate::Error::from("set GITHUB_TOKEN (or GH_TOKEN)"))?;
     let client = http_client()?;
-    let release = find_or_create_release(&client, &token, release, root)?;
+    let github_release = find_or_create_release(&client, &token, release, root)?;
     let mut output = Vec::new();
-    for artifact in release.0.artifacts.iter().filter(|artifact| {
+    for artifact in release.artifacts.iter().filter(|artifact| {
         matches!(
             artifact.kind,
             super::ArtifactKind::Modrinth | super::ArtifactKind::CurseForge
         )
     }) {
-        upload_if_needed(&client, &token, &release.1, artifact, &mut output)?;
-        let checksum = super::artifact_checksum(artifact)?;
-        upload_if_needed(&client, &token, &release.1, &checksum, &mut output)?;
+        upload_if_needed(&client, &token, &github_release, artifact, &mut output)?;
+        let checksum = super::artifact_checksum(artifact);
+        upload_if_needed(&client, &token, &github_release, &checksum, &mut output)?;
     }
-    let manifest = super::artifact(&release.0.manifest, super::ArtifactKind::Manifest)?;
-    upload_if_needed(&client, &token, &release.1, &manifest, &mut output)?;
-    let checksum = super::artifact_checksum(&manifest)?;
-    upload_if_needed(&client, &token, &release.1, &checksum, &mut output)?;
     Ok(output)
 }
 
@@ -101,7 +87,7 @@ fn find_or_create_release(
     token: &str,
     prepared: &PreparedRelease,
     root: &crate::PackRoot,
-) -> Result<(PreparedRelease, Release)> {
+) -> Result<Release> {
     let config = prepared.config.github.as_ref().expect("checked by caller");
     let url = format!(
         "{API_BASE}/repos/{}/releases/tags/{}",
@@ -109,7 +95,7 @@ fn find_or_create_release(
     );
     let response = client.get(&url).bearer_auth(token).send()?;
     if response.status() != reqwest::StatusCode::NOT_FOUND {
-        return Ok((prepared.clone(), response.error_for_status()?.json()?));
+        return Ok(response.error_for_status()?.json()?);
     }
     let body = prepared.changelog(root)?;
     let response = client
@@ -119,11 +105,11 @@ fn find_or_create_release(
             tag_name: &prepared.lock.pack.version,
             name: &format!("{} {}", prepared.lock.pack.name, prepared.lock.pack.version),
             body: &body,
-            draft: config.draft,
-            prerelease: config.prerelease,
+            draft: false,
+            prerelease: false,
         })
         .send()?;
-    Ok((prepared.clone(), response.error_for_status()?.json()?))
+    Ok(response.error_for_status()?.json()?)
 }
 
 fn upload_if_needed(
@@ -138,9 +124,8 @@ fn upload_if_needed(
         .iter()
         .find(|asset| asset.name == artifact.name)
     {
-        if existing.size == artifact.bytes {
-            let artifact_bytes = artifact_bytes(artifact)?;
-            let sha256 = format!("sha256:{}", hex::encode(Sha256::digest(&artifact_bytes)));
+        if existing.size == artifact.bytes.len() as u64 {
+            let sha256 = format!("sha256:{}", hex::encode(Sha256::digest(&artifact.bytes)));
             if existing.digest.as_deref() == Some(sha256.as_str()) {
                 output.push(format!("GitHub already has {}", artifact.name));
                 return Ok(());
@@ -176,7 +161,7 @@ fn upload_if_needed(
         .post(url)
         .bearer_auth(token)
         .header("Content-Type", "application/octet-stream")
-        .body(artifact_bytes(artifact)?)
+        .body(artifact.bytes.clone())
         .send()?;
     if !response.status().is_success() {
         return Err(format!("GitHub asset upload failed: {}", response.status()).into());

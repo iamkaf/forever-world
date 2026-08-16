@@ -1,9 +1,9 @@
 use crate::spec::{FileSpec, Lockfile, SideRequirement, check_pack_path};
-use crate::{PackRoot, Result, hash};
+use crate::{PackRoot, Result};
 use serde::Serialize;
 use std::collections::BTreeMap;
 use std::fs::{self, File};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::Path;
 use zip::ZipWriter;
 use zip::write::SimpleFileOptions;
@@ -48,12 +48,6 @@ pub fn export(root: &PackRoot) -> Result<std::path::PathBuf> {
     let name = format!("{}-{}.mrpack", lock.pack.slug, lock.pack.version);
     let dest = root.dist_dir().join(&name);
     write_mrpack(&dest, &index_bytes, root)?;
-    let archive = fs::read(&dest)?;
-    let sha512 = hash::sha512_hex(&archive);
-    fs::write(
-        dest.with_extension("mrpack.sha512"),
-        format!("{sha512}  {name}\n"),
-    )?;
     Ok(dest)
 }
 
@@ -70,7 +64,7 @@ pub fn index_from_lock(lock: &Lockfile) -> Result<MrpackIndex> {
         lock.pack.loader_version.clone(),
     );
     Ok(MrpackIndex {
-        format_version: 1,
+        format_version: 2,
         game: "minecraft".to_string(),
         version_id: lock.pack.version.clone(),
         name: lock.pack.name.clone(),
@@ -106,82 +100,28 @@ fn loader_dependency_key(loader: &str) -> Result<&'static str> {
 }
 
 fn write_mrpack(dest: &Path, index_bytes: &[u8], root: &PackRoot) -> Result<()> {
+    let mut entries = BTreeMap::new();
+    crate::archive::collect_tree(root.overrides_dir(), "overrides", &mut entries)?;
+    crate::archive::collect_tree(
+        root.client_overrides_dir(),
+        "client-overrides",
+        &mut entries,
+    )?;
+    crate::archive::collect_tree(
+        root.server_overrides_dir(),
+        "server-overrides",
+        &mut entries,
+    )?;
     let file = File::create(dest)?;
     let mut zip = ZipWriter::new(file);
     let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
     zip.start_file("modrinth.index.json", options)?;
     zip.write_all(index_bytes)?;
-    add_override_tree(&mut zip, options, root.overrides_dir(), "overrides")?;
-    add_override_tree(
-        &mut zip,
-        options,
-        root.client_overrides_dir(),
-        "client-overrides",
-    )?;
-    add_override_tree(
-        &mut zip,
-        options,
-        root.server_overrides_dir(),
-        "server-overrides",
-    )?;
+    for (path, bytes) in entries {
+        zip.start_file(path, options)?;
+        zip.write_all(&bytes)?;
+    }
     zip.finish()?;
-    Ok(())
-}
-
-fn add_override_tree(
-    zip: &mut ZipWriter<File>,
-    options: SimpleFileOptions,
-    dir: std::path::PathBuf,
-    prefix: &str,
-) -> Result<()> {
-    if !dir.is_dir() {
-        return Ok(());
-    }
-    add_dir(zip, options, &dir, prefix)?;
-    Ok(())
-}
-
-fn add_dir(
-    zip: &mut ZipWriter<File>,
-    options: SimpleFileOptions,
-    dir: &Path,
-    prefix: &str,
-) -> Result<()> {
-    let mut entries: Vec<_> = fs::read_dir(dir)?.collect();
-    entries.sort_by_key(|entry| {
-        entry
-            .as_ref()
-            .map(|value| value.file_name())
-            .unwrap_or_default()
-    });
-    for entry in entries {
-        let entry = entry?;
-        let name = entry.file_name();
-        let name = name.to_string_lossy();
-        if name == ".DS_Store" || name.starts_with("._") || name.ends_with(".bak") {
-            continue;
-        }
-        let rel = format!("{prefix}/{name}");
-        check_pack_path(&rel)?;
-        let path = entry.path();
-        let meta = fs::symlink_metadata(&path)?;
-        if meta.file_type().is_symlink() {
-            return Err(format!(
-                "refusing symbolic link in pack overrides: {}",
-                path.display()
-            )
-            .into());
-        }
-        if meta.is_dir() {
-            add_dir(zip, options, &path, &rel)?;
-        } else if meta.is_file() {
-            zip.start_file(&rel, options)?;
-            let mut input = File::open(&path)?;
-            let mut bytes = Vec::new();
-            input.read_to_end(&mut bytes)?;
-            zip.write_all(&bytes)?;
-        }
-    }
     Ok(())
 }
 
@@ -193,7 +133,7 @@ mod tests {
     #[test]
     fn index_omits_nothing_and_sorts() {
         let lock = Lockfile {
-            version: 1,
+            version: 2,
             pack: PackMeta {
                 name: "FOREVER WORLD".into(),
                 slug: "forever-world".into(),
@@ -206,7 +146,6 @@ mod tests {
             file: vec![
                 FileSpec {
                     id: "b".into(),
-                    provider: crate::spec::SourceProvider::Modrinth,
                     requested_version: "1.0.0".into(),
                     path: "mods/b.jar".into(),
                     file_size: 1,
@@ -220,7 +159,6 @@ mod tests {
                 },
                 FileSpec {
                     id: "a".into(),
-                    provider: crate::spec::SourceProvider::Modrinth,
                     requested_version: "1.0.0".into(),
                     path: "mods/a.jar".into(),
                     file_size: 1,

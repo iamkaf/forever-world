@@ -1,32 +1,23 @@
 use crate::{Error, Result};
 use serde::{Deserialize, Serialize};
-use std::path::{Component, Path};
+use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum SideRequirement {
     Required,
-    Optional,
     Unsupported,
 }
 
-impl SideRequirement {
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Self::Required => "required",
-            Self::Optional => "optional",
-            Self::Unsupported => "unsupported",
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct EnvSpec {
     pub client: SideRequirement,
     pub server: SideRequirement,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PackMeta {
     pub name: String,
     pub slug: String,
@@ -39,16 +30,13 @@ pub struct PackMeta {
 }
 
 fn default_group() -> String {
-    "com.iamkaf.modpacks".to_string()
+    "com.iamkaf.modpacks".into()
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct FileSpec {
-    #[serde(default)]
     pub id: String,
-    #[serde(default)]
-    pub provider: SourceProvider,
-    #[serde(default)]
     pub requested_version: String,
     pub path: String,
     pub file_size: u64,
@@ -60,36 +48,28 @@ pub struct FileSpec {
 
 impl FileSpec {
     pub fn validate(&self) -> Result<()> {
-        validate_locked_file(self, 2)
+        check_content_id(&self.id)?;
+        if self.requested_version.trim().is_empty() {
+            return Err(format!("{} has no requested_version", self.path).into());
+        }
+        check_pack_path(&self.path)?;
+        if self.downloads.len() != 1 || !self.downloads[0].starts_with("https://") {
+            return Err(format!("{} must have one HTTPS download", self.path).into());
+        }
+        if self.sha1.len() != 40 || self.sha512.len() != 128 {
+            return Err(format!("{} is missing a full sha1/sha512 pin", self.path).into());
+        }
+        Ok(())
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
-#[serde(rename_all = "lowercase")]
-pub enum SourceProvider {
-    Modrinth,
-    #[default]
-    Direct,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
-#[serde(rename_all = "lowercase")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ContentSide {
-    #[default]
     Both,
     Client,
-    Server,
 }
 
 impl ContentSide {
-    pub fn as_str(self) -> &'static str {
-        match self {
-            Self::Both => "both",
-            Self::Client => "client",
-            Self::Server => "server",
-        }
-    }
-
     pub fn env(self) -> EnvSpec {
         match self {
             Self::Both => EnvSpec {
@@ -99,10 +79,6 @@ impl ContentSide {
             Self::Client => EnvSpec {
                 client: SideRequirement::Required,
                 server: SideRequirement::Unsupported,
-            },
-            Self::Server => EnvSpec {
-                client: SideRequirement::Unsupported,
-                server: SideRequirement::Required,
             },
         }
     }
@@ -115,13 +91,6 @@ pub enum ContentKind {
 }
 
 impl ContentKind {
-    pub fn section(self) -> &'static str {
-        match self {
-            Self::Mod => "mods",
-            Self::Shader => "shaders",
-        }
-    }
-
     pub fn folder(self) -> &'static str {
         match self {
             Self::Mod => "mods",
@@ -130,266 +99,121 @@ impl ContentKind {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum ContentSource {
-    Modrinth {
-        modrinth: String,
-        version: String,
-    },
-    Direct {
-        id: String,
-        version: String,
-        filename: String,
-        url: String,
-    },
-}
-
-impl ContentSource {
-    pub fn id(&self) -> &str {
-        match self {
-            Self::Modrinth { modrinth, .. } => modrinth,
-            Self::Direct { id, .. } => id,
-        }
-    }
-
-    pub fn version(&self) -> &str {
-        match self {
-            Self::Modrinth { version, .. } | Self::Direct { version, .. } => version,
-        }
-    }
-
-    pub fn provider(&self) -> SourceProvider {
-        match self {
-            Self::Modrinth { .. } => SourceProvider::Modrinth,
-            Self::Direct { .. } => SourceProvider::Direct,
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ContentSpec {
-    #[serde(default)]
+    pub id: String,
+    pub version: String,
+    pub kind: ContentKind,
     pub side: ContentSide,
-    #[serde(flatten)]
-    pub source: ContentSource,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PackSpec {
     pub format: u32,
     pub pack: PackMeta,
-    #[serde(default, rename = "mod")]
-    pub mods: Vec<ContentSpec>,
+    content: Vec<ContentSpec>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PackDocument {
+    format: u32,
+    pack: PackMeta,
     #[serde(default)]
-    pub shader: Vec<ContentSpec>,
+    mods: BTreeMap<String, String>,
+    #[serde(default)]
+    client_mods: BTreeMap<String, String>,
+    #[serde(default)]
+    shaders: BTreeMap<String, String>,
+    #[serde(default, rename = "publish")]
+    _publish: Option<toml::Value>,
 }
 
 impl PackSpec {
     pub fn parse(text: &str) -> Result<Self> {
-        let value: toml::Value =
+        let document: PackDocument =
             toml::from_str(text).map_err(|error| Error::from(format!("pack.toml: {error}")))?;
-        validate_source_keys(&value)?;
-        let mut legacy_value = value.clone();
-        let mods = legacy_value
-            .as_table_mut()
-            .and_then(|root| root.remove("mods"));
-        let client_mods = legacy_value
-            .as_table_mut()
-            .and_then(|root| root.remove("client_mods"));
-        let shaders = legacy_value
-            .as_table_mut()
-            .and_then(|root| root.remove("shaders"));
-        let mut spec: Self = legacy_value
-            .try_into()
-            .map_err(|error| Error::from(format!("pack.toml: {error}")))?;
-        append_map_entries(&mut spec.mods, mods, ContentSide::Both, ContentKind::Mod)?;
-        append_map_entries(
-            &mut spec.mods,
-            client_mods,
-            ContentSide::Client,
+        let mut content = Vec::with_capacity(
+            document.mods.len() + document.client_mods.len() + document.shaders.len(),
+        );
+        append_content(
+            &mut content,
+            document.mods,
             ContentKind::Mod,
-        )?;
-        append_map_entries(
-            &mut spec.shader,
-            shaders,
+            ContentSide::Both,
+        );
+        append_content(
+            &mut content,
+            document.client_mods,
+            ContentKind::Mod,
             ContentSide::Client,
+        );
+        append_content(
+            &mut content,
+            document.shaders,
             ContentKind::Shader,
-        )?;
+            ContentSide::Client,
+        );
+        let spec = Self {
+            format: document.format,
+            pack: document.pack,
+            content,
+        };
         spec.validate()?;
         Ok(spec)
     }
 
-    pub fn validate(&self) -> Result<()> {
+    fn validate(&self) -> Result<()> {
         if self.format != 1 {
             return Err(format!("unsupported pack.toml format {}", self.format).into());
         }
         validate_pack_meta(&self.pack)?;
-        if self.mods.is_empty() && self.shader.is_empty() {
+        if self.content.is_empty() {
             return Err("pack.toml has no mods or shaders".into());
         }
-        let mut seen = std::collections::BTreeSet::new();
-        for (kind, content) in self.content() {
-            let id = content.source.id();
-            check_content_id(id)?;
-            if content.source.version().trim().is_empty() {
-                return Err(format!("{id} version is required").into());
+        let mut ids = BTreeSet::new();
+        for content in &self.content {
+            check_content_id(&content.id)?;
+            if content.version.trim().is_empty() {
+                return Err(format!("{} version is required", content.id).into());
             }
-            if !seen.insert(id) {
-                return Err(format!("duplicate content ID {id}").into());
-            }
-            if let ContentSource::Direct { filename, url, .. } = &content.source {
-                check_pack_path(&format!("{}/{filename}", kind.folder()))?;
-                if !(url.starts_with("https://") || url.starts_with("file:")) {
-                    return Err(format!("{id} direct URL is not https or file: {url}").into());
-                }
+            if !ids.insert(content.id.as_str()) {
+                return Err(format!("duplicate content ID {}", content.id).into());
             }
         }
         Ok(())
     }
 
-    pub fn content(&self) -> impl Iterator<Item = (ContentKind, &ContentSpec)> {
-        self.mods
-            .iter()
-            .map(|content| (ContentKind::Mod, content))
-            .chain(
-                self.shader
-                    .iter()
-                    .map(|content| (ContentKind::Shader, content)),
-            )
+    pub fn content(&self) -> impl Iterator<Item = &ContentSpec> {
+        self.content.iter()
     }
 
     pub fn content_count(&self) -> usize {
-        self.mods.len() + self.shader.len()
+        self.content.len()
     }
 }
 
-fn validate_source_keys(value: &toml::Value) -> Result<()> {
-    let root = value
-        .as_table()
-        .ok_or_else(|| Error::from("pack.toml must contain a TOML table"))?;
-    reject_unknown_keys(
-        root,
-        &[
-            "format",
-            "pack",
-            "mod",
-            "shader",
-            "mods",
-            "client_mods",
-            "shaders",
-            "publish",
-        ],
-        "pack.toml",
-    )?;
-    if let Some(pack) = root.get("pack").and_then(toml::Value::as_table) {
-        reject_unknown_keys(
-            pack,
-            &[
-                "name",
-                "slug",
-                "version",
-                "group",
-                "minecraft",
-                "loader",
-                "loader_version",
-            ],
-            "pack.toml [pack]",
-        )?;
-    }
-    for section in ["mod", "shader"] {
-        let Some(entries) = root.get(section).and_then(toml::Value::as_array) else {
-            continue;
-        };
-        for (index, entry) in entries.iter().enumerate() {
-            let Some(table) = entry.as_table() else {
-                continue;
-            };
-            let allowed = if table.contains_key("modrinth") {
-                &["modrinth", "version", "side"][..]
-            } else {
-                &["id", "version", "filename", "url", "side"][..]
-            };
-            reject_unknown_keys(
-                table,
-                allowed,
-                &format!("pack.toml [[{section}]] entry {}", index + 1),
-            )?;
-        }
-    }
-    for section in ["mods", "client_mods", "shaders"] {
-        let Some(entries) = root.get(section).and_then(toml::Value::as_table) else {
-            continue;
-        };
-        for (id, version) in entries {
-            check_content_id(id)?;
-            if !version.is_str() {
-                return Err(
-                    format!("pack.toml [{section}] `{id}` must be a version string").into(),
-                );
-            }
-        }
-    }
-    Ok(())
-}
-
-fn append_map_entries(
-    destination: &mut Vec<ContentSpec>,
-    value: Option<toml::Value>,
-    side: ContentSide,
+fn append_content(
+    content: &mut Vec<ContentSpec>,
+    entries: BTreeMap<String, String>,
     kind: ContentKind,
-) -> Result<()> {
-    let Some(table) = value else {
-        return Ok(());
-    };
-    let Some(table) = table.as_table() else {
-        return Err(format!("pack.toml [{}] must be a table", kind.section()).into());
-    };
-    for (id, version) in table {
-        let version = version.as_str().ok_or_else(|| {
-            format!(
-                "pack.toml [{}] `{id}` must be a version string",
-                kind.section()
-            )
-        })?;
-        destination.push(ContentSpec {
-            side,
-            source: ContentSource::Modrinth {
-                modrinth: id.clone(),
-                version: version.to_string(),
-            },
-        });
-    }
-    Ok(())
-}
-
-fn reject_unknown_keys(
-    table: &toml::map::Map<String, toml::Value>,
-    allowed: &[&str],
-    path: &str,
-) -> Result<()> {
-    if let Some(key) = table.keys().find(|key| !allowed.contains(&key.as_str())) {
-        return Err(format!("{path} has unknown key `{key}`").into());
-    }
-    Ok(())
+    side: ContentSide,
+) {
+    content.extend(entries.into_iter().map(|(id, version)| ContentSpec {
+        id,
+        version,
+        kind,
+        side,
+    }));
 }
 
 fn validate_pack_meta(pack: &PackMeta) -> Result<()> {
     if pack.name.trim().is_empty() {
         return Err("pack.name is required".into());
     }
-    if pack.slug.trim().is_empty() {
-        return Err("pack.slug is required".into());
-    }
-    check_coordinate_part("pack.slug", &pack.slug, false)?;
-    if pack.version.trim().is_empty() {
-        return Err("pack.version is required".into());
-    }
-    check_coordinate_part("pack.version", &pack.version, true)?;
-    if pack.group.trim().is_empty() {
-        return Err("pack.group is required".into());
-    }
-    check_coordinate_part("pack.group", &pack.group, true)?;
+    check_coordinate("pack.slug", &pack.slug, false)?;
+    check_coordinate("pack.version", &pack.version, true)?;
+    check_coordinate("pack.group", &pack.group, true)?;
     if pack.minecraft.trim().is_empty() {
         return Err("pack.minecraft is required".into());
     }
@@ -398,7 +222,7 @@ fn validate_pack_meta(pack: &PackMeta) -> Result<()> {
     }
     if pack.loader != "fabric" {
         return Err(format!(
-            "pack.loader `{}` is not supported yet; Forever World is Fabric-only",
+            "pack.loader `{}` is not supported; Forever World is Fabric-only",
             pack.loader
         )
         .into());
@@ -406,63 +230,16 @@ fn validate_pack_meta(pack: &PackMeta) -> Result<()> {
     Ok(())
 }
 
-fn check_coordinate_part(name: &str, value: &str, allow_dots: bool) -> Result<()> {
+fn check_coordinate(name: &str, value: &str, allow_dots: bool) -> Result<()> {
     let valid = !value.is_empty()
         && value.bytes().all(|byte| {
             byte.is_ascii_alphanumeric()
                 || matches!(byte, b'-' | b'_')
                 || (allow_dots && byte == b'.')
         })
-        && (!allow_dots
-            || value
-                .split('.')
-                .all(|component| !component.is_empty() && component != "." && component != ".."));
+        && (!allow_dots || value.split('.').all(|part| !part.is_empty()));
     if !valid {
-        return Err(format!(
-            "{name} `{value}` must use only ASCII letters, digits, `-`, `_`{}",
-            if allow_dots { " or separated `.`" } else { "" }
-        )
-        .into());
-    }
-    Ok(())
-}
-
-fn validate_locked_files(files: &[FileSpec], lock_version: u32) -> Result<()> {
-    if files.is_empty() {
-        return Err("pack.lock.toml has no [[file]] entries".into());
-    }
-    let mut seen = std::collections::BTreeSet::new();
-    let mut seen_ids = std::collections::BTreeSet::new();
-    for file in files {
-        validate_locked_file(file, lock_version)?;
-        if lock_version >= 2 && !seen_ids.insert(file.id.as_str()) {
-            return Err(format!("duplicate locked content ID {}", file.id).into());
-        }
-        if !seen.insert(file.path.clone()) {
-            return Err(format!("duplicate pack path {}", file.path).into());
-        }
-    }
-    Ok(())
-}
-
-fn validate_locked_file(file: &FileSpec, lock_version: u32) -> Result<()> {
-    check_pack_path(&file.path)?;
-    if lock_version >= 2 {
-        check_content_id(&file.id)?;
-        if file.requested_version.trim().is_empty() {
-            return Err(format!("{} has no requested_version", file.path).into());
-        }
-    }
-    if file.downloads.is_empty() {
-        return Err(format!("{} has no downloads", file.path).into());
-    }
-    for url in &file.downloads {
-        if !(url.starts_with("https://") || url.starts_with("file:")) {
-            return Err(format!("{} download is not https or file: {url}", file.path).into());
-        }
-    }
-    if file.sha1.len() != 40 || file.sha512.len() != 128 {
-        return Err(format!("{} is missing a full sha1/sha512 pin", file.path).into());
+        return Err(format!("invalid {name} `{value}`").into());
     }
     Ok(())
 }
@@ -473,21 +250,13 @@ fn check_content_id(id: &str) -> Result<()> {
             .bytes()
             .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.'))
     {
-        return Err(format!(
-            "content ID `{id}` must use only ASCII letters, digits, `-`, `_` or `.`"
-        )
-        .into());
+        return Err(format!("invalid content ID `{id}`").into());
     }
     Ok(())
 }
 
-impl PackMeta {
-    pub fn mrpack_name(&self) -> String {
-        format!("{}-{}.mrpack", self.slug, self.version)
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Lockfile {
     pub version: u32,
     pub pack: PackMeta,
@@ -497,6 +266,7 @@ pub struct Lockfile {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CurseForgeFile {
     pub path: String,
     pub sha1: String,
@@ -515,7 +285,7 @@ impl Lockfile {
     }
 
     pub fn retain_curseforge_from(&mut self, previous: &Self) {
-        let pins: std::collections::BTreeSet<_> = self
+        let pins: BTreeSet<_> = self
             .file
             .iter()
             .map(|file| (file.path.as_str(), file.sha1.as_str()))
@@ -531,17 +301,30 @@ impl Lockfile {
     pub fn parse(text: &str) -> Result<Self> {
         let lock: Self = toml::from_str(text)
             .map_err(|error| Error::from(format!("pack.lock.toml: {error}")))?;
-        if !matches!(lock.version, 1 | 2) {
+        if lock.version != 2 {
             return Err(format!("unsupported lock version {}", lock.version).into());
         }
         validate_pack_meta(&lock.pack)?;
-        validate_locked_files(&lock.file, lock.version)?;
-        let pins: std::collections::BTreeSet<_> = lock
+        if lock.file.is_empty() {
+            return Err("pack.lock.toml has no [[file]] entries".into());
+        }
+        let mut ids = BTreeSet::new();
+        let mut paths = BTreeSet::new();
+        for file in &lock.file {
+            file.validate()?;
+            if !ids.insert(file.id.as_str()) {
+                return Err(format!("duplicate locked content ID {}", file.id).into());
+            }
+            if !paths.insert(file.path.as_str()) {
+                return Err(format!("duplicate pack path {}", file.path).into());
+            }
+        }
+        let pins: BTreeSet<_> = lock
             .file
             .iter()
             .map(|file| (file.path.as_str(), file.sha1.as_str()))
             .collect();
-        let mut seen = std::collections::BTreeSet::new();
+        let mut mapped = BTreeSet::new();
         for file in &lock.curseforge {
             check_pack_path(&file.path)?;
             if file.project_id == 0 || file.file_id == 0 {
@@ -550,7 +333,7 @@ impl Lockfile {
             if !pins.contains(&(file.path.as_str(), file.sha1.as_str())) {
                 return Err(format!("{} has a stale CurseForge mapping", file.path).into());
             }
-            if !seen.insert(file.path.as_str()) {
+            if !mapped.insert(file.path.as_str()) {
                 return Err(format!("duplicate CurseForge mapping for {}", file.path).into());
             }
         }
@@ -563,42 +346,17 @@ impl Lockfile {
 }
 
 pub fn check_pack_path(path: &str) -> Result<()> {
-    if path.is_empty() {
-        return Err("pack path is empty".into());
-    }
-    if path.contains('\0') || path.contains('\\') {
-        return Err(format!("pack path `{path}` must be a slash-separated relative path").into());
-    }
-    if path.starts_with('/') {
-        return Err(format!("pack path `{path}` must not be absolute").into());
-    }
-    if path
-        .split('/')
-        .any(|component| component.is_empty() || component == "." || component == "..")
+    if path.is_empty()
+        || path.starts_with('/')
+        || path.contains('\\')
+        || path.contains('\0')
+        || path
+            .split('/')
+            .any(|part| part.is_empty() || part == "." || part == "..")
     {
-        return Err(format!("pack path `{path}` must not contain empty, `.` or `..` parts").into());
+        return Err(format!("invalid relative pack path `{path}`").into());
     }
-    let parsed = Path::new(path);
-    if parsed.is_absolute() {
-        return Err(format!("pack path `{path}` must not be absolute").into());
-    }
-    for component in parsed.components() {
-        match component {
-            Component::Normal(part) => {
-                if part.is_empty() {
-                    return Err(format!("pack path `{path}` has an empty component").into());
-                }
-            }
-            Component::CurDir | Component::ParentDir => {
-                return Err(format!("pack path `{path}` must not contain `.` or `..`").into());
-            }
-            _ => {
-                return Err(format!("pack path `{path}` is not a clean relative path").into());
-            }
-        }
-    }
-    let first = path.split('/').next().unwrap_or("");
-    if first == "world" {
+    if path.split('/').next() == Some("world") {
         return Err(format!("pack path `{path}` must not replace a server world").into());
     }
     Ok(())
@@ -619,31 +377,32 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn rejects_world_and_traversal() {
-        assert!(check_pack_path("world/level.dat").is_err());
-        assert!(check_pack_path("../mods/x.jar").is_err());
-        assert!(check_pack_path("/mods/x.jar").is_err());
-        assert!(check_pack_path("mods\\x.jar").is_err());
-        assert!(check_pack_path("mods//x.jar").is_err());
-        assert!(check_pack_path("mods/./x.jar").is_err());
-        assert!(check_pack_path("mods/x.jar/").is_err());
+    fn rejects_unsafe_pack_paths_and_coordinates() {
+        for path in [
+            "world/level.dat",
+            "../mods/x.jar",
+            "/mods/x.jar",
+            "mods\\x.jar",
+            "mods//x.jar",
+            "mods/./x.jar",
+            "mods/x.jar/",
+        ] {
+            assert!(check_pack_path(path).is_err(), "accepted {path}");
+        }
         assert!(check_pack_path("mods/sodium.jar").is_ok());
+        assert!(check_coordinate("pack.slug", "forever-world", false).is_ok());
+        assert!(check_coordinate("pack.version", "1.2.0", true).is_ok());
+        assert!(check_coordinate("pack.group", "com.iamkaf.modpacks", true).is_ok());
+        assert!(check_coordinate("pack.slug", "../elsewhere", false).is_err());
+        assert!(check_coordinate("pack.version", "../1.2.0", true).is_err());
+        assert!(check_coordinate("pack.group", "com..modpacks", true).is_err());
     }
 
     #[test]
-    fn pack_coordinates_cannot_escape_distribution_paths() {
-        assert!(check_coordinate_part("pack.slug", "forever-world", false).is_ok());
-        assert!(check_coordinate_part("pack.version", "1.2.0", true).is_ok());
-        assert!(check_coordinate_part("pack.group", "com.iamkaf.modpacks", true).is_ok());
-        assert!(check_coordinate_part("pack.slug", "../elsewhere", false).is_err());
-        assert!(check_coordinate_part("pack.version", "../1.2.0", true).is_err());
-        assert!(check_coordinate_part("pack.group", "com..modpacks", true).is_err());
-    }
-
-    #[test]
-    fn source_config_rejects_unknown_content_keys() {
-        let text = r#"
+    fn source_config_rejects_unknown_or_structured_content() {
+        let unknown = r#"
 format = 1
+sdie = "client"
 
 [pack]
 name = "Example"
@@ -653,73 +412,42 @@ minecraft = "26.2"
 loader = "fabric"
 loader_version = "0.19.3"
 
-[[mod]]
-modrinth = "sodium"
-version = "mc26.2-0.9.1-fabric"
-sdie = "client"
+[mods]
+sodium = "1"
 "#;
-        let error = PackSpec::parse(text)
-            .expect_err("unknown source key")
-            .to_string();
-        assert!(error.contains("unknown key `sdie`"));
+        assert!(PackSpec::parse(unknown).is_err());
+
+        let structured = unknown.replace("sdie = \"client\"\n", "").replace(
+            "sodium = \"1\"",
+            "sodium = { version = \"1\", provider = \"direct\" }",
+        );
+        assert!(PackSpec::parse(&structured).is_err());
     }
 
     #[test]
-    fn lockfiles_receive_full_spec_validation() {
-        let lock = Lockfile {
-            version: 1,
-            pack: PackMeta {
-                name: "FOREVER WORLD".into(),
-                slug: "forever-world".into(),
-                version: "1.1.1".into(),
-                group: "com.iamkaf.modpacks".into(),
-                minecraft: "26.2".into(),
-                loader: "fabric".into(),
-                loader_version: "0.19.3".into(),
-            },
-            file: vec![FileSpec {
-                id: "world".into(),
-                provider: SourceProvider::Direct,
-                requested_version: "1.0.0".into(),
-                path: "world/level.dat".into(),
-                file_size: 1,
-                sha1: "a".repeat(40),
-                sha512: "b".repeat(128),
-                env: EnvSpec {
-                    client: SideRequirement::Required,
-                    server: SideRequirement::Required,
-                },
-                downloads: vec!["https://example.invalid/level.dat".into()],
-            }],
-            curseforge: Vec::new(),
-        };
-        let text = lock.to_toml().expect("lock TOML");
-        assert!(Lockfile::parse(&text).is_err());
-    }
-
-    #[test]
-    fn parses_current_pack() {
+    fn parses_current_pack_and_lock() {
         let root = PackRoot {
             path: PathBuf::from(env!("CARGO_MANIFEST_DIR")),
         };
         let spec = load_spec(&root).expect("pack.toml");
         assert_eq!(spec.pack.version, "1.2.0");
         assert_eq!(spec.pack.minecraft, "26.2");
-        assert_eq!(spec.pack.loader_version, "0.19.3");
         assert_eq!(spec.content_count(), 48);
         let sodium = spec
             .content()
-            .map(|(_, content)| content)
-            .find(|content| content.source.id() == "sodium")
+            .find(|content| content.id == "sodium")
             .expect("sodium");
         assert_eq!(sodium.side, ContentSide::Client);
         let amber = spec
             .content()
-            .map(|(_, content)| content)
-            .find(|content| content.source.id() == "amber")
+            .find(|content| content.id == "amber")
             .expect("amber");
         assert_eq!(amber.side, ContentSide::Both);
-        assert_eq!(spec.shader.len(), 1);
-        assert_eq!(spec.shader[0].side, ContentSide::Client);
+        assert_eq!(
+            spec.content()
+                .filter(|content| content.kind == ContentKind::Shader)
+                .count(),
+            1
+        );
     }
 }

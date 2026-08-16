@@ -102,8 +102,14 @@ fn put_if_needed(
     username: &str,
     password: &str,
 ) -> Result<()> {
-    let bytes = super::artifact_bytes(artifact)?;
-    put_bytes_if_needed(client, url, &bytes, &artifact.sha512, username, password)
+    put_bytes_if_needed(
+        client,
+        url,
+        &artifact.bytes,
+        &artifact.sha512,
+        username,
+        password,
+    )
 }
 
 fn put_bytes_if_needed(
@@ -143,17 +149,14 @@ fn put_bytes_if_needed(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
 
     #[test]
     fn maven_sidecars_are_raw_digests() {
         let artifact = super::super::Artifact {
             name: "pack.mrpack".into(),
-            path: PathBuf::new(),
-            checksum: PathBuf::new(),
             kind: ArtifactKind::Modrinth,
-            bytes: 0,
             sha512: "a".repeat(128),
+            bytes: Vec::new(),
         };
         assert_eq!(checksum_bytes(&artifact), "a".repeat(128).into_bytes());
     }

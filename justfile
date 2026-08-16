@@ -1,7 +1,5 @@
 set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 
-pack := "cargo run --quiet --"
-
 default:
     @just --list
 
@@ -18,21 +16,3 @@ check:
 
 fmt:
     cargo fmt
-
-install:
-    {{pack}} install
-
-run-client: install
-    {{pack}} run client
-
-run-server: install
-    {{pack}} run server
-
-# Dedicated server plus client, with TeaKit layered as a test extra.
-run-pair: install
-    {{pack}} run pair
-
-publish-dry: install
-    {{pack}} publish --dry-run
-
-pair: run-pair

@@ -11,7 +11,6 @@ loader_version = "0.19.3"
 
 [[file]]
 id = "ambientsounds"
-provider = "modrinth"
 requested_version = "6.3.6"
 path = "mods/AmbientSounds_FABRIC_v6.3.6_mc26.2.jar"
 file_size = 84821411
@@ -25,7 +24,6 @@ server = "unsupported"
 
 [[file]]
 id = "controlling"
-provider = "modrinth"
 requested_version = "26.2.2"
 path = "mods/Controlling-fabric-26.2-26.2.2.jar"
 file_size = 85784
@@ -39,7 +37,6 @@ server = "unsupported"
 
 [[file]]
 id = "creativecore"
-provider = "modrinth"
 requested_version = "2.14.16"
 path = "mods/CreativeCore_FABRIC_v2.14.16_mc26.2.jar"
 file_size = 1396350
@@ -53,7 +50,6 @@ server = "required"
 
 [[file]]
 id = "cut-through"
-provider = "modrinth"
 requested_version = "26.2.0"
 path = "mods/CutThrough-v26.2.0-mc26.2.x-Fabric.jar"
 file_size = 26127
@@ -67,7 +63,6 @@ server = "unsupported"
 
 [[file]]
 id = "forge-config-api-port"
-provider = "modrinth"
 requested_version = "26.2.1"
 path = "mods/ForgeConfigAPIPort-v26.2.1-mc26.2.x-Fabric.jar"
 file_size = 609550
@@ -81,7 +76,6 @@ server = "required"
 
 [[file]]
 id = "immediatelyfast"
-provider = "modrinth"
 requested_version = "1.16.1+26.2-fabric"
 path = "mods/ImmediatelyFast-Fabric-1.16.1+26.2.jar"
 file_size = 90736
@@ -95,7 +89,6 @@ server = "unsupported"
 
 [[file]]
 id = "mouse-tweaks"
-provider = "modrinth"
 requested_version = "26.2-2.31-fabric"
 path = "mods/MouseTweaks-fabric-mc26.2-2.31.jar"
 file_size = 75872
@@ -109,7 +102,6 @@ server = "unsupported"
 
 [[file]]
 id = "particle-effects"
-provider = "modrinth"
 requested_version = "1.5.0+26.2+fabric"
 path = "mods/ParticleEffects-1.5.0+26.2+fabric.jar"
 file_size = 318481
@@ -123,7 +115,6 @@ server = "unsupported"
 
 [[file]]
 id = "presence-footsteps"
-provider = "modrinth"
 requested_version = "1.13.3+26.2"
 path = "mods/PresenceFootsteps-1.13.3+26.2.jar"
 file_size = 5749193
@@ -137,7 +128,6 @@ server = "unsupported"
 
 [[file]]
 id = "puzzles-lib"
-provider = "modrinth"
 requested_version = "26.2.0"
 path = "mods/PuzzlesLib-v26.2.0-mc26.2.x-Fabric.jar"
 file_size = 1142960
@@ -151,7 +141,6 @@ server = "required"
 
 [[file]]
 id = "searchables"
-provider = "modrinth"
 requested_version = "1.0.1"
 path = "mods/Searchables-fabric-26.2-1.0.1.jar"
 file_size = 78982
@@ -165,7 +154,6 @@ server = "unsupported"
 
 [[file]]
 id = "amber"
-provider = "modrinth"
 requested_version = "11.1.2+26.2"
 path = "mods/amber-fabric-11.1.2+26.2.jar"
 file_size = 295372
@@ -179,7 +167,6 @@ server = "required"
 
 [[file]]
 id = "appleskin"
-provider = "modrinth"
 requested_version = "3.0.10+mc26.2"
 path = "mods/appleskin-fabric-mc26.2-3.0.10.jar"
 file_size = 181627
@@ -193,7 +180,6 @@ server = "required"
 
 [[file]]
 id = "bobby"
-provider = "modrinth"
 requested_version = "5.2.14+mc26.2"
 path = "mods/bobby-5.2.14+mc26.2.jar"
 file_size = 867211
@@ -207,7 +193,6 @@ server = "unsupported"
 
 [[file]]
 id = "bonded"
-provider = "modrinth"
 requested_version = "4.1.0+26.2"
 path = "mods/bonded-fabric-4.1.0+26.2.jar"
 file_size = 441313
@@ -221,7 +206,6 @@ server = "required"
 
 [[file]]
 id = "c2me-fabric"
-provider = "modrinth"
 requested_version = "0.4.2-alpha.0.13+26.2"
 path = "mods/c2me-fabric-mc26.2-0.4.2-alpha.0.13.jar"
 file_size = 3779880
@@ -235,7 +219,6 @@ server = "required"
 
 [[file]]
 id = "chat-heads"
-provider = "modrinth"
 requested_version = "1.2.4"
 path = "mods/chat_heads-1.2.4-fabric-26.1.jar"
 file_size = 91940
@@ -249,7 +232,6 @@ server = "unsupported"
 
 [[file]]
 id = "cubes-without-borders"
-provider = "modrinth"
 requested_version = "4.1.0+26.2"
 path = "mods/cwb-4.1.0+26.2.jar"
 file_size = 91405
@@ -263,7 +245,6 @@ server = "unsupported"
 
 [[file]]
 id = "entityculling"
-provider = "modrinth"
 requested_version = "1.10.5"
 path = "mods/entityculling-fabric-1.10.5-mc26.2.jar"
 file_size = 1583775
@@ -277,7 +258,6 @@ server = "unsupported"
 
 [[file]]
 id = "fabric-api"
-provider = "modrinth"
 requested_version = "0.154.2+26.2"
 path = "mods/fabric-api-0.154.2+26.2.jar"
 file_size = 2523877
@@ -291,7 +271,6 @@ server = "required"
 
 [[file]]
 id = "fabric-language-kotlin"
-provider = "modrinth"
 requested_version = "1.13.12+kotlin.2.4.0"
 path = "mods/fabric-language-kotlin-1.13.12+kotlin.2.4.0.jar"
 file_size = 8076848
@@ -305,7 +284,6 @@ server = "required"
 
 [[file]]
 id = "ferrite-core"
-provider = "modrinth"
 requested_version = "9.0.0-fabric"
 path = "mods/ferritecore-9.0.0-fabric.jar"
 file_size = 72677
@@ -319,7 +297,6 @@ server = "required"
 
 [[file]]
 id = "gentlehurtcam"
-provider = "modrinth"
 requested_version = "2.1.0+26.2"
 path = "mods/gentlehurtcam-fabric-2.1.0+26.2.jar"
 file_size = 29523
@@ -333,7 +310,6 @@ server = "unsupported"
 
 [[file]]
 id = "happyghastimprovements"
-provider = "modrinth"
 requested_version = "2.1.0+26.2"
 path = "mods/happyghastimprovements-fabric-2.1.0+26.2.jar"
 file_size = 117213
@@ -347,7 +323,6 @@ server = "required"
 
 [[file]]
 id = "iris"
-provider = "modrinth"
 requested_version = "1.11.2+26.2-fabric"
 path = "mods/iris-fabric-1.11.2+mc26.2.jar"
 file_size = 2820763
@@ -361,7 +336,6 @@ server = "unsupported"
 
 [[file]]
 id = "jei"
-provider = "modrinth"
 requested_version = "30.9.0.57"
 path = "mods/jei-26.2-fabric-30.9.0.57.jar"
 file_size = 1656279
@@ -375,7 +349,6 @@ server = "required"
 
 [[file]]
 id = "kaf-hud"
-provider = "modrinth"
 requested_version = "6.1.0+26.2"
 path = "mods/kafhud-fabric-6.1.0+26.2.jar"
 file_size = 213319
@@ -389,7 +362,6 @@ server = "unsupported"
 
 [[file]]
 id = "kafs-valentine-special"
-provider = "modrinth"
 requested_version = "5.1.0+26.2"
 path = "mods/kafvalentine-fabric-5.1.0+26.2.jar"
 file_size = 199371
@@ -403,7 +375,6 @@ server = "required"
 
 [[file]]
 id = "konfig"
-provider = "modrinth"
 requested_version = "0.5.0+26.2"
 path = "mods/konfig-fabric-0.5.0+26.2.jar"
 file_size = 960566
@@ -417,7 +388,6 @@ server = "required"
 
 [[file]]
 id = "lambdynamiclights"
-provider = "modrinth"
 requested_version = "4.12.2+26.2"
 path = "mods/lambdynamiclights-4.12.2+26.2.jar"
 file_size = 1348440
@@ -431,7 +401,6 @@ server = "unsupported"
 
 [[file]]
 id = "libipn"
-provider = "modrinth"
 requested_version = "fabric-26.2-6.8.2"
 path = "mods/libIPN-fabric-26.2-6.8.2.jar"
 file_size = 630245
@@ -445,7 +414,6 @@ server = "unsupported"
 
 [[file]]
 id = "liteminer"
-provider = "modrinth"
 requested_version = "4.1.1+26.2"
 path = "mods/liteminer-fabric-4.1.1+26.2.jar"
 file_size = 128318
@@ -459,7 +427,6 @@ server = "required"
 
 [[file]]
 id = "lithium"
-provider = "modrinth"
 requested_version = "mc26.2-0.25.2-fabric"
 path = "mods/lithium-fabric-0.25.2+mc26.2.jar"
 file_size = 911988
@@ -473,7 +440,6 @@ server = "required"
 
 [[file]]
 id = "mochila"
-provider = "modrinth"
 requested_version = "6.1.0+26.2"
 path = "mods/mochila-fabric-6.1.0+26.2.jar"
 file_size = 208111
@@ -487,7 +453,6 @@ server = "required"
 
 [[file]]
 id = "modmenu"
-provider = "modrinth"
 requested_version = "20.0.1"
 path = "mods/modmenu-20.0.1.jar"
 file_size = 614002
@@ -501,7 +466,6 @@ server = "unsupported"
 
 [[file]]
 id = "mru"
-provider = "modrinth"
 requested_version = "1.0.30+26.2-fabric"
 path = "mods/mru-1.0.30+26.2-fabric.jar"
 file_size = 119741
@@ -515,7 +479,6 @@ server = "required"
 
 [[file]]
 id = "placeholder-api"
-provider = "modrinth"
 requested_version = "3.1.0-beta.1+26.2"
 path = "mods/placeholder-api-3.1.0-beta.1+26.2.jar"
 file_size = 254973
@@ -529,7 +492,6 @@ server = "required"
 
 [[file]]
 id = "rrls"
-provider = "modrinth"
 requested_version = "5.2.7+mc26.2"
 path = "mods/rrls-5.2.7+mc.26.2.jar"
 file_size = 117745
@@ -543,7 +505,6 @@ server = "unsupported"
 
 [[file]]
 id = "bl4cks-sit"
-provider = "modrinth"
 requested_version = "v1.5.1"
 path = "mods/sit-fabric-26.1.1-1.5.1.jar"
 file_size = 71100
@@ -557,7 +518,6 @@ server = "required"
 
 [[file]]
 id = "3dskinlayers"
-provider = "modrinth"
 requested_version = "1.11.2"
 path = "mods/skinlayers3d-fabric-1.11.2-mc26.2.jar"
 file_size = 1966389
@@ -571,7 +531,6 @@ server = "unsupported"
 
 [[file]]
 id = "snapshears"
-provider = "modrinth"
 requested_version = "5.1.0+26.2"
 path = "mods/snapshears-fabric-5.1.0+26.2.jar"
 file_size = 173161
@@ -585,7 +544,6 @@ server = "required"
 
 [[file]]
 id = "sodium"
-provider = "modrinth"
 requested_version = "mc26.2-0.9.1-fabric"
 path = "mods/sodium-fabric-0.9.1+mc26.2.jar"
 file_size = 1834384
@@ -599,7 +557,6 @@ server = "unsupported"
 
 [[file]]
 id = "sound-physics-remastered"
-provider = "modrinth"
 requested_version = "fabric-1.5.1+26.2"
 path = "mods/sound-physics-remastered-fabric-1.5.1+26.2.jar"
 file_size = 201669
@@ -613,7 +570,6 @@ server = "required"
 
 [[file]]
 id = "sound"
-provider = "modrinth"
 requested_version = "2.5.1+edge+26.2-fabric"
 path = "mods/sounds-2.5.1+edge+26.2-fabric.jar"
 file_size = 8140184
@@ -627,7 +583,6 @@ server = "unsupported"
 
 [[file]]
 id = "torch-toss"
-provider = "modrinth"
 requested_version = "5.1.0+26.2"
 path = "mods/torchtoss-fabric-5.1.0+26.2.jar"
 file_size = 207177
@@ -641,7 +596,6 @@ server = "required"
 
 [[file]]
 id = "yacl"
-provider = "modrinth"
 requested_version = "3.9.5+26.2-fabric"
 path = "mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar"
 file_size = 1121528
@@ -655,7 +609,6 @@ server = "required"
 
 [[file]]
 id = "zoomify"
-provider = "modrinth"
 requested_version = "2.16.1+26.2"
 path = "mods/zoomify-2.16.1+26.2.jar"
 file_size = 562176
@@ -669,7 +622,6 @@ server = "unsupported"
 
 [[file]]
 id = "complementary-unbound"
-provider = "modrinth"
 requested_version = "r5.7.1"
 path = "shaderpacks/ComplementaryUnbound_r5.7.1.zip"
 file_size = 522973

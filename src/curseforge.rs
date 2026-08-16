@@ -1,10 +1,10 @@
 use crate::fetch;
-use crate::spec::{CurseForgeFile, Lockfile, SideRequirement, check_pack_path, client_file};
-use crate::{PackRoot, Result, hash};
+use crate::spec::{CurseForgeFile, Lockfile, SideRequirement, client_file};
+use crate::{PackRoot, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::{self, File};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use zip::ZipWriter;
@@ -67,36 +67,27 @@ struct PackwizCurseForge {
     file_id: u32,
 }
 
-#[derive(Debug, PartialEq, Eq)]
-pub struct ResolveReport {
-    pub resolved: usize,
-    pub excluded: Vec<String>,
-    pub unresolved: Vec<String>,
-}
-
-pub fn resolution_is_complete(root: &PackRoot) -> Result<bool> {
+pub fn ensure_mappings(root: &PackRoot) -> Result<()> {
     let config = load_config(root)?;
-    let lock = crate::load_lock(root)?;
+    let mut lock = crate::load_lock(root)?;
     let excluded = validate_config(&config, &lock)?;
     let mapped: BTreeSet<_> = lock
         .curseforge
         .iter()
         .map(|file| (file.path.as_str(), file.sha1.as_str()))
         .collect();
-    Ok(lock
+    let complete = lock
         .file
         .iter()
         .filter(|file| client_file(file))
         .all(|file| {
             excluded.contains(&file.path)
                 || mapped.contains(&(file.path.as_str(), file.sha1.as_str()))
-        }))
-}
+        });
+    if complete {
+        return Ok(());
+    }
 
-pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
-    let config = load_config(root)?;
-    let mut lock = crate::load_lock(root)?;
-    let excluded = validate_config(&config, &lock)?;
     let packwiz = std::env::var_os("PACKWIZ_BIN").unwrap_or_else(|| "packwiz".into());
     let temp = tempfile::tempdir()?;
     initialise_packwiz(temp.path(), &lock)?;
@@ -156,7 +147,7 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
         .iter()
         .map(|file| file.path.as_str())
         .collect();
-    let unresolved = lock
+    let unresolved: Vec<_> = lock
         .file
         .iter()
         .filter(|file| {
@@ -167,11 +158,14 @@ pub fn resolve(root: &PackRoot) -> Result<ResolveReport> {
         .map(|file| file.path.clone())
         .collect();
     fs::write(root.lock_toml(), lock.to_toml()?)?;
-    Ok(ResolveReport {
-        resolved: lock.curseforge.len(),
-        excluded: excluded.into_iter().collect(),
-        unresolved,
-    })
+    if !unresolved.is_empty() {
+        return Err(format!(
+            "Packwiz could not map these CurseForge files: {}",
+            unresolved.join(", ")
+        )
+        .into());
+    }
+    Ok(())
 }
 
 fn validate_config(config: &Config, lock: &Lockfile) -> Result<BTreeSet<String>> {
@@ -431,7 +425,7 @@ fn manifest_from_lock(
             }],
         },
         manifest_type: "minecraftModpack".into(),
-        manifest_version: 1,
+        manifest_version: 2,
         name: lock.pack.name.clone(),
         version: lock.pack.version.clone(),
         author: author.into(),
@@ -451,18 +445,13 @@ pub fn export(root: &PackRoot) -> Result<PathBuf> {
     fs::create_dir_all(root.dist_dir())?;
     let destination = root.dist_dir().join(&name);
     write_archive(root, &destination, &manifest_bytes)?;
-    let digest = hash::sha512_hex(&fs::read(&destination)?);
-    fs::write(
-        destination.with_extension("zip.sha512"),
-        format!("{digest}  {name}\n"),
-    )?;
     Ok(destination)
 }
 
 fn write_archive(root: &PackRoot, destination: &Path, manifest: &[u8]) -> Result<()> {
     let mut entries = BTreeMap::new();
-    collect_overrides(root.overrides_dir(), "overrides", &mut entries)?;
-    collect_overrides(root.client_overrides_dir(), "overrides", &mut entries)?;
+    crate::archive::collect_tree(root.overrides_dir(), "overrides", &mut entries)?;
+    crate::archive::collect_tree(root.client_overrides_dir(), "overrides", &mut entries)?;
     let file = File::create(destination)?;
     let mut zip = ZipWriter::new(file);
     let options = SimpleFileOptions::default().compression_method(zip::CompressionMethod::Deflated);
@@ -473,60 +462,6 @@ fn write_archive(root: &PackRoot, destination: &Path, manifest: &[u8]) -> Result
         zip.write_all(&bytes)?;
     }
     zip.finish()?;
-    Ok(())
-}
-
-fn collect_overrides(
-    dir: PathBuf,
-    prefix: &str,
-    output: &mut BTreeMap<String, Vec<u8>>,
-) -> Result<()> {
-    if !dir.is_dir() {
-        return Ok(());
-    }
-    collect_override_dir(&dir, prefix, output)
-}
-
-fn collect_override_dir(
-    dir: &Path,
-    prefix: &str,
-    output: &mut BTreeMap<String, Vec<u8>>,
-) -> Result<()> {
-    let mut entries: Vec<_> = fs::read_dir(dir)?.collect();
-    entries.sort_by_key(|entry| {
-        entry
-            .as_ref()
-            .map(|entry| entry.file_name())
-            .unwrap_or_default()
-    });
-    for entry in entries {
-        let entry = entry?;
-        let name = entry.file_name();
-        let name = name.to_string_lossy();
-        if name == ".DS_Store" || name.starts_with("._") || name.ends_with(".bak") {
-            continue;
-        }
-        let archive_path = format!("{prefix}/{name}");
-        check_pack_path(&archive_path)?;
-        let path = entry.path();
-        let metadata = fs::symlink_metadata(&path)?;
-        if metadata.file_type().is_symlink() {
-            return Err(format!(
-                "refusing symbolic link in pack overrides: {}",
-                path.display()
-            )
-            .into());
-        }
-        if metadata.is_dir() {
-            collect_override_dir(&path, &archive_path, output)?;
-        } else if metadata.is_file() {
-            let mut bytes = Vec::new();
-            File::open(&path)?.read_to_end(&mut bytes)?;
-            if output.insert(archive_path.clone(), bytes).is_some() {
-                return Err(format!("duplicate CurseForge override {archive_path}").into());
-            }
-        }
-    }
     Ok(())
 }
 
@@ -551,7 +486,6 @@ mod tests {
     fn lock(mapped: bool) -> Lockfile {
         let file = FileSpec {
             id: "example".into(),
-            provider: crate::spec::SourceProvider::Direct,
             requested_version: "1.0.0".into(),
             path: "mods/example.jar".into(),
             file_size: 1,
@@ -564,7 +498,7 @@ mod tests {
             downloads: vec!["https://example.invalid/example.jar".into()],
         };
         Lockfile {
-            version: 1,
+            version: 2,
             pack: PackMeta {
                 name: "FOREVER WORLD".into(),
                 slug: "forever-world".into(),

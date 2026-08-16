@@ -104,31 +104,14 @@ fn parse_add_args(
     let mut query = None;
     let mut version = None;
     let mut options = authoring::AddOptions::default();
-    let mut requested_kind = None;
-    let mut requested_side = None;
     let mut index = 0;
     while index < args.len() {
         match args[index].as_str() {
-            "--client" => select_option(
-                &mut requested_side,
-                forever_world::spec::ContentSide::Client,
-                "--client and --server cannot be used together",
-            )?,
-            "--server" => select_option(
-                &mut requested_side,
-                forever_world::spec::ContentSide::Server,
-                "--client and --server cannot be used together",
-            )?,
-            "--shader" => select_option(
-                &mut requested_kind,
-                forever_world::spec::ContentKind::Shader,
-                "--shader and --mod cannot be used together",
-            )?,
-            "--mod" => select_option(
-                &mut requested_kind,
-                forever_world::spec::ContentKind::Mod,
-                "--shader and --mod cannot be used together",
-            )?,
+            "--client" => options.side = Some(forever_world::spec::ContentSide::Client),
+            "--shader" => {
+                options.kind = forever_world::spec::ContentKind::Shader;
+                options.side = Some(forever_world::spec::ContentSide::Client);
+            }
             "--version" => {
                 index += 1;
                 version = Some(args.get(index).ok_or("--version requires a value")?.clone());
@@ -153,26 +136,9 @@ fn parse_add_args(
         }
         index += 1;
     }
-    let query = query
-        .ok_or("usage: pack add <project> [--version <version>] [--client|--server|--shader]")?;
-    options.kind = requested_kind.unwrap_or(options.kind);
-    options.side = requested_side;
-    if options.kind == forever_world::spec::ContentKind::Shader {
-        options.side = Some(forever_world::spec::ContentSide::Client);
-    }
+    let query =
+        query.ok_or("usage: pack add <project> [--version <version>] [--client|--shader]")?;
     Ok((query, version, options))
-}
-
-fn select_option<T: Copy + PartialEq>(
-    slot: &mut Option<T>,
-    value: T,
-    error: &str,
-) -> forever_world::Result<()> {
-    if slot.is_some_and(|selected| selected != value) {
-        return Err(error.into());
-    }
-    *slot = Some(value);
-    Ok(())
 }
 
 fn print_help() {
@@ -211,11 +177,5 @@ mod tests {
             publish::PublishMode::Publish
         );
         assert!(parse_publish_mode(&args(&["--dry-rnu"])).is_err());
-    }
-
-    #[test]
-    fn add_rejects_conflicting_content_options() {
-        assert!(parse_add_args(&args(&["sodium", "--client", "--server"])).is_err());
-        assert!(parse_add_args(&args(&["sodium", "--mod", "--shader"])).is_err());
     }
 }

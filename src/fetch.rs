@@ -16,16 +16,28 @@ pub fn cached_file(root: &PackRoot, file: &FileSpec) -> PathBuf {
         .join(name)
 }
 
-pub fn ensure_cached(root: &PackRoot, file: &FileSpec) -> Result<PathBuf> {
-    check_pack_path(&file.path)?;
-    let dest = cached_file(root, file);
-    if dest.is_file() {
-        let bytes = fs::read(&dest)?;
-        verify_bytes(file, &bytes)?;
-        return Ok(dest);
+pub fn ensure_all(root: &PackRoot, files: &[FileSpec]) -> Result<()> {
+    let mut client = None;
+    for file in files {
+        check_pack_path(&file.path)?;
+        let dest = cached_file(root, file);
+        if dest.is_file() {
+            verify_bytes(file, &fs::read(dest)?)?;
+            continue;
+        }
+        let client = match &client {
+            Some(client) => client,
+            None => client.insert(http_client()?),
+        };
+        let bytes = download(client, file)?;
+        cache_bytes(root, file, &bytes)?;
     }
-    let bytes = download_first(file)?;
-    cache_bytes(root, file, &bytes)
+    Ok(())
+}
+
+pub fn ensure_cached(root: &PackRoot, file: &FileSpec) -> Result<PathBuf> {
+    ensure_all(root, std::slice::from_ref(file))?;
+    Ok(cached_file(root, file))
 }
 
 pub fn check_cached(root: &PackRoot, file: &FileSpec) -> Result<PathBuf> {
@@ -43,7 +55,7 @@ pub fn check_cached(root: &PackRoot, file: &FileSpec) -> Result<PathBuf> {
     Ok(path)
 }
 
-pub(crate) fn cache_bytes(root: &PackRoot, file: &FileSpec, bytes: &[u8]) -> Result<PathBuf> {
+fn cache_bytes(root: &PackRoot, file: &FileSpec, bytes: &[u8]) -> Result<PathBuf> {
     verify_bytes(file, bytes)?;
     let dest = cached_file(root, file);
     if let Some(parent) = dest.parent() {
@@ -58,31 +70,19 @@ pub(crate) fn cache_bytes(root: &PackRoot, file: &FileSpec, bytes: &[u8]) -> Res
     Ok(dest)
 }
 
-fn download_first(file: &FileSpec) -> Result<Vec<u8>> {
-    let mut last_error = None;
-    for url in &file.downloads {
-        match download(url) {
-            Ok(bytes) => match verify_bytes(file, &bytes) {
-                Ok(()) => return Ok(bytes),
-                Err(error) => last_error = Some(error),
-            },
-            Err(error) => last_error = Some(error),
-        }
-    }
-    Err(last_error.unwrap_or_else(|| format!("{} had no usable download", file.path).into()))
-}
-
-pub(crate) fn download(url: &str) -> Result<Vec<u8>> {
-    if let Some(path) = url.strip_prefix("file:") {
-        let path = path.trim_start_matches("//");
-        return Ok(fs::read(path)?);
-    }
-    let client = reqwest::blocking::Client::builder()
-        .user_agent(USER_AGENT)
-        .timeout(Duration::from_secs(180))
-        .build()?;
+fn download(client: &reqwest::blocking::Client, file: &FileSpec) -> Result<Vec<u8>> {
+    let [url] = file.downloads.as_slice() else {
+        return Err(format!("{} must have one download", file.path).into());
+    };
     let response = client.get(url).send()?.error_for_status()?;
     Ok(response.bytes()?.to_vec())
+}
+
+fn http_client() -> Result<reqwest::blocking::Client> {
+    Ok(reqwest::blocking::Client::builder()
+        .user_agent(USER_AGENT)
+        .timeout(Duration::from_secs(180))
+        .build()?)
 }
 
 fn verify_bytes(file: &FileSpec, bytes: &[u8]) -> Result<()> {
@@ -104,38 +104,4 @@ fn verify_bytes(file: &FileSpec, bytes: &[u8]) -> Result<()> {
         return Err(format!("{} sha512 did not match pin {}", file.path, file.sha512).into());
     }
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::spec::{EnvSpec, SideRequirement};
-
-    #[test]
-    fn tries_the_next_mirror_after_invalid_bytes() {
-        let dir = tempfile::tempdir().expect("temporary directory");
-        let bad = dir.path().join("bad.jar");
-        let good = dir.path().join("good.jar");
-        fs::write(&bad, b"wrong").expect("bad mirror");
-        fs::write(&good, b"right").expect("good mirror");
-        let file = FileSpec {
-            id: "example".into(),
-            provider: crate::spec::SourceProvider::Direct,
-            requested_version: "1.0.0".into(),
-            path: "mods/example.jar".into(),
-            file_size: 5,
-            sha1: hash::sha1_hex(b"right"),
-            sha512: hash::sha512_hex(b"right"),
-            env: EnvSpec {
-                client: SideRequirement::Required,
-                server: SideRequirement::Required,
-            },
-            downloads: vec![
-                format!("file:{}", bad.display()),
-                format!("file:{}", good.display()),
-            ],
-        };
-
-        assert_eq!(download_first(&file).expect("valid mirror"), b"right");
-    }
 }

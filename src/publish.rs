@@ -16,73 +16,55 @@ mod modrinth_adapter;
 use crate::hash;
 use crate::spec::Lockfile;
 use crate::{PackRoot, Result, USER_AGENT};
-use serde::{Deserialize, Deserializer, Serialize, de};
+use serde::{Deserialize, Deserializer, de};
 use std::collections::BTreeSet;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::time::Duration;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PublishMode {
     DryRun,
     Publish,
 }
 
-#[derive(Debug, Clone, Deserialize, Default)]
+#[derive(Debug, Deserialize, Default)]
 #[serde(deny_unknown_fields)]
-pub struct PublishConfig {
+struct PublishConfig {
     #[serde(default)]
-    pub description: Option<String>,
+    changelog: Option<String>,
     #[serde(default)]
-    pub changelog: Option<String>,
-    #[serde(default)]
-    pub modrinth: Option<ModrinthConfig>,
+    modrinth: Option<ModrinthConfig>,
     #[serde(default, deserialize_with = "deserialize_curseforge")]
-    pub curseforge: Option<CurseForgeConfig>,
+    curseforge: Option<CurseForgeConfig>,
     #[serde(default)]
-    pub github: Option<GitHubConfig>,
+    github: Option<GitHubConfig>,
     #[serde(default)]
-    pub maven: Option<MavenConfig>,
+    maven: Option<MavenConfig>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct ModrinthConfig {
-    pub project: String,
-    #[serde(default = "default_release_type")]
-    pub release_type: String,
-    #[serde(default)]
-    pub loaders: Vec<String>,
-    #[serde(default)]
-    pub game_versions: Vec<String>,
+struct ModrinthConfig {
+    project: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct CurseForgeConfig {
-    pub project: u64,
-    #[serde(default)]
-    pub game_versions: Vec<String>,
+struct CurseForgeConfig {
+    project: u64,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct GitHubConfig {
-    pub repository: String,
-    #[serde(default)]
-    pub draft: bool,
-    #[serde(default)]
-    pub prerelease: bool,
+struct GitHubConfig {
+    repository: String,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct MavenConfig {
-    pub repository: String,
-}
-
-fn default_release_type() -> String {
-    "release".into()
+struct MavenConfig {
+    repository: String,
 }
 
 fn deserialize_curseforge<'de, D>(
@@ -104,43 +86,38 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "lowercase")]
-pub enum ArtifactKind {
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ArtifactKind {
     Modrinth,
     CurseForge,
     Maven,
     MavenMetadata,
-    Manifest,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct Artifact {
-    pub name: String,
-    pub path: PathBuf,
-    pub checksum: PathBuf,
-    pub kind: ArtifactKind,
-    pub bytes: u64,
-    pub sha512: String,
+#[derive(Debug, PartialEq, Eq)]
+struct Artifact {
+    name: String,
+    kind: ArtifactKind,
+    sha512: String,
+    bytes: Vec<u8>,
 }
 
-#[derive(Debug, Clone)]
-pub struct PreparedRelease {
-    pub lock: Lockfile,
-    pub config: PublishConfig,
-    pub artifacts: Vec<Artifact>,
-    pub manifest: PathBuf,
+#[derive(Debug)]
+struct PreparedRelease {
+    lock: Lockfile,
+    config: PublishConfig,
+    artifacts: Vec<Artifact>,
 }
 
 impl PreparedRelease {
-    pub fn artifact(&self, kind: ArtifactKind) -> Result<&Artifact> {
+    fn artifact(&self, kind: ArtifactKind) -> Result<&Artifact> {
         self.artifacts
             .iter()
             .find(|artifact| artifact.kind == kind)
             .ok_or_else(|| format!("prepared release is missing a {kind:?} artifact").into())
     }
 
-    pub fn changelog(&self, root: &PackRoot) -> Result<String> {
+    fn changelog(&self, root: &PackRoot) -> Result<String> {
         let relative = self.config.changelog.as_deref().unwrap_or("CHANGELOG.md");
         crate::spec::check_pack_path(relative)?;
         let path = root.path.join(relative);
@@ -150,28 +127,8 @@ impl PreparedRelease {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
-struct ReleaseManifest {
-    schema_version: u32,
-    name: String,
-    slug: String,
-    version: String,
-    minecraft: String,
-    loader: String,
-    loader_version: String,
-    artifacts: Vec<ManifestArtifact>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct ManifestArtifact {
-    name: String,
-    kind: ArtifactKind,
-    bytes: u64,
-    sha512: String,
-}
-
-/// Resolve all local release bytes and write the release manifest.
-pub fn prepare(root: &PackRoot, mode: PublishMode) -> Result<PreparedRelease> {
+/// Resolve every local release artifact once.
+fn prepare(root: &PackRoot, mode: PublishMode) -> Result<PreparedRelease> {
     let lock = crate::load_lock(root)?;
     let spec = crate::load_spec(root)?;
     if !crate::resolve::lock_matches_spec(&spec, &lock) {
@@ -201,7 +158,6 @@ pub fn prepare(root: &PackRoot, mode: PublishMode) -> Result<PreparedRelease> {
                 &lock.pack.slug,
                 &lock.pack.version,
                 &lock.pack.name,
-                config.description.as_deref(),
             ),
         )?;
         artifacts.push(artifact(&pom, ArtifactKind::Maven)?);
@@ -215,43 +171,16 @@ pub fn prepare(root: &PackRoot, mode: PublishMode) -> Result<PreparedRelease> {
     }
     artifacts.sort_by(|left, right| left.name.cmp(&right.name));
 
-    let manifest = root.dist_dir().join("release-manifest.json");
-    let manifest_data = ReleaseManifest {
-        schema_version: 1,
-        name: lock.pack.name.clone(),
-        slug: lock.pack.slug.clone(),
-        version: lock.pack.version.clone(),
-        minecraft: lock.pack.minecraft.clone(),
-        loader: lock.pack.loader.clone(),
-        loader_version: lock.pack.loader_version.clone(),
-        artifacts: artifacts
-            .iter()
-            .map(|artifact| ManifestArtifact {
-                name: artifact.name.clone(),
-                kind: artifact.kind,
-                bytes: artifact.bytes,
-                sha512: artifact.sha512.clone(),
-            })
-            .collect(),
-    };
-    let mut bytes = serde_json::to_vec_pretty(&manifest_data)?;
-    bytes.push(b'\n');
-    fs::write(&manifest, bytes)?;
-    write_checksum(&manifest)?;
-
-    let release = PreparedRelease {
+    Ok(PreparedRelease {
         lock,
         config,
         artifacts,
-        manifest,
-    };
-    crate::verify::verify_prepared_release(&release)?;
-    Ok(release)
+    })
 }
 
 /// Prepare once, then publish the same artifact bytes to every configured target.
 pub fn publish(root: &PackRoot, mode: PublishMode) -> Result<Vec<String>> {
-    let release = prepare(root, mode.clone())?;
+    let release = prepare(root, mode)?;
     let mut output = Vec::new();
     if release.config.modrinth.is_some() {
         output.extend(if mode == PublishMode::DryRun {
@@ -287,7 +216,7 @@ pub fn publish(root: &PackRoot, mode: PublishMode) -> Result<Vec<String>> {
     Ok(output)
 }
 
-pub(crate) fn load_config(root: &PackRoot) -> Result<PublishConfig> {
+fn load_config(root: &PackRoot) -> Result<PublishConfig> {
     let text = fs::read_to_string(root.pack_toml())?;
     let value: toml::Value =
         toml::from_str(&text).map_err(|error| crate::Error::from(format!("pack.toml: {error}")))?;
@@ -298,78 +227,45 @@ pub(crate) fn load_config(root: &PackRoot) -> Result<PublishConfig> {
         .clone()
         .try_into()
         .map_err(|error| crate::Error::from(format!("pack.toml [publish]: {error}")))?;
-    if let Some(modrinth) = &config.modrinth
-        && !matches!(modrinth.release_type.as_str(), "release" | "beta" | "alpha")
-    {
-        return Err(format!(
-            "publish.modrinth.release_type must be release, beta, or alpha, not `{}`",
-            modrinth.release_type
-        )
-        .into());
-    }
     Ok(config)
 }
 
-pub(crate) fn artifact(path: &Path, kind: ArtifactKind) -> Result<Artifact> {
-    let bytes = fs::metadata(path)?.len();
-    let data = fs::read(path)?;
+fn artifact(path: &Path, kind: ArtifactKind) -> Result<Artifact> {
+    let bytes = fs::read(path)?;
     let name = path
         .file_name()
         .and_then(|name| name.to_str())
         .ok_or_else(|| {
             crate::Error::from(format!("invalid artifact filename: {}", path.display()))
         })?;
-    Ok(Artifact {
+    let artifact = Artifact {
         name: name.into(),
-        path: path.to_path_buf(),
-        checksum: write_checksum(path)?,
         kind,
-        bytes,
-        sha512: hash::sha512_hex(&data),
-    })
-}
-
-pub(crate) fn artifact_checksum(artifact: &Artifact) -> Result<Artifact> {
-    let bytes = fs::read(&artifact.checksum)?;
-    let name = artifact
-        .checksum
-        .file_name()
-        .and_then(|name| name.to_str())
-        .ok_or_else(|| crate::Error::from("invalid checksum filename"))?;
-    Ok(Artifact {
-        name: name.into(),
-        path: artifact.checksum.clone(),
-        checksum: artifact.checksum.clone(),
-        kind: artifact.kind,
-        bytes: bytes.len() as u64,
         sha512: hash::sha512_hex(&bytes),
-    })
+        bytes,
+    };
+    fs::write(
+        path.with_file_name(format!("{}.sha512", artifact.name)),
+        checksum_bytes(&artifact),
+    )?;
+    Ok(artifact)
 }
 
-pub(crate) fn write_checksum(path: &Path) -> Result<PathBuf> {
-    let data = fs::read(path)?;
-    let checksum = path.with_file_name(format!(
-        "{}.sha512",
-        path.file_name()
-            .and_then(|name| name.to_str())
-            .ok_or_else(|| crate::Error::from("invalid artifact filename"))?
-    ));
-    let name = path
-        .file_name()
-        .and_then(|name| name.to_str())
-        .ok_or_else(|| crate::Error::from("invalid artifact filename"))?;
-    fs::write(&checksum, format!("{}  {name}\n", hash::sha512_hex(&data)))?;
-    Ok(checksum)
+fn artifact_checksum(artifact: &Artifact) -> Artifact {
+    let bytes = checksum_bytes(artifact);
+    Artifact {
+        name: format!("{}.sha512", artifact.name),
+        kind: artifact.kind,
+        sha512: hash::sha512_hex(&bytes),
+        bytes,
+    }
 }
 
-fn minimal_pom(
-    group: &str,
-    artifact: &str,
-    version: &str,
-    name: &str,
-    description: Option<&str>,
-) -> String {
-    let description = description.unwrap_or("Minecraft modpack (.mrpack)");
+fn checksum_bytes(artifact: &Artifact) -> Vec<u8> {
+    format!("{}  {}\n", artifact.sha512, artifact.name).into_bytes()
+}
+
+fn minimal_pom(group: &str, artifact: &str, version: &str, name: &str) -> String {
     format!(
         r#"<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -381,14 +277,13 @@ fn minimal_pom(
   <version>{}</version>
   <packaging>pom</packaging>
   <name>{}</name>
-  <description>{}</description>
+  <description>Minecraft modpack (.mrpack)</description>
 </project>
 "#,
         xml(group),
         xml(artifact),
         xml(version),
-        xml(name),
-        xml(description)
+        xml(name)
     )
 }
 
@@ -405,10 +300,6 @@ pub(crate) fn http_client() -> Result<reqwest::blocking::Client> {
         .user_agent(USER_AGENT)
         .timeout(Duration::from_secs(300))
         .build()?)
-}
-
-pub(crate) fn artifact_bytes(artifact: &Artifact) -> Result<Vec<u8>> {
-    Ok(fs::read(&artifact.path)?)
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -520,7 +411,7 @@ mod tests {
 
     #[test]
     fn pom_does_not_mention_the_server_launcher() {
-        let pom = minimal_pom("com.example", "pack", "1.0.0", "Pack", None);
+        let pom = minimal_pom("com.example", "pack", "1.0.0", "Pack");
         assert!(pom.contains("Minecraft modpack"));
         assert!(!pom.contains("Pastel"));
     }

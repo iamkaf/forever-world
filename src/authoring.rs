@@ -28,17 +28,14 @@ pub fn add(
     let spec = load_spec(root)?;
     if spec
         .content()
-        .any(|(_, content)| content.source.id().eq_ignore_ascii_case(query))
+        .any(|content| content.id.eq_ignore_ascii_case(query))
     {
         return Err(format!("{} is already in pack.toml", query.trim()).into());
     }
 
     let resolver = resolve::Resolver::new()?;
     let project = resolver.find_project(query)?;
-    if spec
-        .content()
-        .any(|(_, content)| content.source.id() == project)
-    {
+    if spec.content().any(|content| content.id == project) {
         return Err(format!("{project} is already in pack.toml").into());
     }
     let version = match requested_version {
@@ -61,27 +58,23 @@ pub fn remove(root: &PackRoot, query: &str) -> Result<()> {
     if !removed {
         return Err(format!("{query} is not in pack.toml").into());
     }
+    crate::spec::PackSpec::parse(&updated)?;
     fs::write(root.pack_toml(), updated)?;
     Ok(())
 }
 
 pub fn install(root: &PackRoot) -> Result<InstallReport> {
     let spec = load_spec(root)?;
-    let (lock, resolved) = match load_lock(root) {
-        Ok(lock) if resolve::lock_matches_spec(&spec, &lock) => (lock, false),
-        Ok(_) | Err(_) => (resolve::resolve_pack(root)?, true),
+    let lock = match load_lock(root) {
+        Ok(lock) if resolve::lock_matches_spec(&spec, &lock) => lock,
+        Ok(_) | Err(_) => resolve::resolve_pack(root)?,
     };
-    for file in &lock.file {
-        fetch::ensure_cached(root, file)?;
-    }
-    if !curseforge::resolution_is_complete(root)? {
-        curseforge::resolve(root)?;
-    }
+    fetch::ensure_all(root, &lock.file)?;
+    curseforge::ensure_mappings(root)?;
     let generated = overlay::overlay(root)?;
     Ok(InstallReport {
         files: lock.file.len(),
         generated,
-        resolved,
     })
 }
 
@@ -89,7 +82,6 @@ pub fn install(root: &PackRoot) -> Result<InstallReport> {
 pub struct InstallReport {
     pub files: usize,
     pub generated: std::path::PathBuf,
-    pub resolved: bool,
 }
 
 pub fn run(root: &PackRoot, target: RunTarget) -> Result<()> {
@@ -99,38 +91,52 @@ pub fn run(root: &PackRoot, target: RunTarget) -> Result<()> {
     }
     let generated = overlay::overlay(root)?;
     match target {
-        RunTarget::Client => modstage(root, &generated, "client", "forever-world-client"),
-        RunTarget::Server => modstage(root, &generated, "server", "forever-world-server"),
-        RunTarget::Pair => {
-            let node = format!("{}-{}", lock.pack.minecraft, lock.pack.loader);
-            let status = Command::new("./teakitw")
-                .args([
-                    "pair",
-                    "--node",
-                    &node,
-                    "--modstage-config",
-                    "generated/modstage.toml",
-                    "--modstage-instance",
-                    "forever-world-pair",
-                    "--test-file",
-                    "tests/teakit/startup.test.ts",
-                    "--timeout",
-                    "360",
-                    "--report",
-                    "build/teakit/startup.json",
-                ])
-                .current_dir(&root.path)
-                .stdin(Stdio::inherit())
-                .stdout(Stdio::inherit())
-                .stderr(Stdio::inherit())
-                .status()
-                .map_err(|error| format!("could not start TeaKit pair runner: {error}"))?;
-            if status.success() {
-                Ok(())
-            } else {
-                Err(format!("TeaKit pair runner exited with {status}").into())
-            }
-        }
+        RunTarget::Client => modstage(
+            root,
+            &generated,
+            "client",
+            &format!("{}-client", lock.pack.slug),
+        ),
+        RunTarget::Server => modstage(
+            root,
+            &generated,
+            "server",
+            &format!("{}-server", lock.pack.slug),
+        ),
+        RunTarget::Pair => teakit_pair(root, &lock),
+    }
+}
+
+fn teakit_pair(root: &PackRoot, lock: &crate::spec::Lockfile) -> Result<()> {
+    let node = format!("{}-{}", lock.pack.minecraft, lock.pack.loader);
+    let instance = format!("{}-pair", lock.pack.slug);
+    let status = Command::new("./teakitw")
+        .args([
+            "pair",
+            "--no-sync-sdk",
+            "--node",
+            &node,
+            "--modstage-config",
+            "generated/modstage.toml",
+            "--modstage-instance",
+            &instance,
+            "--test-file",
+            "tests/teakit/startup.test.ts",
+            "--timeout",
+            "360",
+            "--report",
+            "build/teakit/startup.json",
+        ])
+        .current_dir(&root.path)
+        .stdin(Stdio::inherit())
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .status()
+        .map_err(|error| format!("could not start TeaKit pair runner: {error}"))?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(format!("TeaKit pair runner exited with {status}").into())
     }
 }
 
@@ -208,6 +214,7 @@ fn append_modrinth(
         text.push_str(&header);
         text.push_str(&line);
     }
+    crate::spec::PackSpec::parse(&text)?;
     fs::write(root.pack_toml(), text)?;
     Ok(())
 }
@@ -240,37 +247,6 @@ fn remove_entry(text: &str, query: &str) -> Result<(String, bool)> {
         }
     }
 
-    // Accept the original array form while old worktrees migrate.
-    let lines: Vec<&str> = text.split_inclusive('\n').collect();
-    let mut ranges = Vec::new();
-    let mut start = None;
-    for (index, line) in lines.iter().enumerate() {
-        if (line.trim() == "[[mod]]" || line.trim() == "[[shader]]")
-            && let Some(begin) = start.replace(index)
-        {
-            ranges.push((begin, index));
-        }
-    }
-    if let Some(begin) = start {
-        ranges.push((begin, lines.len()));
-    }
-    for (begin, end) in ranges.iter().rev().copied() {
-        let block = lines[begin..end].concat();
-        let value: toml::Value = toml::from_str(&block)?;
-        let id = value
-            .get("mod")
-            .or_else(|| value.get("shader"))
-            .and_then(toml::Value::as_array)
-            .and_then(|entries| entries.first())
-            .and_then(toml::Value::as_table)
-            .and_then(|entry| entry.get("modrinth").or_else(|| entry.get("id")))
-            .and_then(toml::Value::as_str);
-        if id.is_some_and(|id| id.eq_ignore_ascii_case(query.trim())) {
-            let mut output = lines[..begin].concat();
-            output.push_str(&lines[end..].concat());
-            return Ok((output, true));
-        }
-    }
     Ok((text.to_string(), false))
 }
 
@@ -283,17 +259,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn removes_only_the_requested_content_block() {
-        let text = "format = 1\n\n[[mod]]\nmodrinth = \"sodium\"\nversion = \"1\"\n\n[[shader]]\nmodrinth = \"complementary-unbound\"\nversion = \"2\"\n";
-        let (updated, removed) = remove_entry(text, "sodium").expect("remove");
-        assert!(removed);
-        assert!(!updated.contains("sodium"));
-        assert!(updated.contains("complementary-unbound"));
-    }
-
-    #[test]
     fn keeps_unknown_content_when_removing_missing_project() {
-        let text = "format = 1\n\n[[mod]]\nmodrinth = \"sodium\"\nversion = \"1\"\n";
+        let text = "format = 1\n\n[mods]\nsodium = \"1\"\n";
         let (updated, removed) = remove_entry(text, "iris").expect("remove");
         assert!(!removed);
         assert_eq!(updated, text);

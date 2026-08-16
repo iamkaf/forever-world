@@ -2,16 +2,16 @@ use std::fmt;
 use std::io;
 use std::path::{Path, PathBuf};
 
+mod archive;
 pub mod authoring;
-pub mod curseforge;
-pub mod export;
-pub mod fetch;
-pub mod hash;
-pub mod overlay;
+mod curseforge;
+mod export;
+mod fetch;
+mod hash;
+mod overlay;
 pub mod publish;
-pub mod resolve;
+mod resolve;
 pub mod spec;
-pub mod verify;
 
 pub const USER_AGENT: &str = "forever-world-pack (iamkaf)";
 

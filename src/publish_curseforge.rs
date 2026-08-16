@@ -1,4 +1,4 @@
-use super::{ArtifactKind, PreparedRelease, Result, artifact_bytes, http_client};
+use super::{ArtifactKind, PreparedRelease, Result, http_client};
 use serde::{Deserialize, Serialize};
 
 const API_BASE: &str = "https://minecraft.curseforge.com/api/projects";
@@ -52,16 +52,11 @@ pub fn publish(release: &PreparedRelease, root: &crate::PackRoot) -> Result<Vec<
     if config.project == 0 {
         return Err("publish.curseforge.project must be a positive project ID".into());
     }
-    let game_versions = if config.game_versions.is_empty() {
-        vec!["Fabric".into(), release.lock.pack.minecraft.clone()]
-    } else {
-        config.game_versions.clone()
-    };
     let metadata = serde_json::to_string(&UploadMetadata {
         changelog: release.changelog(root)?,
         changelog_type: "markdown".into(),
         display_name: format!("{} {}", release.lock.pack.name, release.lock.pack.version),
-        game_version_names: game_versions,
+        game_version_names: vec!["Fabric".into(), release.lock.pack.minecraft.clone()],
         release_type: "release".into(),
     })?;
     let url = upload_url(config.project);
@@ -69,7 +64,7 @@ pub fn publish(release: &PreparedRelease, root: &crate::PackRoot) -> Result<Vec<
         .text("metadata", metadata)
         .part(
             "file",
-            reqwest::blocking::multipart::Part::bytes(artifact_bytes(artifact)?)
+            reqwest::blocking::multipart::Part::bytes(artifact.bytes.clone())
                 .file_name(artifact.name.clone()),
         );
     let response = http_client()?

@@ -1,16 +1,13 @@
 use crate::spec::{FileSpec, Lockfile, client_file, server_file};
-use crate::{PackRoot, Result, fetch};
+use crate::{PackRoot, Result};
 use std::fs;
 use std::path::Path;
 
 /// Test-only extra. Never export this into the `.mrpack`.
-pub const TEAKIT_FABRIC: &str = "maven:com.iamkaf.teakit:teakit-fabric:0.14.0+26.2";
+const TEAKIT_VERSION: &str = "0.14.0";
 
 pub fn overlay(root: &PackRoot) -> Result<std::path::PathBuf> {
     let lock = crate::load_lock(root)?;
-    for file in &lock.file {
-        fetch::ensure_cached(root, file)?;
-    }
     fs::create_dir_all(root.generated_dir())?;
     let dest = root.generated_dir().join("modstage.toml");
     fs::write(&dest, overlay_toml(&lock))?;
@@ -18,19 +15,28 @@ pub fn overlay(root: &PackRoot) -> Result<std::path::PathBuf> {
 }
 
 pub(crate) fn overlay_toml(lock: &Lockfile) -> String {
-    let mut out = String::from(
+    let mut out = format!(
         "# Generated from pack.lock.toml. Do not edit; do not commit.\n\
          [project]\n\
-         name = \"forever-world\"\n\
+         name = {}\n\
          \n\
          [repositories]\n\
          mavenLocal = \"mavenLocal\"\n\
          kaf = \"https://maven.kaf.sh\"\n",
+        toml_string(&lock.pack.slug)
+    );
+
+    let server = format!("{}-server", lock.pack.slug);
+    let client = format!("{}-client", lock.pack.slug);
+    let pair = format!("{}-pair", lock.pack.slug);
+    let teakit = format!(
+        "maven:com.iamkaf.teakit:teakit-fabric:{TEAKIT_VERSION}+{}",
+        lock.pack.minecraft
     );
 
     write_instance(
         &mut out,
-        "forever-world-server",
+        &server,
         lock,
         &["server"],
         lock.file.iter().filter(|file| server_file(file)),
@@ -40,7 +46,7 @@ pub(crate) fn overlay_toml(lock: &Lockfile) -> String {
 
     write_instance(
         &mut out,
-        "forever-world-client",
+        &client,
         lock,
         &["client"],
         lock.file
@@ -49,7 +55,7 @@ pub(crate) fn overlay_toml(lock: &Lockfile) -> String {
         &[],
         false,
     );
-    write_shader_fixtures(
+    write_fixtures(
         &mut out,
         lock.file
             .iter()
@@ -58,20 +64,20 @@ pub(crate) fn overlay_toml(lock: &Lockfile) -> String {
 
     write_instance(
         &mut out,
-        "forever-world-pair",
+        &pair,
         lock,
         &["client", "server"],
         lock.file.iter().filter(|file| server_file(file)),
-        &[TEAKIT_FABRIC],
+        &[&teakit],
         true,
     );
-    write_mod_fixtures(
+    write_fixtures(
         &mut out,
         lock.file.iter().filter(|file| {
             client_file(file) && !server_file(file) && Path::new(&file.path).starts_with("mods")
         }),
     );
-    write_shader_fixtures(
+    write_fixtures(
         &mut out,
         lock.file
             .iter()
@@ -122,13 +128,7 @@ fn write_instance<'a>(
     out.push_str("]\n");
 }
 
-fn write_mod_fixtures<'a>(out: &mut String, files: impl Iterator<Item = &'a FileSpec>) {
-    for file in files {
-        write_fixture(out, file, &file.path);
-    }
-}
-
-fn write_shader_fixtures<'a>(out: &mut String, files: impl Iterator<Item = &'a FileSpec>) {
+fn write_fixtures<'a>(out: &mut String, files: impl Iterator<Item = &'a FileSpec>) {
     for file in files {
         write_fixture(out, file, &file.path);
     }
@@ -161,7 +161,7 @@ mod tests {
 
     fn sample_lock() -> Lockfile {
         Lockfile {
-            version: 1,
+            version: 2,
             pack: PackMeta {
                 name: "FOREVER WORLD".into(),
                 slug: "forever-world".into(),
@@ -203,7 +203,6 @@ mod tests {
     ) -> FileSpec {
         FileSpec {
             id: path.to_string(),
-            provider: crate::spec::SourceProvider::Direct,
             requested_version: "1.0.0".into(),
             path: path.into(),
             file_size: 1,
@@ -218,7 +217,7 @@ mod tests {
     fn pair_layers_teakit_without_putting_client_only_jars_on_the_server() {
         let toml = overlay_toml(&sample_lock());
         assert!(toml.contains("name = \"forever-world-pair\""));
-        assert!(toml.contains(TEAKIT_FABRIC));
+        assert!(toml.contains("maven:com.iamkaf.teakit:teakit-fabric:0.14.0+26.2"));
         assert!(toml.contains("sides = [\"client\", \"server\"]"));
         assert!(toml.contains("loader_version = \"0.19.3\""));
         let pair = toml
@@ -239,8 +238,14 @@ mod tests {
             .split("[[instance]]")
             .next()
             .expect("server body");
-        assert!(!server.contains(TEAKIT_FABRIC));
+        assert!(!server.contains("maven:com.iamkaf.teakit"));
         assert!(!server.contains("sodium-fabric"));
         assert!(!server.contains("shaderpacks"));
+
+        let wrapper = fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join("teakitw"))
+            .expect("TeaKit wrapper");
+        assert!(wrapper.contains(&format!(
+            "TEAKIT_RUNNER_PINNED_VERSION=\"{TEAKIT_VERSION}\""
+        )));
     }
 }
