@@ -30,7 +30,7 @@ Import the [mrpack](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.1.1
 
 ## Host
 
-For a persistent dedicated server, use [Pastel](https://kaf.sh/pastel). It verifies the server files, installs Fabric and Java, and keeps Minecraft running. `pack run server` is for working on this repository. Pastel is for running the published pack.
+For a persistent dedicated server, use [Pastel](https://kaf.sh/pastel). It verifies the server files, installs Fabric and Java, and keeps Minecraft running. `just run-server` is for working on this repository. Pastel is for running the published pack.
 
 From an empty server directory:
 
@@ -44,7 +44,7 @@ Pastel leaves client-only files off the dedicated server. Running the server mea
 
 ## Building it
 
-This repo is the source for `com.iamkaf.modpacks:forever-world`. `pack.toml` describes the pack. The lockfile records the exact files that were installed, including their hashes and download URLs.
+This repo is the source for `com.iamkaf.modpacks:forever-world`. [Swatch](https://github.com/iamkaf/swatch) reads `pack.toml` and prepares the pack. The lockfile records the exact files that were installed, including their hashes and download URLs.
 
 Most entries are one line:
 
@@ -53,16 +53,18 @@ Most entries are one line:
 sodium = "mc26.2-0.9.1-fabric"
 ```
 
-`[mods]` loads on both sides. `[client_mods]` stays off the server. `[shaders]` contains client shader packs.
+`[mods]` loads on both sides. `[client_mods]` stays off the server. `[server_mods]` stays off the client. `[shaders]` contains client shader packs.
 
 ```bash
-pack install
-pack run client
-pack run server
-pack run pair
+swatch install
+just run-client
+just run-server
+just run-pair
 ```
 
-`pack install` resolves and downloads the locked files. The run commands use those installed files. `pack run pair` starts the local client and dedicated server together for TeaKit checks.
+`swatch install` resolves and downloads the locked files. The `just` recipes render the pack's Modstage client, server, and pair instances from that lockfile. `just run-pair` starts the local client and dedicated server together for TeaKit checks.
+
+Maintainers need Swatch on `PATH`, or can set `SWATCH_BIN` to its executable.
 
 To check the project without launching Minecraft:
 
@@ -78,9 +80,9 @@ Forever World versions describe what changed in the pack:
 - Minor: any mod, resource pack, or shader change.
 - Patch: fixes to the glue that do not change those inputs.
 
-CurseForge files are resolved with Packwiz and pinned in `pack.lock.toml`. Content exceptions in `overrides.toml` refer to the stable content IDs from `pack.toml`, not filenames. `pack install` runs `packwiz` from `PATH` only when a changed pack needs new CurseForge mappings. `PACKWIZ_BIN` can override the command.
+CurseForge files are resolved with Packwiz and pinned in `pack.lock.toml`. Content exceptions in `overrides.toml` refer to the stable content IDs from `pack.toml`, not filenames. Run `swatch install --curseforge` when a changed pack needs new CurseForge mappings. Swatch runs `packwiz` from `PATH`; `PACKWIZ_BIN` can override the command.
 
-Publishing reads its destinations from `pack.toml`. `pack publish --dry-run` builds the configured artifacts and shows what would be uploaded. `pack publish` uploads those same bytes to Modrinth, GitHub Releases, and the Maven snapshots repository. Add `[publish.curseforge]` with the CurseForge project ID once the project exists. Credentials stay in environment variables.
+Publishing reads its destinations from `pack.toml`. `swatch publish --dry-run` builds the configured artifacts and shows what would be uploaded. `swatch publish` uploads those same bytes to Modrinth, GitHub Releases, and the Maven snapshots repository. Add `[publish.curseforge]` with `project = <id>` and `author = "iamkaf"` once the project exists. Credentials stay in environment variables.
 
 Use `MODRINTH_TOKEN`, `CURSEFORGE_TOKEN`, `GITHUB_TOKEN`, `MAVEN_PUBLISH_USERNAME`, and `MAVEN_PUBLISH_PASSWORD` for the configured targets. CurseForge's author API cannot verify an existing upload before creating one; after an ambiguous network failure, inspect the project before retrying.
 
