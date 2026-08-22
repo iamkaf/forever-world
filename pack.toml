@@ -74,4 +74,4 @@ project = "forever-world"
 repository = "iamkaf/forever-world"
 
 [publish.maven]
-repository = "https://z.kaf.sh/snapshots"
+repository = "https://z.kaf.sh/releases"

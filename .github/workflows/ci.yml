@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release-integrity:
+    name: Release integrity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check pack policy
+        run: python3 scripts/check_pack_policy.py
+
+      - name: Typecheck TeaKit smoke
+        run: |
+          saved_tsconfig="$RUNNER_TEMP/tsconfig.json"
+          cp tsconfig.json "$saved_tsconfig"
+          trap 'cp "$saved_tsconfig" tsconfig.json' EXIT
+          ./teakitw typecheck --timeout 120
+
+      - name: Set up Swatch
+        uses: ./.github/actions/setup-swatch
+
+      - name: Verify locked install
+        run: |
+          set -euo pipefail
+          swatch install
+          git diff --exit-code -- pack.toml pack.lock.toml overrides.toml
+
+      - name: Dry-prepare and prove release artifacts
+        run: python3 scripts/artifact_proof.py prepare

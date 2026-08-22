@@ -22,11 +22,11 @@ Sodium, Iris, Lithium, the sound mods, the shader folder, C2ME, JEI, all of that
 
 ![Two players sitting on a garden bench by a campfire.](images/together.webp)
 
-The latest published pack is 1.1.1. Minecraft 26.2, Fabric Loader 0.19.3. Java 25 in the launcher.
+Forever World 1.2.0 is for Minecraft 26.2 with Fabric Loader 0.19.3. Use Java 25 in the launcher.
 
 ## Play
 
-Import the [mrpack](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.1.1/forever-world-1.1.1.mrpack) in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition does not include Presence Footsteps because there is no Minecraft 26.2 file for it on CurseForge.
+The 1.2.0 release targets GitHub Releases, the [Maven repository](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.2.0/forever-world-1.2.0.mrpack), and CurseForge. After it is published, import the `.mrpack` in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition has 47 of the pack's 48 entries because Presence Footsteps has no Minecraft 26.2 file on CurseForge. Modrinth will use the complete `.mrpack` when it is published there.
 
 ## Host
 
@@ -36,7 +36,7 @@ From an empty server directory:
 
 ```bash
 curl -fsSL https://kaf.sh/pastel/install.sh | sh
-./pastel install com.iamkaf.modpacks:forever-world:1.1.1 -repo https://maven.kaf.sh
+./pastel install com.iamkaf.modpacks:forever-world:1.2.0 -repo https://maven.kaf.sh
 ./pastel run
 ```
 
@@ -82,9 +82,18 @@ Forever World versions describe what changed in the pack:
 
 CurseForge files are resolved with Packwiz and pinned in `pack.lock.toml`. Content exceptions in `overrides.toml` refer to the stable content IDs from `pack.toml`, not filenames. Run `swatch install --curseforge` when a changed pack needs new CurseForge mappings. Swatch runs `packwiz` from `PATH`; `PACKWIZ_BIN` can override the command.
 
-Publishing reads its destinations from `pack.toml`. `swatch publish --dry-run` builds the configured artifacts and shows what would be uploaded. `swatch publish` uploads those same bytes to Modrinth, GitHub Releases, and the Maven snapshots repository. Add `[publish.curseforge]` with `project = <id>` and `author = "iamkaf"` once the project exists. Credentials stay in environment variables.
+`just publish-dry` prepares every 1.2.0 artifact without uploading. It prints the pack version, Minecraft and loader versions, artifact names, and SHA-256 and SHA-512 hashes. It also checks the 48-entry canonical pack and the 47-entry CurseForge edition against the lockfile.
 
-Use `MODRINTH_TOKEN`, `CURSEFORGE_TOKEN`, `GITHUB_TOKEN`, `MAVEN_PUBLISH_USERNAME`, and `MAVEN_PUBLISH_PASSWORD` for the configured targets. CurseForge's author API cannot verify an existing upload before creating one; after an ambiguous network failure, inspect the project before retrying.
+Pushing the matching `v1.2.0` tag starts the release workflow. It prepares the artifacts once, signs the release manifest through Sigstore, creates GitHub provenance attestations, verifies both kinds of proof, and only then makes the verified bytes available to GitHub Releases, Maven, and CurseForge. Merges and untagged pushes never publish.
+
+The release environments need this setup before a tag is pushed:
+
+- `github-release` uses the workflow's GitHub token.
+- `maven-release` needs `MAVEN_PUBLISH_USERNAME` and `MAVEN_PUBLISH_PASSWORD` secrets. Numbered releases go to `https://z.kaf.sh/releases`.
+- `curseforge-release` needs a positive `CURSEFORGE_PROJECT_ID` variable and a `CURSEFORGE_TOKEN` secret.
+- `modrinth-release` needs `MODRINTH_RELEASE_ENABLED=true`, a `MODRINTH_TOKEN` secret, and the `forever-world` project. After Modrinth publication is approved, run the manual Publish Modrinth workflow with `v1.2.0`. It downloads and verifies the original signed GitHub release instead of preparing the pack again.
+
+The workflow, not a local live `swatch publish`, owns external releases. CurseForge's author API cannot verify an existing upload before creating one. After an ambiguous network failure, inspect the project before retrying.
 
 TeaKit is only for the pair check. It never goes in the pack, and it does not change Fabric Loader 0.19.3.
 

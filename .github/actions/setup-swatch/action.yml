@@ -1,0 +1,24 @@
+name: Set up Swatch
+description: Install the pinned public Swatch release after verifying its archive.
+
+runs:
+  using: composite
+  steps:
+    - name: Install Swatch 0.1.1
+      shell: bash
+      env:
+        SWATCH_ARCHIVE_SHA256: a9eb1ab0d5e2dd6bc39899f790af38cf5f5dc50c37f2d36cb6d5d3196d50a990
+        SWATCH_ARCHIVE_URL: >-
+          https://github.com/iamkaf/swatch/releases/download/v0.1.1/swatch-linux-x86_64.tar.gz
+      run: |
+        set -euo pipefail
+        archive="$RUNNER_TEMP/swatch-linux-x86_64.tar.gz"
+        install_dir="$RUNNER_TEMP/swatch-0.1.1"
+        mkdir -p "$install_dir"
+        curl --proto '=https' --tlsv1.2 --retry 3 --fail --location \
+          "$SWATCH_ARCHIVE_URL" --output "$archive"
+        printf '%s  %s\n' "$SWATCH_ARCHIVE_SHA256" "$archive" | sha256sum --check --strict
+        tar --extract --gzip --file "$archive" --directory "$install_dir" swatch
+        chmod +x "$install_dir/swatch"
+        "$install_dir/swatch" help
+        printf '%s\n' "$install_dir" >> "$GITHUB_PATH"

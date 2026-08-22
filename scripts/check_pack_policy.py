@@ -162,6 +162,24 @@ def check() -> None:
     )
     assert_equal(len(lock.get("curseforge", [])), 47, "CurseForge mapping count")
 
+    publish = source["publish"]
+    assert_equal(publish["curseforge"], False, "direct CurseForge publishing")
+    assert_equal(
+        publish["maven"]["repository"],
+        "https://z.kaf.sh/releases",
+        "numbered Maven repository",
+    )
+    assert_equal(
+        publish["github"]["repository"],
+        "iamkaf/forever-world",
+        "GitHub release repository",
+    )
+    assert_equal(
+        publish["modrinth"]["project"],
+        "forever-world",
+        "Modrinth project",
+    )
+
 
 def main() -> int:
     try:

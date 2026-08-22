@@ -1,0 +1,119 @@
+name: Publish Modrinth
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Signed Forever World release tag, such as v1.2.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: modrinth-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  modrinth:
+    name: Publish verified Modrinth release
+    if: vars.MODRINTH_RELEASE_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: modrinth-release
+    steps:
+      - name: Check out the signed release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+
+      - name: Validate clean tag source
+        run: python3 scripts/artifact_proof.py validate-source --tag "${{ inputs.tag }}"
+
+      - name: Download the signed GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ inputs.tag }}" --dir release --repo "$GITHUB_REPOSITORY"
+
+      - name: Set up Cosign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.0.6
+
+      - name: Verify hashes and archive contents
+        run: >-
+          python3 scripts/artifact_proof.py verify
+          --directory release
+          --tag "${{ inputs.tag }}"
+          --allow-proof
+
+      - name: Verify the original Sigstore identity
+        env:
+          CERTIFICATE_IDENTITY: https://github.com/${{ github.repository }}/.github/workflows/release.yml@refs/tags/${{ inputs.tag }}
+        run: |
+          cosign verify-blob \
+            --bundle release/release-manifest.sigstore.json \
+            --certificate-identity "$CERTIFICATE_IDENTITY" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            release/release-manifest.json
+
+      - name: Verify the original GitHub provenance
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          while read -r _ name; do
+            gh attestation verify "release/$name" \
+              --bundle release/github-provenance.jsonl \
+              --repo "$GITHUB_REPOSITORY" \
+              --signer-workflow "$GITHUB_REPOSITORY/.github/workflows/release.yml" \
+              --source-ref "refs/tags/$RELEASE_TAG"
+          done < release/SHA256SUMS
+
+      - name: Require approved Modrinth setup
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: |
+          test -n "$MODRINTH_TOKEN" || { echo "MODRINTH_TOKEN is not configured" >&2; exit 1; }
+
+      - name: Upload the verified Modrinth edition
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          version=$(jq --raw-output '.pack.version' release/release-manifest.json)
+          name=$(jq --raw-output '.pack.name' release/release-manifest.json)
+          minecraft=$(jq --raw-output '.pack.minecraft' release/release-manifest.json)
+          loader=$(jq --raw-output '.pack.loader' release/release-manifest.json)
+          project=$(jq --raw-output '.destinations.modrinth.project' release/release-manifest.json)
+          artifact=$(jq --raw-output \
+            '.artifacts[] | select(.kind == "modrinth-pack") | .name' \
+            release/release-manifest.json)
+          jq --null-input \
+            --rawfile changelog release/release-notes.md \
+            --arg name "$name" \
+            --arg project "$project" \
+            --arg version "$version" \
+            --arg minecraft "$minecraft" \
+            --arg loader "$loader" \
+            '{
+              name: ($name + " " + $version),
+              version_number: $version,
+              changelog: $changelog,
+              version_type: "release",
+              loaders: [$loader],
+              game_versions: [$minecraft],
+              featured: true,
+              status: "listed",
+              project_id: $project,
+              file_parts: ["file"],
+              primary_file: "file"
+            }' > "$RUNNER_TEMP/modrinth-data.json"
+          curl --fail --show-error --silent \
+            --header "Authorization: $MODRINTH_TOKEN" \
+            --form "data=<$RUNNER_TEMP/modrinth-data.json;type=application/json" \
+            --form "file=@release/$artifact;type=application/zip" \
+            https://api.modrinth.com/v2/version
