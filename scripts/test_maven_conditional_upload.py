@@ -34,6 +34,7 @@ def metadata(*versions: str) -> bytes:
 class MetadataHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         self.server.fetch_cache_control = self.headers.get("Cache-Control")
+        self.server.fetch_authorization = self.headers.get("Authorization")
         self.send_response(200)
         self.send_header("Content-Type", "application/xml")
         self.send_header("Content-Length", str(len(self.server.content)))
@@ -74,6 +75,7 @@ class ConditionalUploadTest(unittest.TestCase):
         self.server.mutate_before_put = True
         self.server.received_if_match = None
         self.server.fetch_cache_control = None
+        self.server.fetch_authorization = None
         self.thread = Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
 
@@ -90,6 +92,7 @@ class ConditionalUploadTest(unittest.TestCase):
                 publish(source, self.url, "release-user", "release-password")
         self.assertEqual(self.server.received_if_match, '"initial"')
         self.assertEqual(self.server.fetch_cache_control, "no-cache")
+        self.assertIsNone(self.server.fetch_authorization)
         self.assertEqual(self.server.content, self.concurrent)
 
     def test_missing_strong_validator_disables_publication(self) -> None:

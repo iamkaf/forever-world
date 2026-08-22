@@ -36,11 +36,10 @@ def is_strong_etag(value: str | None) -> bool:
     )
 
 
-def fetch(destination: str, auth: str) -> tuple[int, bytes, str | None]:
+def fetch(destination: str) -> tuple[int, bytes, str | None]:
     request = urllib.request.Request(
         destination,
         headers={
-            "Authorization": auth,
             "Cache-Control": "no-cache",
             "Pragma": "no-cache",
             "User-Agent": "forever-world-release/1",
@@ -60,7 +59,7 @@ def fetch(destination: str, auth: str) -> tuple[int, bytes, str | None]:
 def publish(source: Path, destination: str, username: str, password: str) -> None:
     prepared = source.read_bytes()
     auth = authorization(username, password)
-    status, current, etag = fetch(destination, auth)
+    status, current, etag = fetch(destination)
     if len(current) > 1024 * 1024:
         raise PublishError("published Maven metadata is unexpectedly large")
 

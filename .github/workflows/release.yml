@@ -277,7 +277,6 @@ jobs:
             local destination="$2"
             local status
             status=$(curl --silent --show-error \
-              --user "$MAVEN_PUBLISH_USERNAME:$MAVEN_PUBLISH_PASSWORD" \
               --header 'Cache-Control: no-cache' \
               --output "$RUNNER_TEMP/existing" --write-out '%{http_code}' \
               "$destination?release_check=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT")
