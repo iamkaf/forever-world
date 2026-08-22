@@ -180,19 +180,25 @@ jobs:
               changelog: $changelog,
               dependencies: [],
               version_type: "release",
+              featured: false,
               loaders: [$loader],
               game_versions: [$minecraft],
               project_id: $project,
               file_parts: ["file"],
               primary_file: "file"
             }' > "$RUNNER_TEMP/modrinth-data.json"
-          curl --fail-with-body --show-error --silent \
+          code=$(curl --show-error --silent \
             --output "$RUNNER_TEMP/created-version.json" \
+            --write-out '%{http_code}' \
             --header "Authorization: $MODRINTH_TOKEN" \
             --form "data=<$RUNNER_TEMP/modrinth-data.json;type=application/json" \
             --form "file=@release/$artifact;type=application/zip" \
-            https://api.modrinth.com/v2/version
+            https://api.modrinth.com/v2/version)
           created="$RUNNER_TEMP/created-version.json"
+          if [[ ! "$code" =~ ^2[0-9][0-9]$ ]]; then
+            cat "$created" >&2
+            exit 1
+          fi
           created_id=$(jq -er '.id' "$created")
           test "$created_id" != "$REPLACE_VERSION_ID"
           test "$(jq -er '.project_id' "$created")" = "$project"
