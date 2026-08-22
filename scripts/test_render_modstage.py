@@ -62,6 +62,15 @@ class RenderModstageTest(unittest.TestCase):
             )
             for path in artifact_paths:
                 self.assertTrue((output_directory / path).is_file(), path)
+            fixture_destinations = {
+                fixture["to"]
+                for instance in config["instance"]
+                for fixture in instance.get("fixture", [])
+            }
+            self.assertEqual(
+                fixture_destinations,
+                {file["path"] for file in files},
+            )
             for file in files:
                 self.assertNotIn(f"{file['sha512']}/{Path(file['path']).name}", rendered)
 
