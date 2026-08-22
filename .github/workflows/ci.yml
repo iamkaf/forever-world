@@ -36,7 +36,7 @@ jobs:
       - name: Check locked release artifacts
         run: |
           set -euo pipefail
-          test "$(swatch --version)" = "swatch 0.3.0"
+          test "$(swatch --version)" = "swatch 0.3.1"
           swatch install
           scripts/check
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
