@@ -21,7 +21,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Check pack policy
-        run: python3 scripts/check_pack_policy.py
+        run: |
+          python3 scripts/check_pack_policy.py
+          python3 scripts/test_maven_conditional_upload.py
 
       - name: Typecheck TeaKit smoke
         run: |

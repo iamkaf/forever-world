@@ -89,7 +89,7 @@ Pushing the matching `v1.2.0` tag starts the release workflow. It prepares the a
 The release environments need this setup before a tag is pushed:
 
 - `github-release` uses the workflow's GitHub token.
-- `maven-release` needs `MAVEN_PUBLISH_USERNAME` and `MAVEN_PUBLISH_PASSWORD` secrets. Numbered releases go to `https://z.kaf.sh/releases`.
+- `maven-release` needs `MAVEN_PUBLISH_USERNAME` and `MAVEN_PUBLISH_PASSWORD` secrets. Numbered releases go to `https://z.kaf.sh/releases`. The repository must return a strong `ETag` for metadata and enforce `If-Match` and `If-None-Match` on uploads; Maven publication stops before replacing metadata if those atomic-write guarantees are unavailable.
 - `curseforge-release` needs a `CURSEFORGE_TOKEN` secret. Replace the `0` project placeholder in `release.toml` with the approved Forever World project ID before tagging; the release workflow refuses to run while it is unset.
 - `modrinth-release` needs `MODRINTH_RELEASE_ENABLED=true`, a `MODRINTH_TOKEN` secret, and the `forever-world` project. After Modrinth publication is approved, run the manual Publish Modrinth workflow with `v1.2.0`. It downloads and verifies the original signed GitHub release instead of preparing the pack again.
 

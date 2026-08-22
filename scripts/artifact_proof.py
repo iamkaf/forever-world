@@ -238,6 +238,10 @@ def sidecar_files(files: list[PreparedFile]) -> list[PreparedFile]:
         destinations = tuple(
             destination for destination in item.destinations if destination in {"github", "maven"}
         )
+        if item.kind == "maven-metadata":
+            destinations = tuple(
+                destination for destination in destinations if destination == "github"
+            )
         for algorithm in ("sha256", "sha512"):
             sidecars.append(
                 PreparedFile(
@@ -422,9 +426,9 @@ def verify_maven(directory: Path, pack: dict) -> None:
         fail("Maven metadata release version does not match the pack")
 
 
-def verify_maven_update(prepared_path: Path, current_path: Path) -> None:
-    prepared = ET.parse(prepared_path).getroot()
-    current = ET.parse(current_path).getroot()
+def verify_maven_update_documents(prepared_bytes: bytes, current_bytes: bytes) -> None:
+    prepared = ET.fromstring(prepared_bytes)
+    current = ET.fromstring(current_bytes)
     for field in ("groupId", "artifactId"):
         if current.findtext(field) != prepared.findtext(field):
             fail(f"published Maven metadata has a different {field}")
@@ -446,6 +450,10 @@ def verify_maven_update(prepared_path: Path, current_path: Path) -> None:
         if value is not None and value not in prepared_versions:
             fail(f"published Maven metadata has an unknown {field} version: {value}")
     print("published Maven metadata is safe to advance to the signed release index")
+
+
+def verify_maven_update(prepared_path: Path, current_path: Path) -> None:
+    verify_maven_update_documents(prepared_path.read_bytes(), current_path.read_bytes())
 
 
 def verify_checksums(directory: Path, entries: dict[str, dict]) -> None:

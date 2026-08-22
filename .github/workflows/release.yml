@@ -268,8 +268,6 @@ jobs:
           upload() {
             local source="$1"
             local destination="$2"
-            local mutable="${3:-false}"
-            local verify_metadata="${4:-false}"
             local status
             status=$(curl --silent --show-error \
               --user "$MAVEN_PUBLISH_USERNAME:$MAVEN_PUBLISH_PASSWORD" \
@@ -280,15 +278,8 @@ jobs:
               if cmp --silent "$source" "$RUNNER_TEMP/existing"; then
                 return
               fi
-              if [[ "$mutable" != "true" ]]; then
-                echo "Maven already has different bytes at $destination" >&2
-                exit 1
-              fi
-              if [[ "$verify_metadata" == "true" ]]; then
-                python3 scripts/artifact_proof.py verify-maven-update \
-                  --prepared "$source" \
-                  --current "$RUNNER_TEMP/existing"
-              fi
+              echo "Maven already has different bytes at $destination" >&2
+              exit 1
             fi
             [[ "$status" == "200" || "$status" == "404" ]] || {
               echo "Maven lookup failed with HTTP $status at $destination" >&2
@@ -303,9 +294,9 @@ jobs:
             upload "release/$name.sha256" "$base/$version/$name.sha256"
             upload "release/$name.sha512" "$base/$version/$name.sha512"
           done
-          upload "release/$metadata" "$base/$metadata" true true
-          upload "release/$metadata.sha256" "$base/$metadata.sha256" true
-          upload "release/$metadata.sha512" "$base/$metadata.sha512" true
+          python3 scripts/maven_conditional_upload.py \
+            --source "release/$metadata" \
+            --destination "$base/$metadata"
 
   curseforge:
     name: Publish CurseForge release
