@@ -9,20 +9,34 @@ check:
     #!/usr/bin/env bash
     set -euo pipefail
     python3 scripts/check_pack_policy.py
+    python3 scripts/test_maven_conditional_upload.py
     saved_tsconfig=$(mktemp)
     cp tsconfig.json "$saved_tsconfig"
     trap 'cp "$saved_tsconfig" tsconfig.json; rm -f "$saved_tsconfig"' EXIT
     ./teakitw typecheck --timeout 120
 
-_swatch-install:
+_require-swatch:
     #!/usr/bin/env bash
-    if ! command -v "{{swatch_bin}}" >/dev/null 2>&1; then
+    if ! command -v "{{ swatch_bin }}" >/dev/null 2>&1; then
     echo "swatch is not installed; set SWATCH_BIN to the Swatch executable" >&2
     exit 1
     fi
-    "{{swatch_bin}}" install
+
+_swatch-install: _require-swatch
+    "{{ swatch_bin }}" install
 
 install: _swatch-install render-modstage
+
+install-locked: _require-swatch
+    #!/usr/bin/env bash
+    set -euo pipefail
+    before=$(sha256sum pack.toml pack.lock.toml overrides.toml release.toml)
+    "{{ swatch_bin }}" install
+    after=$(sha256sum pack.toml pack.lock.toml overrides.toml release.toml)
+    if [[ "$before" != "$after" ]]; then
+    echo "swatch install changed the locked pack" >&2
+    exit 1
+    fi
 
 render-modstage:
     python3 scripts/render_modstage.py
@@ -43,10 +57,7 @@ server: run-server
 
 pair: run-pair
 
-publish-dry: install
-    #!/usr/bin/env bash
-    if ! command -v "{{swatch_bin}}" >/dev/null 2>&1; then
-    echo "swatch is not installed; set SWATCH_BIN to the Swatch executable" >&2
-    exit 1
-    fi
-    "{{swatch_bin}}" publish --dry-run
+artifact-proof: _require-swatch
+    python3 scripts/artifact_proof.py prepare
+
+publish-dry: install-locked artifact-proof

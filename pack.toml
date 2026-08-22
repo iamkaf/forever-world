@@ -68,10 +68,10 @@ changelog = "CHANGELOG.md"
 curseforge = false
 
 [publish.modrinth]
-project = "forever-world"
+project = "TRgAveYb"
 
 [publish.github]
 repository = "iamkaf/forever-world"
 
 [publish.maven]
-repository = "https://z.kaf.sh/snapshots"
+repository = "https://z.kaf.sh/releases"

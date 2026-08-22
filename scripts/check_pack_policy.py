@@ -80,6 +80,7 @@ def content(pack: dict) -> list[tuple[str, str, str, str, str]]:
 def check() -> None:
     source = load("pack.toml")
     lock = load("pack.lock.toml")
+    release = load("release.toml")
     pack = source["pack"]
 
     assert_equal(pack["name"], "FOREVER WORLD", "pack name")
@@ -90,7 +91,7 @@ def check() -> None:
 
     entries = content(source)
     assert_equal(len(entries), 48, "pack content count")
-    assert_equal(lock["version"], 2, "lockfile version")
+    assert_equal(lock["version"], 1, "lockfile version")
     assert_equal(lock["pack"], pack, "pack metadata differs between source and lockfile")
     files = lock["file"]
     assert_equal(len(files), len(entries), "lockfile content count")
@@ -161,6 +162,28 @@ def check() -> None:
         "unmapped CurseForge files",
     )
     assert_equal(len(lock.get("curseforge", [])), 47, "CurseForge mapping count")
+
+    publish = source["publish"]
+    assert_equal(publish["curseforge"], False, "direct CurseForge publishing")
+    assert_equal(
+        publish["maven"]["repository"],
+        "https://z.kaf.sh/releases",
+        "numbered Maven repository",
+    )
+    assert_equal(
+        publish["github"]["repository"],
+        "iamkaf/forever-world",
+        "GitHub release repository",
+    )
+    assert_equal(
+        publish["modrinth"]["project"],
+        "TRgAveYb",
+        "Modrinth project",
+    )
+    assert_equal(release["format"], 1, "release config format")
+    assert_equal(release["curseforge"]["author"], "iamkaf", "CurseForge author")
+    curseforge_project = release["curseforge"]["project_id"]
+    assert_equal(curseforge_project, 1663962, "CurseForge project ID")
 
 
 def main() -> int:
