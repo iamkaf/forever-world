@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish signed Maven metadata without accepting a lost update."""
+"""Publish signed Maven files without overwriting existing release bytes."""
 
 from __future__ import annotations
 
@@ -54,6 +54,77 @@ def fetch(destination: str) -> tuple[int, bytes, str | None]:
         if status == 404:
             return 404, b"", None
         raise PublishError(f"Maven metadata lookup failed with HTTP {status}") from error
+
+
+def compare_remote(source: Path, destination: str) -> tuple[int, bool]:
+    request = urllib.request.Request(
+        destination,
+        headers={
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+            "User-Agent": "forever-world-release/1",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=30) as response:
+            with source.open("rb") as local:
+                while True:
+                    remote_block = response.read(1024 * 1024)
+                    local_block = local.read(1024 * 1024)
+                    if remote_block != local_block:
+                        return response.status, False
+                    if not remote_block:
+                        return response.status, True
+    except urllib.error.HTTPError as error:
+        status = error.code
+        error.close()
+        if status == 404:
+            return 404, False
+        raise PublishError(f"Maven artifact lookup failed with HTTP {status}") from error
+
+
+def publish_immutable(
+    source: Path,
+    destination: str,
+    read_destination: str,
+    username: str,
+    password: str,
+) -> None:
+    status, matches = compare_remote(source, read_destination)
+    if status == 200:
+        if matches:
+            print(f"{source.name} is already published")
+            return
+        raise PublishError(f"Maven already has different bytes for {source.name}")
+    if status != 404:
+        raise PublishError(f"Maven artifact lookup failed with HTTP {status}")
+
+    request = urllib.request.Request(
+        destination,
+        data=source.read_bytes(),
+        headers={
+            "Authorization": authorization(username, password),
+            "Content-Type": "application/octet-stream",
+            "User-Agent": "forever-world-release/1",
+        },
+        method="PUT",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            if response.status not in {200, 201, 204}:
+                raise PublishError(
+                    f"immutable Maven upload failed with HTTP {response.status}"
+                )
+    except urllib.error.HTTPError as error:
+        status = error.code
+        error.close()
+        if status == 409:
+            _, matches = compare_remote(source, read_destination)
+            if matches:
+                print(f"{source.name} is already published")
+                return
+        raise PublishError(f"immutable Maven upload failed with HTTP {status}") from error
+    print(f"published immutable Maven file {source.name}")
 
 
 def publish(
@@ -120,6 +191,7 @@ def main() -> int:
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--destination", required=True)
     parser.add_argument("--read-destination")
+    parser.add_argument("--immutable", action="store_true")
     args = parser.parse_args()
     username = os.environ.get("MAVEN_PUBLISH_USERNAME", "")
     password = os.environ.get("MAVEN_PUBLISH_PASSWORD", "")
@@ -127,13 +199,24 @@ def main() -> int:
         print("Maven publication credentials are not configured", file=sys.stderr)
         return 1
     try:
-        publish(
-            args.source,
-            args.destination,
-            username,
-            password,
-            args.read_destination,
-        )
+        if args.immutable:
+            if not args.read_destination:
+                raise PublishError("immutable publication requires --read-destination")
+            publish_immutable(
+                args.source,
+                args.destination,
+                args.read_destination,
+                username,
+                password,
+            )
+        else:
+            publish(
+                args.source,
+                args.destination,
+                username,
+                password,
+                args.read_destination,
+            )
     except (OSError, PublishError, ET.ParseError) as error:
         print(f"Maven metadata publication failed: {error}", file=sys.stderr)
         return 1

@@ -276,30 +276,11 @@ jobs:
           base="$repository/$group_path/$slug"
           read_base="$MAVEN_READ_REPOSITORY/$group_path/$slug"
           upload() {
-            local source="$1"
-            local destination="$2"
-            local read_destination="$3"
-            local status
-            status=$(curl --silent --show-error \
-              --user-agent forever-world-release/1 \
-              --header 'Cache-Control: no-cache' \
-              --output "$RUNNER_TEMP/existing" --write-out '%{http_code}' \
-              "$read_destination?release_check=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT")
-            if [[ "$status" == "200" ]]; then
-              if cmp --silent "$source" "$RUNNER_TEMP/existing"; then
-                return
-              fi
-              echo "Maven already has different bytes at $destination" >&2
-              exit 1
-            fi
-            [[ "$status" == "200" || "$status" == "404" ]] || {
-              echo "Maven lookup failed with HTTP $status at $destination" >&2
-              exit 1
-            }
-            curl --fail --show-error --silent \
-              --user-agent forever-world-release/1 \
-              --user "$MAVEN_PUBLISH_USERNAME:$MAVEN_PUBLISH_PASSWORD" \
-              --upload-file "$source" "$destination"
+            python3 scripts/maven_conditional_upload.py \
+              --immutable \
+              --source "$1" \
+              --destination "$2" \
+              --read-destination "$3?release_check=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           }
           for name in "$mrpack" "$pom"; do
             upload "release/$name" "$base/$version/$name" "$read_base/$version/$name"
