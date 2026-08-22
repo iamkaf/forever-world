@@ -5,52 +5,56 @@ swatch_bin := env_var_or_default("SWATCH_BIN", "swatch")
 default:
     @just --list
 
-check:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    python3 scripts/check_pack_policy.py
-    python3 scripts/test_render_modstage.py
-    python3 scripts/test_maven_conditional_upload.py
-    saved_tsconfig=$(mktemp)
-    cp tsconfig.json "$saved_tsconfig"
-    trap 'cp "$saved_tsconfig" tsconfig.json; rm -f "$saved_tsconfig"' EXIT
-    ./teakitw typecheck --timeout 120
-
 _require-swatch:
     #!/usr/bin/env bash
     if ! command -v "{{ swatch_bin }}" >/dev/null 2>&1; then
-    echo "swatch is not installed; set SWATCH_BIN to the Swatch executable" >&2
-    exit 1
+        echo "swatch is not installed; set SWATCH_BIN to the Swatch executable" >&2
+        exit 1
     fi
 
-_swatch-install: _require-swatch
+install: _require-swatch
     "{{ swatch_bin }}" install
-
-install: _swatch-install render-modstage
 
 install-locked: _require-swatch
     #!/usr/bin/env bash
     set -euo pipefail
-    before=$(sha256sum pack.toml pack.lock.toml overrides.toml release.toml)
+    before=$(sha256sum pack.toml pack.lock.toml overrides.toml)
     "{{ swatch_bin }}" install
-    after=$(sha256sum pack.toml pack.lock.toml overrides.toml release.toml)
+    after=$(sha256sum pack.toml pack.lock.toml overrides.toml)
     if [[ "$before" != "$after" ]]; then
-    echo "swatch install changed the locked pack" >&2
-    exit 1
+        echo "swatch install changed the locked pack" >&2
+        exit 1
     fi
 
-render-modstage:
-    python3 scripts/render_modstage.py
+teakit-typecheck:
+    scripts/check
 
-run-client: install
-    modstage --config generated/modstage.toml run client forever-world-client --timeout 180s
+artifact-check: install-locked
+    "{{ swatch_bin }}" prepare
+    "{{ swatch_bin }}" verify
 
-run-server: install
-    modstage --config generated/modstage.toml run server forever-world-server --timeout 180s
+check: install-locked
+    scripts/check
+    "{{ swatch_bin }}" prepare
+    "{{ swatch_bin }}" verify
 
-run-pair: install
+stage: install-locked
+    "{{ swatch_bin }}" stage all
+
+run-client: stage
+    modstage --config modstage.toml run client forever-world-client --timeout 180s
+
+run-server: stage
+    modstage --config modstage.toml run server forever-world-server --timeout 180s
+
+run-pair: stage
     mkdir -p build/teakit
-    ./teakitw pair --no-sync-sdk --node 26.2-fabric --modstage-config generated/modstage.toml --modstage-instance forever-world-pair --test-file tests/teakit/startup.test.ts --timeout 360 --report build/teakit/startup.json
+    ./teakitw pair --no-sync-sdk --node 26.2-fabric --modstage-config modstage.toml --modstage-instance forever-world-pair --test-file tests/teakit/startup.test.ts --timeout 360 --report build/teakit/startup.json
+
+runtime-check: install-locked
+    SWATCH_BIN="{{ swatch_bin }}" scripts/check-runtime
+
+run-pair-xvfb: runtime-check
 
 client: run-client
 
@@ -58,7 +62,5 @@ server: run-server
 
 pair: run-pair
 
-artifact-proof: _require-swatch
-    python3 scripts/artifact_proof.py prepare
-
-publish-dry: install-locked artifact-proof
+publish-dry: install-locked
+    "{{ swatch_bin }}" publish --dry-run

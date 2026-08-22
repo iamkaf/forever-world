@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+saved_tsconfig=$(mktemp)
+cp tsconfig.json "$saved_tsconfig"
+trap 'cp "$saved_tsconfig" tsconfig.json; rm -f "$saved_tsconfig"' EXIT
+./teakitw typecheck --timeout 120

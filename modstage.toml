@@ -1,0 +1,52 @@
+[project]
+name = "forever-world"
+
+[repositories]
+mavenLocal = "mavenLocal"
+kaf = "https://maven.kaf.sh"
+
+[[instance]]
+name = "forever-world-server"
+minecraft = "26.2"
+loader = "fabric"
+loader_version = "0.19.3"
+sides = ["server"]
+server_properties = { online-mode = "false", enforce-secure-profile = "false" }
+
+[[instance.fixture]]
+from = "generated/stage/server"
+to = "."
+replace = true
+
+[[instance]]
+name = "forever-world-client"
+minecraft = "26.2"
+loader = "fabric"
+loader_version = "0.19.3"
+sides = ["client"]
+
+[[instance.fixture]]
+from = "generated/stage/client"
+to = "."
+replace = true
+
+[[instance]]
+name = "forever-world-pair"
+minecraft = "26.2"
+loader = "fabric"
+loader_version = "0.19.3"
+sides = ["client", "server"]
+server_properties = { online-mode = "false", enforce-secure-profile = "false" }
+mods = ["maven:com.iamkaf.teakit:teakit-fabric:0.14.0+26.2"]
+
+[[instance.fixture]]
+from = "generated/stage/client"
+to = "."
+side = "client"
+replace = true
+
+[[instance.fixture]]
+from = "generated/stage/server"
+to = "."
+side = "server"
+replace = true

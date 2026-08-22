@@ -1,0 +1,23 @@
+name: Set up Modstage
+description: Install the verified Modstage release used by this pack
+
+runs:
+  using: composite
+  steps:
+    - name: Download and verify Modstage 0.6.0
+      shell: bash
+      run: |
+        set -euo pipefail
+        archive="modstage-linux-x86_64.tar.gz"
+        download="$RUNNER_TEMP/modstage-0.6.0-download"
+        install="$RUNNER_TEMP/modstage-0.6.0-bin"
+        mkdir -p "$download" "$install"
+        curl --fail --location --proto '=https' --tlsv1.2 \
+          --output "$download/$archive" \
+          "https://github.com/iamkaf/modstage/releases/download/v0.6.0/$archive"
+        printf '%s  %s\n' \
+          "3b8b0bf2f2d3c3395e3cf3a5a80cf16db8c68ef5c0e1ee77759f0f9bdaaafc1f" \
+          "$download/$archive" | sha256sum --check --strict
+        tar -xzf "$download/$archive" -C "$install" modstage
+        chmod 0755 "$install/modstage"
+        printf '%s\n' "$install" >> "$GITHUB_PATH"
