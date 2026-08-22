@@ -108,6 +108,7 @@ jobs:
               name: ($name + " " + $version),
               version_number: $version,
               changelog: $changelog,
+              dependencies: [],
               version_type: "release",
               loaders: [$loader],
               game_versions: [$minecraft],
@@ -117,7 +118,7 @@ jobs:
               file_parts: ["file"],
               primary_file: "file"
             }' > "$RUNNER_TEMP/modrinth-data.json"
-          curl --fail --show-error --silent \
+          curl --fail-with-body --show-error --silent \
             --header "Authorization: $MODRINTH_TOKEN" \
             --form "data=<$RUNNER_TEMP/modrinth-data.json;type=application/json" \
             --form "file=@release/$artifact;type=application/zip" \
