@@ -16,8 +16,7 @@ def quote(value: str) -> str:
 
 
 def cache_path(file: dict) -> str:
-    name = Path(file["path"]).name
-    return f"../.cache/objects/{file['sha512']}/{name}"
+    return f"../.cache/objects/{file['sha512']}"
 
 
 def server_file(file: dict) -> bool:

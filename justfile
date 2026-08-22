@@ -9,6 +9,7 @@ check:
     #!/usr/bin/env bash
     set -euo pipefail
     python3 scripts/check_pack_policy.py
+    python3 scripts/test_render_modstage.py
     python3 scripts/test_maven_conditional_upload.py
     saved_tsconfig=$(mktemp)
     cp tsconfig.json "$saved_tsconfig"
