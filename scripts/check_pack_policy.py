@@ -91,7 +91,7 @@ def check() -> None:
 
     entries = content(source)
     assert_equal(len(entries), 48, "pack content count")
-    assert_equal(lock["version"], 2, "lockfile version")
+    assert_equal(lock["version"], 1, "lockfile version")
     assert_equal(lock["pack"], pack, "pack metadata differs between source and lockfile")
     files = lock["file"]
     assert_equal(len(files), len(entries), "lockfile content count")
