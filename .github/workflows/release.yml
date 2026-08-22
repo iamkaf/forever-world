@@ -254,7 +254,7 @@ jobs:
             '.pack.group | gsub("\\."; "/")' release/release-manifest.json)
           slug=$(jq --raw-output '.pack.slug' release/release-manifest.json)
           mrpack=$(jq --raw-output \
-            '.artifacts[] | select(.kind == "modrinth-pack") | .name' \
+            '.artifacts[] | select(.kind == "client-pack") | .name' \
             release/release-manifest.json)
           pom=$(jq --raw-output \
             '.artifacts[] | select(.kind == "maven-pom") | .name' \

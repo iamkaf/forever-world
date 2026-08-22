@@ -107,7 +107,7 @@ jobs:
           loader=$(jq --raw-output '.pack.loader' release/release-manifest.json)
           project=$(jq --raw-output '.destinations.modrinth.project' release/release-manifest.json)
           artifact=$(jq --raw-output \
-            '.artifacts[] | select(.kind == "modrinth-pack") | .name' \
+            '.artifacts[] | select(.kind == "client-pack") | .name' \
             release/release-manifest.json)
           jq --null-input \
             --rawfile changelog release/release-notes.md \

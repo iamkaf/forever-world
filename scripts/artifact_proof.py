@@ -22,7 +22,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 BUILD = ROOT / "build"
-SWATCH_VERSION = "0.1.1"
+SWATCH_VERSION = "0.2.0"
 PREPARE_PROJECT_SENTINEL = 9_223_372_036_854_775_807
 CURSEFORGE_AUTHOR = "iamkaf"
 PROOF_FILES = {"release-manifest.sigstore.json", "github-provenance.jsonl"}
@@ -186,9 +186,14 @@ def prepared_files(pack: dict) -> list[PreparedFile]:
     version = pack["version"]
     return [
         PreparedFile(
-            f"{slug}-{version}.mrpack",
-            "modrinth-pack",
+            f"{slug}-{version}-client.mrpack",
+            "client-pack",
             ("github", "maven", "modrinth"),
+        ),
+        PreparedFile(
+            f"{slug}-{version}-server.mrpack",
+            "server-pack",
+            ("github",),
         ),
         PreparedFile(
             f"{slug}-{version}-curseforge.zip",
@@ -288,6 +293,14 @@ def manifest_entry(directory: Path, item: PreparedFile) -> dict:
 
 def prepare(output: Path, swatch: str) -> None:
     pack = validate_source(None)
+    version = subprocess.run(
+        [swatch, "--version"],
+        check=True,
+        text=True,
+        stdout=subprocess.PIPE,
+    ).stdout.strip()
+    if version != f"swatch {SWATCH_VERSION}":
+        fail(f"artifact proof requires Swatch {SWATCH_VERSION}, got {version!r}")
     source_manifest, _ = pack_data()
     output = safe_output(output)
     if output.exists():
@@ -297,17 +310,22 @@ def prepare(output: Path, swatch: str) -> None:
     with tempfile.TemporaryDirectory(prefix="release-source-", dir=BUILD) as temporary:
         source = Path(temporary)
         copy_release_source(source)
-        completed = subprocess.run(
-            [swatch, "publish", "--dry-run"],
+        prepared = subprocess.run(
+            [swatch, "prepare"],
             cwd=source,
             check=True,
             text=True,
             stdout=subprocess.PIPE,
         )
-        print(completed.stdout, end="")
-        for destination in ("Modrinth", "CurseForge", "GitHub", "Maven"):
-            if f"DRY {destination} " not in completed.stdout:
-                fail(f"Swatch did not prepare the {destination} destination")
+        print(prepared.stdout, end="")
+        verified = subprocess.run(
+            [swatch, "verify"],
+            cwd=source,
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+        )
+        print(verified.stdout, end="")
         base = prepared_files(pack)
         for item in base[:-1]:
             source_path = source / "dist" / item.name
@@ -364,17 +382,26 @@ def read_json_member(archive: Path, name: str) -> dict:
 def verify_archives(directory: Path, pack: dict, lock: dict) -> None:
     slug = pack["slug"]
     version = pack["version"]
-    modrinth = read_json_member(directory / f"{slug}-{version}.mrpack", "modrinth.index.json")
-    if modrinth["versionId"] != version or modrinth["name"] != pack["name"]:
-        fail("Modrinth pack identity does not match pack.toml")
-    dependencies = modrinth["dependencies"]
-    if dependencies.get("minecraft") != pack["minecraft"]:
-        fail("Modrinth pack has the wrong Minecraft version")
-    loader_key = f"{pack['loader']}-loader"
-    if dependencies.get(loader_key) != pack["loader_version"]:
-        fail("Modrinth pack has the wrong loader version")
-    if len(modrinth["files"]) != 48:
-        fail("Modrinth pack must contain all 48 canonical identities")
+    for side in ("client", "server"):
+        modrinth = read_json_member(
+            directory / f"{slug}-{version}-{side}.mrpack", "modrinth.index.json"
+        )
+        if modrinth["versionId"] != version or modrinth["name"] != pack["name"]:
+            fail(f"{side} pack identity does not match pack.toml")
+        dependencies = modrinth["dependencies"]
+        if dependencies.get("minecraft") != pack["minecraft"]:
+            fail(f"{side} pack has the wrong Minecraft version")
+        loader_key = f"{pack['loader']}-loader"
+        if dependencies.get(loader_key) != pack["loader_version"]:
+            fail(f"{side} pack has the wrong loader version")
+        expected_paths = sorted(
+            item["path"]
+            for item in lock["file"]
+            if item["env"][side] != "unsupported"
+        )
+        actual_paths = sorted(item["path"] for item in modrinth["files"])
+        if actual_paths != expected_paths:
+            fail(f"{side} pack does not match the locked {side} files")
 
     curseforge = read_json_member(
         directory / f"{slug}-{version}-curseforge.zip", "manifest.json"
@@ -561,7 +588,8 @@ def verify(directory: Path, tag: str | None, allow_proof: bool) -> None:
         print(f"CurseForge project: {curseforge_project}")
     for entry in artifacts:
         if entry["kind"] in {
-            "modrinth-pack",
+            "client-pack",
+            "server-pack",
             "curseforge-pack",
             "maven-pom",
             "maven-metadata",

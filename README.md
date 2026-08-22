@@ -26,7 +26,7 @@ Forever World 1.2.0 is for Minecraft 26.2 with Fabric Loader 0.19.3. Use Java 25
 
 ## Play
 
-The 1.2.0 release targets GitHub Releases, the [Maven repository](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.2.0/forever-world-1.2.0.mrpack), and CurseForge. After it is published, import the `.mrpack` in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition has 47 of the pack's 48 entries because Presence Footsteps has no Minecraft 26.2 file on CurseForge. Modrinth will use the complete `.mrpack` when it is published there.
+The 1.2.0 release targets GitHub Releases, the [Maven repository](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.2.0/forever-world-1.2.0-client.mrpack), and CurseForge. After it is published, import the client `.mrpack` in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition has 47 of the pack's 48 entries because Presence Footsteps has no Minecraft 26.2 file on CurseForge. Modrinth will use the complete client pack when it is published there.
 
 ## Host
 

@@ -38,6 +38,7 @@ jobs:
       - name: Verify locked install
         run: |
           set -euo pipefail
+          test "$(swatch --version)" = "swatch 0.2.0"
           swatch install
           git diff --exit-code -- pack.toml pack.lock.toml overrides.toml release.toml
 
