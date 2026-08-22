@@ -12,7 +12,7 @@ runs:
     - name: Install Swatch 0.2.0
       shell: bash
       env:
-        SWATCH_REVISION: 167a2e4527857cfcb467cb449c35acdaf0fb933a
+        SWATCH_REVISION: 28fee0c2922ba236bcd6785c3f27a8547efe6c89
         SWATCH_VERSION: 0.2.0
       run: |
         set -euo pipefail
