@@ -16,8 +16,7 @@ def quote(value: str) -> str:
 
 
 def cache_path(file: dict) -> str:
-    name = Path(file["path"]).name
-    return f"../.cache/objects/{file['sha512']}/{name}"
+    return f"../.cache/objects/{file['sha512']}"
 
 
 def server_file(file: dict) -> bool:
@@ -33,8 +32,7 @@ def write_instance(
     name: str,
     pack: dict,
     sides: tuple[str, ...],
-    mods: list[dict],
-    extras: tuple[str, ...] = (),
+    mods: tuple[str, ...] = (),
     server_properties: bool = False,
 ) -> None:
     output.extend(
@@ -52,40 +50,38 @@ def write_instance(
         output.append(
             'server_properties = { online-mode = "false", enforce-secure-profile = "false" }'
         )
-    output.extend(["mods = [", *(f"  {quote(cache_path(file))}," for file in mods)])
-    output.extend(f"  {quote(extra)}," for extra in extras)
+    output.extend(["mods = [", *(f"  {quote(mod)}," for mod in mods)])
     output.append("]")
 
 
-def write_fixtures(output: list[str], files: list[dict]) -> None:
+def write_fixtures(
+    output: list[str], files: list[dict], side: str | None = None
+) -> None:
     for file in files:
-        output.extend(
-            [
-                "",
-                "[[instance.fixture]]",
-                f"from = {quote(cache_path(file))}",
-                f"to = {quote(file['path'])}",
-                'side = "client"',
-                "replace = true",
-            ]
-        )
+        fixture = [
+            "",
+            "[[instance.fixture]]",
+            f"from = {quote(cache_path(file))}",
+            f"to = {quote(file['path'])}",
+        ]
+        if side is not None:
+            fixture.append(f"side = {quote(side)}")
+        fixture.append("replace = true")
+        output.extend(fixture)
 
 
 def render(lock: dict) -> str:
     pack = lock["pack"]
     files = lock["file"]
-    client_mods = [
-        file
-        for file in files
-        if client_file(file) and file["path"].startswith("mods/")
+    client_files = [file for file in files if client_file(file)]
+    server_files = [file for file in files if server_file(file)]
+    shared_files = [file for file in files if client_file(file) and server_file(file)]
+    client_only_files = [
+        file for file in files if client_file(file) and not server_file(file)
     ]
-    client_only_mods = [
-        file
-        for file in files
-        if client_file(file) and not server_file(file) and file["path"].startswith("mods/")
+    server_only_files = [
+        file for file in files if server_file(file) and not client_file(file)
     ]
-    shaders = [file for file in files if client_file(file) and file["path"].startswith("shaderpacks/")]
-    server_mods = [file for file in files if server_file(file)]
     teakit = (
         f"maven:com.iamkaf.teakit:teakit-fabric:{TEAKIT_VERSION}+{pack['minecraft']}"
     )
@@ -104,22 +100,22 @@ def render(lock: dict) -> str:
         f"{pack['slug']}-server",
         pack,
         ("server",),
-        server_mods,
         server_properties=True,
     )
-    write_instance(output, f"{pack['slug']}-client", pack, ("client",), client_mods)
-    write_fixtures(output, shaders)
+    write_fixtures(output, server_files)
+    write_instance(output, f"{pack['slug']}-client", pack, ("client",))
+    write_fixtures(output, client_files)
     write_instance(
         output,
         f"{pack['slug']}-pair",
         pack,
         ("client", "server"),
-        server_mods,
-        extras=(teakit,),
+        mods=(teakit,),
         server_properties=True,
     )
-    write_fixtures(output, client_only_mods)
-    write_fixtures(output, shaders)
+    write_fixtures(output, shared_files)
+    write_fixtures(output, client_only_files, side="client")
+    write_fixtures(output, server_only_files, side="server")
     return "\n".join(output) + "\n"
 
 
