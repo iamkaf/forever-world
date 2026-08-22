@@ -91,7 +91,7 @@ The release environments need this setup before a tag is pushed:
 - `github-release` uses the workflow's GitHub token.
 - `maven-release` needs `MAVEN_PUBLISH_USERNAME` and `MAVEN_PUBLISH_PASSWORD` secrets. Numbered releases go to `https://z.kaf.sh/releases`. The repository must return a strong `ETag` for metadata and enforce `If-Match` and `If-None-Match` on uploads; Maven publication stops before replacing metadata if those atomic-write guarantees are unavailable.
 - `curseforge-release` needs a `CURSEFORGE_TOKEN` secret for project `1663962`.
-- `modrinth-release` needs `MODRINTH_RELEASE_ENABLED=true` and a `MODRINTH_TOKEN` secret for project `TRgAveYb`. After Modrinth publication is approved, run the manual Publish Modrinth workflow with `v1.2.0`. It downloads and verifies the original signed GitHub release instead of preparing the pack again.
+- `modrinth-release` needs a `MODRINTH_TOKEN` secret for project `TRgAveYb`. Run the manual Publish Modrinth workflow with `v1.2.0` after the signed GitHub release exists. It downloads and verifies the original release instead of preparing the pack again, then creates an unlisted Modrinth version.
 
 The workflow, not a local live `swatch publish`, owns external releases. CurseForge's author API cannot verify an existing upload before creating one. After an ambiguous network failure, inspect the project before retrying.
 

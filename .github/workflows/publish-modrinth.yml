@@ -17,8 +17,7 @@ concurrency:
 
 jobs:
   modrinth:
-    name: Publish verified Modrinth release
-    if: vars.MODRINTH_RELEASE_ENABLED == 'true'
+    name: Publish verified unlisted Modrinth release
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: modrinth-release
@@ -33,17 +32,6 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.tag }}
         run: python3 scripts/artifact_proof.py validate-source --tag "$RELEASE_TAG"
-
-      - name: Enforce the Modrinth publication date
-        env:
-          TZ: America/Sao_Paulo
-        run: |
-          not_before=$(date --date='2026-09-26 00:00:00' +%s)
-          now=$(date +%s)
-          if (( now < not_before )); then
-            echo "Modrinth publication is unavailable before 2026-09-26 in America/Sao_Paulo" >&2
-            exit 1
-          fi
 
       - name: Download the signed GitHub release
         env:
@@ -123,8 +111,8 @@ jobs:
               version_type: "release",
               loaders: [$loader],
               game_versions: [$minecraft],
-              featured: true,
-              status: "listed",
+              featured: false,
+              status: "unlisted",
               project_id: $project,
               file_parts: ["file"],
               primary_file: "file"
