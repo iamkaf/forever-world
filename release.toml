@@ -1,0 +1,6 @@
+format = 1
+
+[curseforge]
+# Replace 0 with the approved Forever World project ID before tagging a release.
+project_id = 0
+author = "iamkaf"

@@ -24,7 +24,10 @@ jobs:
           fetch-depth: 0
 
       - name: Validate clean tag source
-        run: python3 scripts/artifact_proof.py validate-source --tag "$GITHUB_REF_NAME"
+        run: >-
+          python3 scripts/artifact_proof.py validate-source
+          --tag "$GITHUB_REF_NAME"
+          --require-publishable
 
       - name: Check pack policy
         run: python3 scripts/check_pack_policy.py
@@ -43,13 +46,16 @@ jobs:
         run: |
           set -euo pipefail
           swatch install
-          git diff --exit-code -- pack.toml pack.lock.toml overrides.toml
+          git diff --exit-code -- pack.toml pack.lock.toml overrides.toml release.toml
 
       - name: Prepare every destination from the locked pack
         run: python3 scripts/artifact_proof.py prepare --output build/release
 
       - name: Confirm preparation left the source clean
-        run: python3 scripts/artifact_proof.py validate-source --tag "$GITHUB_REF_NAME"
+        run: >-
+          python3 scripts/artifact_proof.py validate-source
+          --tag "$GITHUB_REF_NAME"
+          --require-publishable
 
       - name: Preserve prepared bytes
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -214,6 +220,9 @@ jobs:
     timeout-minutes: 10
     environment: maven-release
     steps:
+      - name: Check out release scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
       - name: Download verified bytes
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -260,10 +269,13 @@ jobs:
             local source="$1"
             local destination="$2"
             local mutable="${3:-false}"
+            local verify_metadata="${4:-false}"
             local status
             status=$(curl --silent --show-error \
               --user "$MAVEN_PUBLISH_USERNAME:$MAVEN_PUBLISH_PASSWORD" \
-              --output "$RUNNER_TEMP/existing" --write-out '%{http_code}' "$destination")
+              --header 'Cache-Control: no-cache' \
+              --output "$RUNNER_TEMP/existing" --write-out '%{http_code}' \
+              "$destination?release_check=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT")
             if [[ "$status" == "200" ]]; then
               if cmp --silent "$source" "$RUNNER_TEMP/existing"; then
                 return
@@ -271,6 +283,11 @@ jobs:
               if [[ "$mutable" != "true" ]]; then
                 echo "Maven already has different bytes at $destination" >&2
                 exit 1
+              fi
+              if [[ "$verify_metadata" == "true" ]]; then
+                python3 scripts/artifact_proof.py verify-maven-update \
+                  --prepared "$source" \
+                  --current "$RUNNER_TEMP/existing"
               fi
             fi
             [[ "$status" == "200" || "$status" == "404" ]] || {
@@ -286,7 +303,7 @@ jobs:
             upload "release/$name.sha256" "$base/$version/$name.sha256"
             upload "release/$name.sha512" "$base/$version/$name.sha512"
           done
-          upload "release/$metadata" "$base/$metadata" true
+          upload "release/$metadata" "$base/$metadata" true true
           upload "release/$metadata.sha256" "$base/$metadata.sha256" true
           upload "release/$metadata.sha512" "$base/$metadata.sha512" true
 
@@ -305,18 +322,21 @@ jobs:
 
       - name: Require CurseForge project setup
         env:
-          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
         run: |
-          [[ "$CURSEFORGE_PROJECT_ID" =~ ^[1-9][0-9]*$ ]] || {
-            echo "CURSEFORGE_PROJECT_ID must be a positive project ID" >&2
+          project=$(jq --raw-output \
+            '.destinations.curseforge.project' release/release-manifest.json)
+          [[ "$project" =~ ^[1-9][0-9]*$ ]] || {
+            echo "signed CurseForge project ID is not configured" >&2
             exit 1
           }
-          test -n "$CURSEFORGE_TOKEN" || { echo "CURSEFORGE_TOKEN is not configured" >&2; exit 1; }
+          if [[ -z "$CURSEFORGE_TOKEN" ]]; then
+            echo "CURSEFORGE_TOKEN is not configured" >&2
+            exit 1
+          fi
 
       - name: Upload the 47-file CurseForge edition
         env:
-          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
         run: |
           set -euo pipefail
@@ -329,6 +349,8 @@ jobs:
           artifact=$(jq --raw-output \
             '.artifacts[] | select(.kind == "curseforge-pack") | .name' \
             release/release-manifest.json)
+          project=$(jq --raw-output \
+            '.destinations.curseforge.project' release/release-manifest.json)
           jq --null-input \
             --rawfile changelog release/release-notes.md \
             --arg displayName "$name $version" \
@@ -345,4 +367,4 @@ jobs:
             --header "X-Api-Token: $CURSEFORGE_TOKEN" \
             --form "metadata=<$RUNNER_TEMP/curseforge-metadata.json;type=application/json" \
             --form "file=@release/$artifact;type=application/zip" \
-            "https://minecraft.curseforge.com/api/projects/$CURSEFORGE_PROJECT_ID/upload-file"
+            "https://minecraft.curseforge.com/api/projects/$project/upload-file"

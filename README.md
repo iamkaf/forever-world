@@ -90,7 +90,7 @@ The release environments need this setup before a tag is pushed:
 
 - `github-release` uses the workflow's GitHub token.
 - `maven-release` needs `MAVEN_PUBLISH_USERNAME` and `MAVEN_PUBLISH_PASSWORD` secrets. Numbered releases go to `https://z.kaf.sh/releases`.
-- `curseforge-release` needs a positive `CURSEFORGE_PROJECT_ID` variable and a `CURSEFORGE_TOKEN` secret.
+- `curseforge-release` needs a `CURSEFORGE_TOKEN` secret. Replace the `0` project placeholder in `release.toml` with the approved Forever World project ID before tagging; the release workflow refuses to run while it is unset.
 - `modrinth-release` needs `MODRINTH_RELEASE_ENABLED=true`, a `MODRINTH_TOKEN` secret, and the `forever-world` project. After Modrinth publication is approved, run the manual Publish Modrinth workflow with `v1.2.0`. It downloads and verifies the original signed GitHub release instead of preparing the pack again.
 
 The workflow, not a local live `swatch publish`, owns external releases. CurseForge's author API cannot verify an existing upload before creating one. After an ambiguous network failure, inspect the project before retrying.

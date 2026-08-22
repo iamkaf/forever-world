@@ -60,6 +60,19 @@ def pack_data() -> tuple[dict, dict]:
     return source, lock
 
 
+def release_data() -> dict:
+    release = load_toml(ROOT / "release.toml")
+    if release.get("format") != 1:
+        fail("release.toml must use format 1")
+    curseforge = release.get("curseforge", {})
+    project_id = curseforge.get("project_id")
+    if not isinstance(project_id, int) or isinstance(project_id, bool) or project_id < 0:
+        fail("release.toml curseforge.project_id must be zero or a positive integer")
+    if curseforge.get("author") != CURSEFORGE_AUTHOR:
+        fail(f"release.toml curseforge.author must be {CURSEFORGE_AUTHOR!r}")
+    return release
+
+
 def content_count(source: dict) -> int:
     return sum(
         len(source.get(section, {}))
@@ -67,8 +80,9 @@ def content_count(source: dict) -> int:
     )
 
 
-def validate_source(tag: str | None) -> dict:
+def validate_source(tag: str | None, require_publishable: bool = False) -> dict:
     source, lock = pack_data()
+    release = release_data()
     pack = source["pack"]
     if tag is not None and tag != f"v{pack['version']}":
         fail(f"tag {tag!r} does not match pack version v{pack['version']}")
@@ -86,18 +100,21 @@ def validate_source(tag: str | None) -> dict:
         fail("Presence Footsteps must stay excluded from the CurseForge edition")
     if source["publish"]["maven"]["repository"] != "https://z.kaf.sh/releases":
         fail("numbered pack releases must use the Maven releases repository")
+    if require_publishable and release["curseforge"]["project_id"] == 0:
+        fail("release.toml needs the approved CurseForge project ID before tagging")
     return pack
 
 
 def release_pack_toml() -> str:
     text = (ROOT / "pack.toml").read_text(encoding="utf-8")
+    curseforge = release_data()["curseforge"]
     marker = "curseforge = false"
     if text.count(marker) != 1:
         fail("pack.toml must contain one explicit disabled CurseForge target")
     replacement = (
         "[publish.curseforge]\n"
-        f"project = {PREPARE_PROJECT_SENTINEL}\n"
-        f'author = "{CURSEFORGE_AUTHOR}"'
+        f"project = {curseforge['project_id'] or PREPARE_PROJECT_SENTINEL}\n"
+        f'author = "{curseforge["author"]}"'
     )
     return text.replace(marker, replacement)
 
@@ -317,7 +334,10 @@ def prepare(output: Path, swatch: str) -> None:
         "destinations": {
             "github": source["publish"]["github"],
             "maven": source["publish"]["maven"],
-            "curseforge": {"author": CURSEFORGE_AUTHOR, "project": None},
+            "curseforge": {
+                "author": release_data()["curseforge"]["author"],
+                "project": release_data()["curseforge"]["project_id"],
+            },
             "modrinth": source["publish"]["modrinth"],
         },
         "artifacts": [
@@ -402,6 +422,32 @@ def verify_maven(directory: Path, pack: dict) -> None:
         fail("Maven metadata release version does not match the pack")
 
 
+def verify_maven_update(prepared_path: Path, current_path: Path) -> None:
+    prepared = ET.parse(prepared_path).getroot()
+    current = ET.parse(current_path).getroot()
+    for field in ("groupId", "artifactId"):
+        if current.findtext(field) != prepared.findtext(field):
+            fail(f"published Maven metadata has a different {field}")
+    prepared_versions = {
+        element.text
+        for element in prepared.findall("./versioning/versions/version")
+        if element.text
+    }
+    current_versions = {
+        element.text
+        for element in current.findall("./versioning/versions/version")
+        if element.text
+    }
+    if not current_versions.issubset(prepared_versions):
+        newer = sorted(current_versions - prepared_versions, key=version_key)
+        fail(f"published Maven metadata has newer versions: {', '.join(newer)}")
+    for field in ("latest", "release"):
+        value = current.findtext(f"./versioning/{field}")
+        if value is not None and value not in prepared_versions:
+            fail(f"published Maven metadata has an unknown {field} version: {value}")
+    print("published Maven metadata is safe to advance to the signed release index")
+
+
 def verify_checksums(directory: Path, entries: dict[str, dict]) -> None:
     for entry in entries.values():
         path = directory / entry["name"]
@@ -452,7 +498,10 @@ def verify(directory: Path, tag: str | None, allow_proof: bool) -> None:
     expected_destinations = {
         "github": source["publish"]["github"],
         "maven": source["publish"]["maven"],
-        "curseforge": {"author": CURSEFORGE_AUTHOR, "project": None},
+        "curseforge": {
+            "author": release_data()["curseforge"]["author"],
+            "project": release_data()["curseforge"]["project_id"],
+        },
         "modrinth": source["publish"]["modrinth"],
     }
     if manifest.get("destinations") != expected_destinations:
@@ -497,6 +546,11 @@ def verify(directory: Path, tag: str | None, allow_proof: bool) -> None:
         f"{pack['loader'].capitalize()} Loader {pack['loader_version']}"
     )
     print("content: 48 canonical identities; CurseForge: 47, excluding presence-footsteps")
+    curseforge_project = release_data()["curseforge"]["project_id"]
+    if curseforge_project == 0:
+        print("CurseForge project: unset in release.toml; tagged publication will fail")
+    else:
+        print(f"CurseForge project: {curseforge_project}")
     for entry in artifacts:
         if entry["kind"] in {
             "modrinth-pack",
@@ -507,8 +561,8 @@ def verify(directory: Path, tag: str | None, allow_proof: bool) -> None:
             print(f"{entry['name']}  sha256:{entry['sha256']}  sha512:{entry['sha512']}")
 
 
-def clean_source(tag: str) -> None:
-    validate_source(tag)
+def clean_source(tag: str, require_publishable: bool) -> None:
+    validate_source(tag, require_publishable)
     completed = subprocess.run(
         ["git", "status", "--porcelain", "--untracked-files=all"],
         cwd=ROOT,
@@ -526,6 +580,7 @@ def main() -> int:
     subparsers = parser.add_subparsers(dest="command", required=True)
     validate_parser = subparsers.add_parser("validate-source")
     validate_parser.add_argument("--tag", required=True)
+    validate_parser.add_argument("--require-publishable", action="store_true")
     prepare_parser = subparsers.add_parser("prepare")
     prepare_parser.add_argument("--output", type=Path, default=BUILD / "release")
     prepare_parser.add_argument(
@@ -535,12 +590,17 @@ def main() -> int:
     verify_parser.add_argument("--directory", type=Path, default=BUILD / "release")
     verify_parser.add_argument("--tag")
     verify_parser.add_argument("--allow-proof", action="store_true")
+    maven_parser = subparsers.add_parser("verify-maven-update")
+    maven_parser.add_argument("--prepared", type=Path, required=True)
+    maven_parser.add_argument("--current", type=Path, required=True)
     args = parser.parse_args()
     try:
         if args.command == "validate-source":
-            clean_source(args.tag)
+            clean_source(args.tag, args.require_publishable)
         elif args.command == "prepare":
             prepare(args.output, args.swatch)
+        elif args.command == "verify-maven-update":
+            verify_maven_update(args.prepared, args.current)
         else:
             verify(args.directory, args.tag, args.allow_proof)
     except (

@@ -29,9 +29,9 @@ install: _swatch-install render-modstage
 install-locked: _require-swatch
     #!/usr/bin/env bash
     set -euo pipefail
-    before=$(sha256sum pack.toml pack.lock.toml overrides.toml)
+    before=$(sha256sum pack.toml pack.lock.toml overrides.toml release.toml)
     "{{ swatch_bin }}" install
-    after=$(sha256sum pack.toml pack.lock.toml overrides.toml)
+    after=$(sha256sum pack.toml pack.lock.toml overrides.toml release.toml)
     if [[ "$before" != "$after" ]]; then
     echo "swatch install changed the locked pack" >&2
     exit 1

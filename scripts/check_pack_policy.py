@@ -80,6 +80,7 @@ def content(pack: dict) -> list[tuple[str, str, str, str, str]]:
 def check() -> None:
     source = load("pack.toml")
     lock = load("pack.lock.toml")
+    release = load("release.toml")
     pack = source["pack"]
 
     assert_equal(pack["name"], "FOREVER WORLD", "pack name")
@@ -179,6 +180,15 @@ def check() -> None:
         "forever-world",
         "Modrinth project",
     )
+    assert_equal(release["format"], 1, "release config format")
+    assert_equal(release["curseforge"]["author"], "iamkaf", "CurseForge author")
+    curseforge_project = release["curseforge"]["project_id"]
+    if (
+        not isinstance(curseforge_project, int)
+        or isinstance(curseforge_project, bool)
+        or curseforge_project < 0
+    ):
+        fail("CurseForge project ID must be zero or a positive integer")
 
 
 def main() -> int:

@@ -37,7 +37,7 @@ jobs:
         run: |
           set -euo pipefail
           swatch install
-          git diff --exit-code -- pack.toml pack.lock.toml overrides.toml
+          git diff --exit-code -- pack.toml pack.lock.toml overrides.toml release.toml
 
       - name: Dry-prepare and prove release artifacts
         run: python3 scripts/artifact_proof.py prepare
