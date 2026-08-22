@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 from threading import Thread
 import unittest
 
-from maven_conditional_upload import PublishError, publish
+from maven_conditional_upload import PublishError, publish, publish_immutable
 
 
 def metadata(*versions: str) -> bytes:
@@ -132,6 +132,88 @@ class ConditionalUploadTest(unittest.TestCase):
     def url_for(self, path: str) -> str:
         host, port = self.server.server_address
         return f"http://{host}:{port}{path}"
+
+
+class ImmutableHandler(BaseHTTPRequestHandler):
+    def do_GET(self) -> None:
+        self.server.fetch_authorization = self.headers.get("Authorization")
+        self.server.fetch_user_agent = self.headers.get("User-Agent")
+        if self.server.content is None:
+            self.send_response(404)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        self.send_response(200)
+        self.send_header("Content-Length", str(len(self.server.content)))
+        self.end_headers()
+        self.wfile.write(self.server.content)
+
+    def do_PUT(self) -> None:
+        self.server.put_authorization = self.headers.get("Authorization")
+        self.server.put_user_agent = self.headers.get("User-Agent")
+        length = int(self.headers["Content-Length"])
+        self.server.content = self.rfile.read(length)
+        self.send_response(204)
+        self.end_headers()
+
+    def log_message(self, format: str, *args: object) -> None:
+        pass
+
+
+class ImmutableUploadTest(unittest.TestCase):
+    def setUp(self) -> None:
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), ImmutableHandler)
+        self.server.content = None
+        self.server.fetch_authorization = None
+        self.server.fetch_user_agent = None
+        self.server.put_authorization = None
+        self.server.put_user_agent = None
+        self.thread = Thread(target=self.server.serve_forever, daemon=True)
+        self.thread.start()
+
+    def tearDown(self) -> None:
+        self.server.shutdown()
+        self.server.server_close()
+        self.thread.join()
+
+    def test_missing_file_is_read_publicly_then_uploaded_with_auth(self) -> None:
+        with TemporaryDirectory() as temporary:
+            source = Path(temporary) / "pack.mrpack"
+            source.write_bytes(b"signed release bytes")
+            publish_immutable(
+                source,
+                self.url,
+                self.url,
+                "release-user",
+                "release-password",
+            )
+        self.assertIsNone(self.server.fetch_authorization)
+        self.assertEqual(self.server.fetch_user_agent, "forever-world-release/1")
+        self.assertEqual(
+            self.server.put_authorization,
+            "Basic cmVsZWFzZS11c2VyOnJlbGVhc2UtcGFzc3dvcmQ=",
+        )
+        self.assertEqual(self.server.put_user_agent, "forever-world-release/1")
+        self.assertEqual(self.server.content, b"signed release bytes")
+
+    def test_matching_file_is_not_uploaded_again(self) -> None:
+        self.server.content = b"signed release bytes"
+        with TemporaryDirectory() as temporary:
+            source = Path(temporary) / "pack.mrpack"
+            source.write_bytes(self.server.content)
+            publish_immutable(
+                source,
+                self.url,
+                self.url,
+                "release-user",
+                "release-password",
+            )
+        self.assertIsNone(self.server.put_authorization)
+
+    @property
+    def url(self) -> str:
+        host, port = self.server.server_address
+        return f"http://{host}:{port}/pack.mrpack"
 
 
 if __name__ == "__main__":
