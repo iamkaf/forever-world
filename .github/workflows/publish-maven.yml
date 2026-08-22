@@ -115,6 +115,7 @@ jobs:
             local read_destination="$3"
             local status
             status=$(curl --silent --show-error \
+              --user-agent forever-world-release/1 \
               --header 'Cache-Control: no-cache' \
               --output "$RUNNER_TEMP/existing" --write-out '%{http_code}' \
               "$read_destination?release_check=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT")
@@ -130,6 +131,7 @@ jobs:
               exit 1
             }
             curl --fail --show-error --silent \
+              --user-agent forever-world-release/1 \
               --user "$MAVEN_PUBLISH_USERNAME:$MAVEN_PUBLISH_PASSWORD" \
               --upload-file "$source" "$destination"
           }
