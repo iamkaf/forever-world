@@ -226,6 +226,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     environment: maven-release
+    env:
+      MAVEN_READ_REPOSITORY: https://maven.kaf.sh
     steps:
       - name: Check out release scripts
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -272,14 +274,16 @@ jobs:
           repository=$(jq --raw-output \
             '.destinations.maven.repository' release/release-manifest.json)
           base="$repository/$group_path/$slug"
+          read_base="$MAVEN_READ_REPOSITORY/$group_path/$slug"
           upload() {
             local source="$1"
             local destination="$2"
+            local read_destination="$3"
             local status
             status=$(curl --silent --show-error \
               --header 'Cache-Control: no-cache' \
               --output "$RUNNER_TEMP/existing" --write-out '%{http_code}' \
-              "$destination?release_check=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT")
+              "$read_destination?release_check=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT")
             if [[ "$status" == "200" ]]; then
               if cmp --silent "$source" "$RUNNER_TEMP/existing"; then
                 return
@@ -296,13 +300,14 @@ jobs:
               --upload-file "$source" "$destination"
           }
           for name in "$mrpack" "$pom"; do
-            upload "release/$name" "$base/$version/$name"
-            upload "release/$name.sha256" "$base/$version/$name.sha256"
-            upload "release/$name.sha512" "$base/$version/$name.sha512"
+            upload "release/$name" "$base/$version/$name" "$read_base/$version/$name"
+            upload "release/$name.sha256" "$base/$version/$name.sha256" "$read_base/$version/$name.sha256"
+            upload "release/$name.sha512" "$base/$version/$name.sha512" "$read_base/$version/$name.sha512"
           done
           python3 scripts/maven_conditional_upload.py \
             --source "release/$metadata" \
-            --destination "$base/$metadata"
+            --destination "$base/$metadata" \
+            --read-destination "$base/$metadata?release_check=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
 
   curseforge:
     name: Publish CurseForge release
