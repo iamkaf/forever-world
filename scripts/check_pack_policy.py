@@ -177,18 +177,13 @@ def check() -> None:
     )
     assert_equal(
         publish["modrinth"]["project"],
-        "forever-world",
+        "TRgAveYb",
         "Modrinth project",
     )
     assert_equal(release["format"], 1, "release config format")
     assert_equal(release["curseforge"]["author"], "iamkaf", "CurseForge author")
     curseforge_project = release["curseforge"]["project_id"]
-    if (
-        not isinstance(curseforge_project, int)
-        or isinstance(curseforge_project, bool)
-        or curseforge_project < 0
-    ):
-        fail("CurseForge project ID must be zero or a positive integer")
+    assert_equal(curseforge_project, 1663962, "CurseForge project ID")
 
 
 def main() -> int:
