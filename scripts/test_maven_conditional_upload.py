@@ -33,6 +33,7 @@ def metadata(*versions: str) -> bytes:
 
 class MetadataHandler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
+        self.server.fetch_path = self.path
         self.server.fetch_cache_control = self.headers.get("Cache-Control")
         self.server.fetch_authorization = self.headers.get("Authorization")
         self.send_response(200)
@@ -44,6 +45,7 @@ class MetadataHandler(BaseHTTPRequestHandler):
         self.wfile.write(self.server.content)
 
     def do_PUT(self) -> None:
+        self.server.put_path = self.path
         self.server.received_if_match = self.headers.get("If-Match")
         if self.server.mutate_before_put:
             self.server.content = self.server.concurrent_content
@@ -76,6 +78,8 @@ class ConditionalUploadTest(unittest.TestCase):
         self.server.received_if_match = None
         self.server.fetch_cache_control = None
         self.server.fetch_authorization = None
+        self.server.fetch_path = None
+        self.server.put_path = None
         self.thread = Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
 
@@ -106,10 +110,28 @@ class ConditionalUploadTest(unittest.TestCase):
         self.assertIsNone(self.server.received_if_match)
         self.assertEqual(self.server.content, self.current)
 
+    def test_public_read_origin_can_differ_from_authenticated_write_origin(self) -> None:
+        self.server.mutate_before_put = False
+        with TemporaryDirectory() as temporary:
+            source = Path(temporary) / "maven-metadata.xml"
+            source.write_bytes(self.prepared)
+            publish(
+                source,
+                self.url_for("/write/maven-metadata.xml"),
+                "release-user",
+                "release-password",
+                self.url_for("/read/maven-metadata.xml"),
+            )
+        self.assertEqual(self.server.fetch_path, "/read/maven-metadata.xml")
+        self.assertEqual(self.server.put_path, "/write/maven-metadata.xml")
+
     @property
     def url(self) -> str:
+        return self.url_for("/maven-metadata.xml")
+
+    def url_for(self, path: str) -> str:
         host, port = self.server.server_address
-        return f"http://{host}:{port}/maven-metadata.xml"
+        return f"http://{host}:{port}{path}"
 
 
 if __name__ == "__main__":

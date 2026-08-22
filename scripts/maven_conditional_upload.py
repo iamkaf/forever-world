@@ -56,10 +56,16 @@ def fetch(destination: str) -> tuple[int, bytes, str | None]:
         raise PublishError(f"Maven metadata lookup failed with HTTP {status}") from error
 
 
-def publish(source: Path, destination: str, username: str, password: str) -> None:
+def publish(
+    source: Path,
+    destination: str,
+    username: str,
+    password: str,
+    read_destination: str | None = None,
+) -> None:
     prepared = source.read_bytes()
     auth = authorization(username, password)
-    status, current, etag = fetch(destination)
+    status, current, etag = fetch(read_destination or destination)
     if len(current) > 1024 * 1024:
         raise PublishError("published Maven metadata is unexpectedly large")
 
@@ -113,6 +119,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--destination", required=True)
+    parser.add_argument("--read-destination")
     args = parser.parse_args()
     username = os.environ.get("MAVEN_PUBLISH_USERNAME", "")
     password = os.environ.get("MAVEN_PUBLISH_PASSWORD", "")
@@ -120,7 +127,13 @@ def main() -> int:
         print("Maven publication credentials are not configured", file=sys.stderr)
         return 1
     try:
-        publish(args.source, args.destination, username, password)
+        publish(
+            args.source,
+            args.destination,
+            username,
+            password,
+            args.read_destination,
+        )
     except (OSError, PublishError, ET.ParseError) as error:
         print(f"Maven metadata publication failed: {error}", file=sys.stderr)
         return 1
