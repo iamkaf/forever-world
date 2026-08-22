@@ -26,7 +26,7 @@ Forever World 1.2.0 is for Minecraft 26.2 with Fabric Loader 0.19.3. Use Java 25
 
 ## Play
 
-The 1.2.0 release targets GitHub Releases, the [Maven repository](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.2.0/forever-world-1.2.0-client.mrpack), and CurseForge. After it is published, import the client `.mrpack` in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition has 47 of the pack's 48 entries because Presence Footsteps has no Minecraft 26.2 file on CurseForge. Modrinth will use the complete client pack when it is published there.
+Forever World 1.2.0 is available from GitHub Releases, [CurseForge](https://www.curseforge.com/minecraft/modpacks/forever-world), and the [Maven repository](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.2.0/forever-world-1.2.0-client.mrpack). Import the client `.mrpack` in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition has 47 of the pack's 48 entries because Presence Footsteps has no Minecraft 26.2 file on CurseForge. The other editions contain all 48.
 
 ## Host
 
@@ -57,12 +57,13 @@ sodium = "mc26.2-0.9.1-fabric"
 
 ```bash
 swatch install
+swatch stage all
 just run-client
 just run-server
 just run-pair
 ```
 
-`swatch install` resolves and downloads the locked files. The `just` recipes render the pack's Modstage client, server, and pair instances from that lockfile. `just run-pair` starts the local client and dedicated server together for TeaKit checks.
+`swatch install` resolves and downloads the locked files. `swatch stage all` writes complete client and server trees under `generated/stage/`. The `just` recipes stage those trees before launching the static Modstage client, server, or TeaKit pair. `just run-pair-xvfb` runs the pair in a background X server.
 
 Maintainers need Swatch on `PATH`, or can set `SWATCH_BIN` to its executable.
 
@@ -82,23 +83,24 @@ Forever World versions describe what changed in the pack:
 
 CurseForge files are resolved with Packwiz and pinned in `pack.lock.toml`. Content exceptions in `overrides.toml` refer to the stable content IDs from `pack.toml`, not filenames. Run `swatch install --curseforge` when a changed pack needs new CurseForge mappings. Swatch runs `packwiz` from `PATH`; `PACKWIZ_BIN` can override the command.
 
-`just publish-dry` prepares every 1.2.0 artifact without uploading. It prints the pack version, Minecraft and loader versions, artifact names, and SHA-256 and SHA-512 hashes. It also checks the 48-entry canonical pack and the 47-entry CurseForge edition against the lockfile.
+`just publish-dry` prepares a publication preview without uploading. Swatch checks the manifest, lockfile, authored files, configured destinations, and prepared artifact hashes.
 
-Pushing the matching `v1.2.0` tag starts the release workflow. It prepares the artifacts once, signs the release manifest through Sigstore, creates GitHub provenance attestations, verifies both kinds of proof, and only then makes the verified bytes available to GitHub Releases, Maven, and CurseForge. Merges and untagged pushes never publish.
+Run the Release workflow from `main` with the matching `v1.2.0` tag. It stages the pack and reruns the TeaKit client and dedicated server pair under Xvfb before it prepares any release bytes. It then signs `release.json` through Sigstore, creates GitHub provenance attestations, and verifies both kinds of proof. The `publish` input controls whether that verified release goes to GitHub Releases, Modrinth, CurseForge, and Maven. Pull requests and ordinary pushes never publish.
 
-The release environments need this setup before a tag is pushed:
+The `pack-release` environment needs these secrets before publication:
 
-- `github-release` uses the workflow's GitHub token.
-- `maven-release` needs `MAVEN_PUBLISH_USERNAME` and `MAVEN_PUBLISH_PASSWORD` secrets. Numbered releases go to `https://z.kaf.sh/releases`. The repository must return a strong `ETag` for metadata and enforce `If-Match` and `If-None-Match` on uploads; Maven publication stops before replacing metadata if those atomic-write guarantees are unavailable.
-- `curseforge-release` needs a `CURSEFORGE_TOKEN` secret for project `1663962`.
-- `modrinth-release` needs a `MODRINTH_TOKEN` secret for project `TRgAveYb`. Run the manual Publish Modrinth workflow with `v1.2.0` after the signed GitHub release exists. It downloads and verifies the original release instead of preparing the pack again, then creates an unlisted Modrinth version.
+- `MAVEN_PUBLISH_USERNAME` and `MAVEN_PUBLISH_PASSWORD` for numbered releases at `https://z.kaf.sh/releases`.
+- `CURSEFORGE_TOKEN` for project `1663962`.
+- `MODRINTH_TOKEN` for project `TRgAveYb`.
 
-The workflow, not a local live `swatch publish`, owns external releases. CurseForge's author API cannot verify an existing upload before creating one. After an ambiguous network failure, inspect the project before retrying.
+The workflow uses its GitHub token for GitHub Releases. Swatch prepares once, verifies the same files again in the publication job, and publishes that verified snapshot without rebuilding it.
+
+CurseForge's author API cannot verify an existing upload before creating one. After an ambiguous network failure, inspect the project before retrying.
 
 TeaKit is only for the pair check. It never goes in the pack, and it does not change Fabric Loader 0.19.3.
 
 ## License
 
-Source available, all rights reserved. You can read this. You can't copy it, publish it, or ship it as your own without asking. See [LICENSE](LICENSE).
+Forever World's original source is licensed under the [PolyForm Shield License 1.0.0](LICENSE). Read the license before redistributing the repository or using it in another product.
 
 The mods and shaderpacks keep their own licenses. I'm not relicensing Sodium.

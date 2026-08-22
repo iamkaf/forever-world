@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+swatch_bin=${SWATCH_BIN:-swatch}
+"$swatch_bin" stage all
+mkdir -p build/teakit
+xvfb-run -a ./teakitw pair \
+  --no-sync-sdk \
+  --node 26.2-fabric \
+  --modstage-config modstage.toml \
+  --modstage-instance forever-world-pair \
+  --test-file tests/teakit/startup.test.ts \
+  --timeout 360 \
+  --report build/teakit/startup.json

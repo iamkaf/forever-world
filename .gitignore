@@ -4,7 +4,6 @@
 /generated
 /.teakit
 /build
-__pycache__/
 /server/pastel
 /server/pastel.exe
 /server/.pastel/
