@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@teakit/test": ["../../build/teakit/sdk/.teakit/types/@teakit/test"],
+      "@teakit/test/protocol": ["../../build/teakit/sdk/.teakit/types/@teakit/test/protocol.d.ts"],
+      "@teakit/test/capabilities.json": ["../../build/teakit/sdk/.teakit/types/@teakit/test/capabilities.json"]
+    },
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "checkJs": false,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "strict": true,
+    "target": "ES2022"
+  },
+  "include": ["./*.test.ts"]
+}

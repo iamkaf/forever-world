@@ -18,7 +18,7 @@ runs:
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
-        SWATCH_VERSION: 0.3.1
+        SWATCH_VERSION: 0.4.0
       run: |
         set -euo pipefail
         archive="swatch-linux-x86_64.tar.gz"
