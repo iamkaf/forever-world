@@ -18,9 +18,9 @@ install: _require-swatch
 install-locked: _require-swatch
     #!/usr/bin/env bash
     set -euo pipefail
-    before=$(sha256sum pack.toml pack.lock.toml overrides.toml)
+    before=$(sha256sum pack.toml pack.lock.toml)
     "{{ swatch_bin }}" install
-    after=$(sha256sum pack.toml pack.lock.toml overrides.toml)
+    after=$(sha256sum pack.toml pack.lock.toml)
     if [[ "$before" != "$after" ]]; then
         echo "swatch install changed the locked pack" >&2
         exit 1
@@ -42,14 +42,14 @@ stage: install-locked
     "{{ swatch_bin }}" stage all
 
 run-client: stage
-    modstage --config modstage.toml run client forever-world-client --timeout 180s
+    modstage --config tests/teakit/modstage.toml run client forever-world-client --timeout 180s
 
 run-server: stage
-    modstage --config modstage.toml run server forever-world-server --timeout 180s
+    modstage --config tests/teakit/modstage.toml run server forever-world-server --timeout 180s
 
 run-pair: stage
     mkdir -p build/teakit
-    ./teakitw pair --no-sync-sdk --node 26.2-fabric --modstage-config modstage.toml --modstage-instance forever-world-pair --test-file tests/teakit/startup.test.ts --timeout 360 --report build/teakit/startup.json
+    ./teakitw pair --no-sync-sdk --config tests/teakit/teakit.toml --node 26.2-fabric --modstage-config tests/teakit/modstage.toml --modstage-instance forever-world-pair --test-file tests/teakit/startup.test.ts --timeout 360 --report build/teakit/startup.json
 
 runtime-check: install-locked
     SWATCH_BIN="{{ swatch_bin }}" scripts/check-runtime

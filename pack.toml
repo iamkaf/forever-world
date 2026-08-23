@@ -78,3 +78,12 @@ repository = "https://z.kaf.sh/releases"
 [publish.curseforge]
 project = 1663962
 author = "iamkaf"
+
+[[publish.curseforge.add]]
+id = "complementary-unbound"
+project_id = 385587
+file_id = 7574260
+
+[[publish.curseforge.exclude]]
+id = "presence-footsteps"
+reason = "No Minecraft 26.2 file is available on CurseForge."

@@ -63,7 +63,7 @@ just run-server
 just run-pair
 ```
 
-`swatch install` resolves and downloads the locked files. `swatch stage all` writes complete client and server trees under `generated/stage/`. The `just` recipes stage those trees before launching the static Modstage client, server, or TeaKit pair. `just run-pair-xvfb` runs the pair in a background X server.
+`swatch install` resolves and downloads the locked files. `swatch stage all` writes complete client and server trees under `build/stage/`. The `just` recipes stage those trees before launching the static Modstage client, server, or TeaKit pair. `just run-pair-xvfb` runs the pair in a background X server.
 
 Maintainers need Swatch on `PATH`, or can set `SWATCH_BIN` to its executable.
 
@@ -81,7 +81,7 @@ Forever World versions describe what changed in the pack:
 - Minor: any mod, resource pack, or shader change.
 - Patch: fixes to the glue that do not change those inputs.
 
-CurseForge files are resolved with Packwiz and pinned in `pack.lock.toml`. Content exceptions in `overrides.toml` refer to the stable content IDs from `pack.toml`, not filenames. Run `swatch install --curseforge` when a changed pack needs new CurseForge mappings. Swatch runs `packwiz` from `PATH`; `PACKWIZ_BIN` can override the command.
+CurseForge files are resolved with Packwiz and pinned in `pack.lock.toml`. Content exceptions under `[publish.curseforge]` refer to stable content IDs, not filenames. Run `swatch install --curseforge` when a changed pack needs new CurseForge mappings. Swatch runs `packwiz` from `PATH`; `PACKWIZ_BIN` can override the command.
 
 `just publish-dry` prepares a publication preview without uploading. Swatch checks the manifest, lockfile, authored files, configured destinations, and prepared artifact hashes.
 

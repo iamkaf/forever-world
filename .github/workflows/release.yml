@@ -60,7 +60,7 @@ jobs:
           if git show-ref --verify --quiet "refs/tags/$TAG"; then
             test "$(git rev-parse "refs/tags/$TAG^{commit}")" = "$GITHUB_SHA"
           fi
-          test "$(swatch --version)" = "swatch 0.3.1"
+          test "$(swatch --version)" = "swatch 0.4.0"
           swatch install
           scripts/check
           test -z "$(git status --porcelain=v1 --untracked-files=all)"
@@ -91,7 +91,7 @@ jobs:
           if jq -e 'index("release.json") != null' <<<"$release_assets" >/dev/null; then
             gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
               --pattern release.json --dir "$existing_release"
-            cmp --silent dist/release.json "$existing_release/release.json"
+            cmp --silent build/dist/release.json "$existing_release/release.json"
           fi
           if jq -e 'index("release.json.sigstore.json") != null' \
             <<<"$release_assets" >/dev/null; then
@@ -102,19 +102,19 @@ jobs:
               --bundle "$existing_release/release.json.sigstore.json" \
               --certificate-identity "https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@refs/heads/main" \
               --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-              dist/release.json
+              build/dist/release.json
             cp "$existing_release/release.json.sigstore.json" \
-              dist/release.json.sigstore.json
+              build/dist/release.json.sigstore.json
           else
             cosign sign-blob --yes \
-              --bundle dist/release.json.sigstore.json \
-              dist/release.json
+              --bundle build/dist/release.json.sigstore.json \
+              build/dist/release.json
           fi
 
       - name: Attest prepared files
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
-          subject-path: dist/*
+          subject-path: build/dist/*
 
       - name: Verify signed release
         env:
@@ -123,11 +123,11 @@ jobs:
           set -euo pipefail
           swatch verify
           cosign verify-blob \
-            --bundle dist/release.json.sigstore.json \
+            --bundle build/dist/release.json.sigstore.json \
             --certificate-identity "https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@refs/heads/main" \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-            dist/release.json
-          for file in dist/*; do
+            build/dist/release.json
+          for file in build/dist/*; do
             gh attestation verify "$file" --repo "$GITHUB_REPOSITORY"
           done
 
@@ -135,7 +135,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: verified-pack-release
-          path: dist/
+          path: build/dist/
           if-no-files-found: error
           compression-level: 0
           retention-days: 90
@@ -165,7 +165,7 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: verified-pack-release
-          path: dist
+          path: build/dist
 
       - name: Reverify and publish
         env:
@@ -186,11 +186,11 @@ jobs:
           fi
           swatch verify
           cosign verify-blob \
-            --bundle dist/release.json.sigstore.json \
+            --bundle build/dist/release.json.sigstore.json \
             --certificate-identity "https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@refs/heads/main" \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-            dist/release.json
-          for file in dist/*; do
+            build/dist/release.json
+          for file in build/dist/*; do
             gh attestation verify "$file" --repo "$GITHUB_REPOSITORY"
           done
           swatch publish

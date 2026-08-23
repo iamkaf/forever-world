@@ -14,7 +14,7 @@ sides = ["server"]
 server_properties = { online-mode = "false", enforce-secure-profile = "false" }
 
 [[instance.fixture]]
-from = "generated/stage/server"
+from = "../../build/stage/server"
 to = "."
 replace = true
 
@@ -26,7 +26,7 @@ loader_version = "0.19.3"
 sides = ["client"]
 
 [[instance.fixture]]
-from = "generated/stage/client"
+from = "../../build/stage/client"
 to = "."
 replace = true
 
@@ -40,13 +40,13 @@ server_properties = { online-mode = "false", enforce-secure-profile = "false" }
 mods = ["maven:com.iamkaf.teakit:teakit-fabric:0.14.0+26.2"]
 
 [[instance.fixture]]
-from = "generated/stage/client"
+from = "../../build/stage/client"
 to = "."
 side = "client"
 replace = true
 
 [[instance.fixture]]
-from = "generated/stage/server"
+from = "../../build/stage/server"
 to = "."
 side = "server"
 replace = true
