@@ -22,11 +22,11 @@ Sodium, Iris, Lithium, the sound mods, the shader folder, C2ME, JEI, all of that
 
 ![Two players sitting on a garden bench by a campfire.](images/together.webp)
 
-Forever World 1.2.0 is for Minecraft 26.2 with Fabric Loader 0.19.3. Use Java 25 in the launcher.
+Forever World 1.3.0 is for Minecraft 26.3 with Fabric Loader 0.19.5. Use Java 25 in the launcher.
 
 ## Play
 
-Forever World 1.2.0 is available from GitHub Releases, [CurseForge](https://www.curseforge.com/minecraft/modpacks/forever-world), and the [Maven repository](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.2.0/forever-world-1.2.0-client.mrpack). Import the client `.mrpack` in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition has 47 of the pack's 48 entries because Presence Footsteps has no Minecraft 26.2 file on CurseForge. The other editions contain all 48.
+Forever World 1.3.0 is available from GitHub Releases, [CurseForge](https://www.curseforge.com/minecraft/modpacks/forever-world), and the [Maven repository](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.3.0/forever-world-1.3.0-client.mrpack). Import the client `.mrpack` in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition omits Sounds and its MRU and YACL libraries because their Minecraft 26.3 files are not available there.
 
 ## Host
 
@@ -36,7 +36,7 @@ From an empty server directory:
 
 ```bash
 curl -fsSL https://kaf.sh/pastel/install.sh | sh
-./pastel install com.iamkaf.modpacks:forever-world:1.2.0 -repo https://maven.kaf.sh
+./pastel install com.iamkaf.modpacks:forever-world:1.3.0 -repo https://maven.kaf.sh
 ./pastel run
 ```
 
@@ -50,7 +50,7 @@ Most entries are one line:
 
 ```toml
 [client_mods]
-sodium = "mc26.2-0.9.1-fabric"
+sodium = "mc26.3-0.9.2-fabric"
 ```
 
 `[mods]` loads on both sides. `[client_mods]` stays off the server. `[server_mods]` stays off the client. `[shaders]` contains client shader packs.
@@ -75,17 +75,13 @@ just check
 
 ### Versioning
 
-Forever World versions describe what changed in the pack:
-
-- Major: a Minecraft version bump.
-- Minor: any mod, resource pack, or shader change.
-- Patch: fixes to the glue that do not change those inputs.
+Forever World stays on the 1.x line. Minecraft version bumps and changes to mods, resource packs, or shaders increment the minor version. Fixes to the glue that do not change those inputs increment the patch version.
 
 CurseForge files are resolved with Packwiz and pinned in `pack.lock.toml`. Content exceptions under `[publish.curseforge]` refer to stable content IDs, not filenames. Run `swatch install --curseforge` when a changed pack needs new CurseForge mappings. Swatch runs `packwiz` from `PATH`; `PACKWIZ_BIN` can override the command.
 
 `just publish-dry` prepares a publication preview without uploading. Swatch checks the manifest, lockfile, authored files, configured destinations, and prepared artifact hashes.
 
-Run the Release workflow from `main` with the matching `v1.2.0` tag. It stages the pack and reruns the TeaKit client and dedicated server pair under Xvfb before it prepares any release bytes. It then signs `release.json` through Sigstore, creates GitHub provenance attestations, and verifies both kinds of proof. The `publish` input controls whether that verified release goes to GitHub Releases, Modrinth, CurseForge, and Maven. Pull requests and ordinary pushes never publish.
+Run the Release workflow from `main` with the matching `v1.3.0` tag. It stages the pack and reruns the TeaKit client and dedicated server pair under Xvfb before it prepares any release bytes. It then signs `release.json` through Sigstore, creates GitHub provenance attestations, and verifies both kinds of proof. The `publish` input controls whether that verified release goes to GitHub Releases, Modrinth, CurseForge, and Maven. Pull requests and ordinary pushes never publish.
 
 The `pack-release` environment needs these secrets before publication:
 
@@ -97,7 +93,7 @@ The workflow uses its GitHub token for GitHub Releases. Swatch prepares once, ve
 
 CurseForge's author API cannot verify an existing upload before creating one. After an ambiguous network failure, inspect the project before retrying.
 
-TeaKit is only for the pair check. It never goes in the pack, and it does not change Fabric Loader 0.19.3.
+TeaKit is only for the pair check. It never goes in the pack, and it does not change Fabric Loader 0.19.5.
 
 ## License
 

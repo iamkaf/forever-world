@@ -7,9 +7,9 @@ kaf = "https://maven.kaf.sh"
 
 [[instance]]
 name = "forever-world-server"
-minecraft = "26.2"
+minecraft = "26.3"
 loader = "fabric"
-loader_version = "0.19.3"
+loader_version = "0.19.5"
 sides = ["server"]
 server_properties = { online-mode = "false", enforce-secure-profile = "false" }
 
@@ -20,9 +20,9 @@ replace = true
 
 [[instance]]
 name = "forever-world-client"
-minecraft = "26.2"
+minecraft = "26.3"
 loader = "fabric"
-loader_version = "0.19.3"
+loader_version = "0.19.5"
 sides = ["client"]
 
 [[instance.fixture]]
@@ -32,12 +32,12 @@ replace = true
 
 [[instance]]
 name = "forever-world-pair"
-minecraft = "26.2"
+minecraft = "26.3"
 loader = "fabric"
-loader_version = "0.19.3"
+loader_version = "0.19.5"
 sides = ["client", "server"]
 server_properties = { online-mode = "false", enforce-secure-profile = "false" }
-mods = ["maven:com.iamkaf.teakit:teakit-fabric:0.14.0+26.2"]
+mods = ["maven:com.iamkaf.teakit:teakit-fabric:0.16.0+26.3"]
 
 [[instance.fixture]]
 from = "../../build/stage/client"
