@@ -51,6 +51,9 @@ run-pair: stage
     mkdir -p build/teakit
     ./teakitw pair --no-sync-sdk --config tests/teakit/teakit.toml --node 26.3-fabric --modstage-config tests/teakit/modstage.toml --modstage-instance forever-world-pair --test-file tests/teakit/startup.test.ts --timeout 360 --report build/teakit/startup.json
 
+play: stage
+    scripts/play
+
 runtime-check: install-locked
     SWATCH_BIN="{{ swatch_bin }}" scripts/check-runtime
 
