@@ -2,6 +2,10 @@
 
 ## 1.3.0
 
+### Added
+
+- Restored AppleSkin, AmbientSounds, Entity Culling, and Sound Physics Remastered now that they support Minecraft 26.3.
+
 ### Changed
 
 - Ported to Minecraft 26.3.
@@ -11,7 +15,7 @@
 ### Removed
 
 - Removed Sit because Minecraft 26.3 now provides its behavior.
-- Removed AppleSkin, AmbientSounds, Bobby, Cut Through, Cubes Without Borders, Entity Culling, Particle Effects, Sound Physics Remastered, and Zoomify because they do not have Minecraft 26.3 releases.
+- Removed Bobby, Cut Through, Cubes Without Borders, Particle Effects, and Zoomify because they do not have Minecraft 26.3 releases.
 
 ## 1.2.0
 

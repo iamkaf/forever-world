@@ -37,7 +37,7 @@ loader = "fabric"
 loader_version = "0.19.5"
 sides = ["client", "server"]
 server_properties = { online-mode = "false", enforce-secure-profile = "false" }
-mods = ["maven:com.iamkaf.teakit:teakit-fabric:0.16.0+26.3"]
+mods = ["maven:com.iamkaf.teakit:teakit-fabric:0.17.0+26.3"]
 
 [[instance.fixture]]
 from = "../../build/stage/client"

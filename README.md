@@ -26,7 +26,7 @@ Forever World 1.3.0 is for Minecraft 26.3 with Fabric Loader 0.19.5. Use Java 25
 
 ## Play
 
-Forever World 1.3.0 is available from GitHub Releases, [CurseForge](https://www.curseforge.com/minecraft/modpacks/forever-world), and the [Maven repository](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.3.0/forever-world-1.3.0-client.mrpack). Import the client `.mrpack` in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition omits Sounds and its MRU and YACL libraries because their Minecraft 26.3 files are not available there.
+Forever World 1.3.0 is available from GitHub Releases, [CurseForge](https://www.curseforge.com/minecraft/modpacks/forever-world), and the [Maven repository](https://maven.kaf.sh/com/iamkaf/modpacks/forever-world/1.3.0/forever-world-1.3.0-client.mrpack). Import the client `.mrpack` in Prism or whatever else eats Modrinth packs. Complementary Unbound is already in the instance. The CurseForge edition omits Sounds and YACL because their Minecraft 26.3 files are not available there.
 
 ## Host
 
