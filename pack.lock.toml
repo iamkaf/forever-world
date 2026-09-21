@@ -102,12 +102,12 @@ server = "required"
 
 [[file]]
 id = "forge-config-api-port"
-requested_version = "26.3.0"
-path = "mods/ForgeConfigAPIPort-v26.3.0-mc26.3.x-Fabric.jar"
-file_size = 609536
-sha1 = "8a618f4e8e5c6a1792715aabd2b0f88f1d3d8f1f"
-sha512 = "843dcf988138da57820df9d7e168a9b91a583d2a815773c6dc7c51026b887c818e7e95abef8de9d14f380c9ce6783bd9b1346ac44ecb0aa56d25af494c6c4437"
-downloads = ["https://cdn.modrinth.com/data/ohNO6lps/versions/c1wkPZ5n/ForgeConfigAPIPort-v26.3.0-mc26.3.x-Fabric.jar"]
+requested_version = "26.3.1"
+path = "mods/ForgeConfigAPIPort-v26.3.1-mc26.3.x-Fabric.jar"
+file_size = 609574
+sha1 = "a0d802d2cb010a5054c72f1ccf248433b6e0bafb"
+sha512 = "b9339c21e14beec2eae0ca215317284bcaacef72e1d1dee8b3dfbe2de0eefaa758a172446df85419b6534557c479abe972d7d21f4ec194f2d436f9ed4329cb9f"
+downloads = ["https://cdn.modrinth.com/data/ohNO6lps/versions/JpKvrr9J/ForgeConfigAPIPort-v26.3.1-mc26.3.x-Fabric.jar"]
 
 [file.env]
 client = "required"
@@ -128,12 +128,12 @@ server = "required"
 
 [[file]]
 id = "jei"
-requested_version = "31.1.0.12"
-path = "mods/jei-26.3-fabric-31.1.0.12.jar"
-file_size = 2228687
-sha1 = "10ff6d7d5d452c54f3a2eb9ad8bd301553c411bb"
-sha512 = "dbb0a50f54783ac63d5f93fcb33778d06e5adecfd6bdcce93cd887aa10ab7ca5199c916d2a23a57c0085fb6dfd031034fc4a895661a3596984335158fb20b997"
-downloads = ["https://cdn.modrinth.com/data/u6dRKJwZ/versions/xF7ChAdJ/jei-26.3-fabric-31.1.0.12.jar"]
+requested_version = "31.3.0.18"
+path = "mods/jei-26.3-fabric-31.3.0.18.jar"
+file_size = 2278968
+sha1 = "67ac91ef235b59290a4312d70cab91f6c29f71b0"
+sha512 = "efb04753acfa8b47153c762987ef201e98a64a5e7539e42dacd55f17e83167a3d5882e80692f51515cf12f4ab6054b57f32557e677bbb3a53f3e1df03098904b"
+downloads = ["https://cdn.modrinth.com/data/u6dRKJwZ/versions/JUOOv4iy/jei-26.3-fabric-31.3.0.18.jar"]
 
 [file.env]
 client = "required"
@@ -167,12 +167,12 @@ server = "required"
 
 [[file]]
 id = "liteminer"
-requested_version = "4.3.0+26.3"
-path = "mods/liteminer-fabric-4.3.0+26.3.jar"
-file_size = 178721
-sha1 = "f79425e6de2fb3ad98ed862fdb39e5fcac42ba67"
-sha512 = "bc2099da9afc13a09e851870198301ab5a6a382110e5d53a101d15134125d437387e4b570a0af59ac43d4a35927c2dfdf12e54a29ab73cb6ee7cfae50ffa0226"
-downloads = ["https://cdn.modrinth.com/data/VTnHoofC/versions/bKrh1YLg/liteminer-fabric-4.3.0%2B26.3.jar"]
+requested_version = "4.3.1+26.3"
+path = "mods/liteminer-fabric-4.3.1+26.3.jar"
+file_size = 180138
+sha1 = "d95139b6c6e920821e762d32425ace086f37da93"
+sha512 = "c0705de9d7805897a35be9b610608d19c40c1065f97ef6b90ab116e958edcebe0e088f215eef568ceb0d2e0663cab1e97535a8f67d03cda1d1b1bd4dd6c386a8"
+downloads = ["https://cdn.modrinth.com/data/VTnHoofC/versions/J6UOieJ4/liteminer-fabric-4.3.1%2B26.3.jar"]
 
 [file.env]
 client = "required"
@@ -505,12 +505,12 @@ server = "unsupported"
 
 [[file]]
 id = "yacl"
-requested_version = "3.9.6+26.3-fabric"
-path = "mods/yet_another_config_lib_v3-3.9.6+26.3-fabric.jar"
-file_size = 1121548
-sha1 = "c559c6fb982f0979e7f35183dafd450cfad636bb"
-sha512 = "e858b30a27621e56fbe68f181cf5dcba156ce54fd39c92d2f10409051952f4f0d506ff48cd1d25b3915489dd2058275abb3aea362faa5aaff0d1dce4a2415d5b"
-downloads = ["https://cdn.modrinth.com/data/1eAoo2KR/versions/rSnhz5tr/yet_another_config_lib_v3-3.9.6%2B26.3-fabric.jar"]
+requested_version = "3.9.7+26.3-fabric"
+path = "mods/yet_another_config_lib_v3-3.9.7+26.3-fabric.jar"
+file_size = 1125377
+sha1 = "e54d86dd4a78f95cd6ec0309d96fae01e661c00d"
+sha512 = "f3957028dd31cae78f08aee3e768f61bd12c4c8423257d357bc3c1a2172047c769d37901f99775c7ffff1e5ee794025dc72738b2869cab06f1c2811841d68b24"
+downloads = ["https://cdn.modrinth.com/data/1eAoo2KR/versions/s9SjoFu1/yet_another_config_lib_v3-3.9.7%2B26.3-fabric.jar"]
 
 [file.env]
 client = "required"
@@ -548,10 +548,10 @@ project_id = 257814
 file_id = 8894326
 
 [[curseforge]]
-path = "mods/ForgeConfigAPIPort-v26.3.0-mc26.3.x-Fabric.jar"
-sha1 = "8a618f4e8e5c6a1792715aabd2b0f88f1d3d8f1f"
+path = "mods/ForgeConfigAPIPort-v26.3.1-mc26.3.x-Fabric.jar"
+sha1 = "a0d802d2cb010a5054c72f1ccf248433b6e0bafb"
 project_id = 547434
-file_id = 8889946
+file_id = 8938808
 
 [[curseforge]]
 path = "mods/ImmediatelyFast-Fabric-1.17.1+26.3.jar"
@@ -656,10 +656,10 @@ project_id = 455508
 file_id = 8888283
 
 [[curseforge]]
-path = "mods/jei-26.3-fabric-31.1.0.12.jar"
-sha1 = "10ff6d7d5d452c54f3a2eb9ad8bd301553c411bb"
+path = "mods/jei-26.3-fabric-31.3.0.18.jar"
+sha1 = "67ac91ef235b59290a4312d70cab91f6c29f71b0"
 project_id = 238222
-file_id = 8928168
+file_id = 8937144
 
 [[curseforge]]
 path = "mods/kafhud-fabric-6.2.0+26.3.jar"
@@ -686,10 +686,10 @@ project_id = 393442
 file_id = 8890400
 
 [[curseforge]]
-path = "mods/liteminer-fabric-4.3.0+26.3.jar"
-sha1 = "f79425e6de2fb3ad98ed862fdb39e5fcac42ba67"
+path = "mods/liteminer-fabric-4.3.1+26.3.jar"
+sha1 = "d95139b6c6e920821e762d32425ace086f37da93"
 project_id = 1133225
-file_id = 8927254
+file_id = 8930296
 
 [[curseforge]]
 path = "mods/lithium-fabric-0.26.1+mc26.3.jar"
@@ -750,6 +750,12 @@ path = "mods/torchtoss-fabric-5.3.0+26.3.jar"
 sha1 = "88533c0b8cf6d33f7adbaa637c48d63216f7c34a"
 project_id = 1191803
 file_id = 8906560
+
+[[curseforge]]
+path = "mods/yet_another_config_lib_v3-3.9.7+26.3-fabric.jar"
+sha1 = "e54d86dd4a78f95cd6ec0309d96fae01e661c00d"
+project_id = 667299
+file_id = 8935498
 
 [[curseforge]]
 path = "shaderpacks/ComplementaryUnbound_r5.9.3.zip"
