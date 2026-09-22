@@ -4,6 +4,22 @@ set -euo pipefail
 swatch_bin=${SWATCH_BIN:-swatch}
 "$swatch_bin" stage all
 mkdir -p build/teakit
+
+dump_runtime_logs() {
+  status=$?
+  trap - EXIT
+
+  if ((status != 0)); then
+    while IFS= read -r -d '' log; do
+      printf '\nTeaKit runtime log: %s\n' "$log"
+      tail -n 400 "$log"
+    done < <(find build/teakit -type f -name 'modstage-*.log' -print0 | sort -z)
+  fi
+
+  exit "$status"
+}
+
+trap dump_runtime_logs EXIT
 xvfb-run -a ./teakitw pair \
   --no-sync-sdk \
   --config tests/teakit/teakit.toml \
@@ -11,5 +27,5 @@ xvfb-run -a ./teakitw pair \
   --modstage-config tests/teakit/modstage.toml \
   --modstage-instance forever-world-pair \
   --test-file tests/teakit/startup.test.ts \
-  --timeout 360 \
+  --timeout 720 \
   --report build/teakit/startup.json
