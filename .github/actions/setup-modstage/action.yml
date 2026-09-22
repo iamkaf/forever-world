@@ -4,6 +4,13 @@ description: Install the verified Modstage release used by this pack
 runs:
   using: composite
   steps:
+    - name: Install headless graphics libraries
+      shell: bash
+      run: |
+        set -euo pipefail
+        sudo apt-get update
+        sudo apt-get install --yes --no-install-recommends libegl1 libgl1-mesa-dri
+
     - name: Download and verify Modstage 0.6.0
       shell: bash
       run: |

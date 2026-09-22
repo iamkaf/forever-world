@@ -44,9 +44,9 @@ jobs:
           swatch verify
 
       - name: Set up Modstage
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' }}
         uses: ./.github/actions/setup-modstage
 
       - name: Run the production pair under Xvfb
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' }}
         run: scripts/check-runtime
