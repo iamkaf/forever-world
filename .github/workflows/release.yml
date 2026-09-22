@@ -61,7 +61,7 @@ jobs:
       - name: Prepare and verify release bytes
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ inputs.tag }}
+          TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           swatch prepare
