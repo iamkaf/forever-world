@@ -3,163 +3,20 @@ version = 1
 [pack]
 name = "FOREVER WORLD"
 slug = "forever-world"
-version = "1.2.0"
+version = "1.3.0"
 group = "com.iamkaf.modpacks"
-minecraft = "26.2"
+minecraft = "26.3"
 loader = "fabric"
-loader_version = "0.19.3"
-
-[[file]]
-id = "ambientsounds"
-requested_version = "6.3.6"
-path = "mods/AmbientSounds_FABRIC_v6.3.6_mc26.2.jar"
-file_size = 84821411
-sha1 = "b4fa62c189907192933fae4853eeebeb6d57d836"
-sha512 = "02163deeee68e4d7b884dd99efa90220ab3197616edbd305a6fabb0bf9b0ac61c74af97d1fa534155a71034736df2daa3cd384d207c964c7b78205a16b168e06"
-downloads = ["https://cdn.modrinth.com/data/fM515JnW/versions/jGlT0HRa/AmbientSounds_FABRIC_v6.3.6_mc26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "controlling"
-requested_version = "26.2.2"
-path = "mods/Controlling-fabric-26.2-26.2.2.jar"
-file_size = 85784
-sha1 = "23da84738f49e75b6318a75eb98fe18c284798ff"
-sha512 = "705a98e5d05c15854c5a711fb6f1a9fbe5eaae354bdaf8b5c1641b09f89457c98ed41b819c9221b380c1faf0a342df93debc19a3ceeadf4cd4b1bdc1219ed606"
-downloads = ["https://cdn.modrinth.com/data/xv94TkTM/versions/rAp2jljs/Controlling-fabric-26.2-26.2.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "creativecore"
-requested_version = "2.14.16"
-path = "mods/CreativeCore_FABRIC_v2.14.16_mc26.2.jar"
-file_size = 1396350
-sha1 = "c9189bb8b0f760d3b84e73b77cf81ca809399c3d"
-sha512 = "627a0821c5d833a5bc2fe8dee7c00ef67a6e6c69ddddeed5049c70883597956181778c30c143e1fcd201939c47b806de6a5aeee65b024342c0ff1a094db59a33"
-downloads = ["https://cdn.modrinth.com/data/OsZiaDHq/versions/SI6rsPDj/CreativeCore_FABRIC_v2.14.16_mc26.2.jar"]
-
-[file.env]
-client = "required"
-server = "required"
-
-[[file]]
-id = "cut-through"
-requested_version = "26.2.0"
-path = "mods/CutThrough-v26.2.0-mc26.2.x-Fabric.jar"
-file_size = 26127
-sha1 = "fa4ca6a3945d23bd1bb98dde10db5e9b002974df"
-sha512 = "73988cdd77699e01d1f6a844f97c9882b462e88cb5a221e9aecedee7a0776070f90b6ab95d9cfe44f74c9b93bb49c5170caf10630409a3aaacdc2d2972fbc8b8"
-downloads = ["https://cdn.modrinth.com/data/Dk6su9JN/versions/WhJ0S6SM/CutThrough-v26.2.0-mc26.2.x-Fabric.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "forge-config-api-port"
-requested_version = "26.2.1"
-path = "mods/ForgeConfigAPIPort-v26.2.1-mc26.2.x-Fabric.jar"
-file_size = 609550
-sha1 = "a4083de0d8e0c19b993d21f7a576216efb5ceb23"
-sha512 = "948b8d83de61a11aad2fc0bb0744a8b4848c9b2f0663c9aa015389d9560b3fa78518e609c44ec90278de0e159a92ebd721ccbdebb453aa455c353e5cd19413bf"
-downloads = ["https://cdn.modrinth.com/data/ohNO6lps/versions/rSd3GiG8/ForgeConfigAPIPort-v26.2.1-mc26.2.x-Fabric.jar"]
-
-[file.env]
-client = "required"
-server = "required"
-
-[[file]]
-id = "immediatelyfast"
-requested_version = "1.16.1+26.2-fabric"
-path = "mods/ImmediatelyFast-Fabric-1.16.1+26.2.jar"
-file_size = 90736
-sha1 = "ef9347d232ede4c97799fa5dd3a6d2b5be9d7bd8"
-sha512 = "d90c2489f09efd0bf51072e4e675aa0a7aaca10b004cb1b01ffdcf3a6f20d9bc29002dbb47cfd69ade125d09203109a0c1d62e58ed18df29776bf61844fbe6fd"
-downloads = ["https://cdn.modrinth.com/data/5ZwdcRci/versions/4r0uMdy5/ImmediatelyFast-Fabric-1.16.1%2B26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "mouse-tweaks"
-requested_version = "26.2-2.31-fabric"
-path = "mods/MouseTweaks-fabric-mc26.2-2.31.jar"
-file_size = 75872
-sha1 = "ad5b7e4ad6dc734152d41f05902b65aedb448d64"
-sha512 = "bc77723465dc4aef7a3a8fa2fea3641df1e6ba7cc8a2d86cd2659ef65ca661f6a763d3997fdaed1f8ff6c78a4c6061f8074160ca3162a29021735779a6c55e46"
-downloads = ["https://cdn.modrinth.com/data/aC3cM3Vq/versions/jOiTBIaB/MouseTweaks-fabric-mc26.2-2.31.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "particle-effects"
-requested_version = "1.5.0+26.2+fabric"
-path = "mods/ParticleEffects-1.5.0+26.2+fabric.jar"
-file_size = 318481
-sha1 = "80634b799b693044dfbddaf46fa139f1f98492a2"
-sha512 = "20fa05c5a9b9841ff65a5f9c7dab727858b83c5bd29e4198a570d63ec1b240bc7366143510af184f5d185e4ca6c322e100a3b1dbe41c8c9cd1edcfadb90ec334"
-downloads = ["https://cdn.modrinth.com/data/PLAGcSFJ/versions/PuwJAxCv/ParticleEffects-1.5.0%2B26.2%2Bfabric.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "presence-footsteps"
-requested_version = "1.13.3+26.2"
-path = "mods/PresenceFootsteps-1.13.3+26.2.jar"
-file_size = 5749193
-sha1 = "07791ec2f22d779c42cb06e71cff834da9d85456"
-sha512 = "c0b6a1fc1340b7666903f680e12c45fdd24cb75a34ee5eea815e4f8b77752e3f4ecea1df5971ef87474316c97f94ac424c27a75b8b67ca1100467d6ad6181f79"
-downloads = ["https://cdn.modrinth.com/data/rcTfTZr3/versions/8TkGmrgl/PresenceFootsteps-1.13.3%2B26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "puzzles-lib"
-requested_version = "26.2.0"
-path = "mods/PuzzlesLib-v26.2.0-mc26.2.x-Fabric.jar"
-file_size = 1142960
-sha1 = "0b116d3b84970ece52d7e42a3b1cabf831b5e6df"
-sha512 = "c27ebb45076f479ca4f333e502474f60e2e189355b2890f3931f4c4a3b3f7eddb9d6cdb2325757e16838674ea003de350f76b06617e5a686162fb6900cedfb05"
-downloads = ["https://cdn.modrinth.com/data/QAGBst4M/versions/7NdidvUq/PuzzlesLib-v26.2.0-mc26.2.x-Fabric.jar"]
-
-[file.env]
-client = "required"
-server = "required"
-
-[[file]]
-id = "searchables"
-requested_version = "1.0.1"
-path = "mods/Searchables-fabric-26.2-1.0.1.jar"
-file_size = 78982
-sha1 = "73c1917f4ff056254c95f50a5acb18d16384139a"
-sha512 = "342f6b9ddee7391f0f5c30090dc7b7fe0b9638c86b729d3e989360ccdf5e5a85d729decc3e27efcdaeaad6b4696e9dd8fb48391c803d8324195b6f5194761a70"
-downloads = ["https://cdn.modrinth.com/data/fuuu3xnx/versions/bvFby61J/Searchables-fabric-26.2-1.0.1.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
+loader_version = "0.19.5"
 
 [[file]]
 id = "amber"
-requested_version = "11.1.2+26.2"
-path = "mods/amber-fabric-11.1.2+26.2.jar"
-file_size = 295372
-sha1 = "c7a271f2207f04414b9558a063288118418e092a"
-sha512 = "161859c5b05c33d18829ab074d5cd6bf8bf7ffdb6c74842a7252f0d69d3b2bbf4ff88209b5ed79e8a3ac5c3797eb5fefd08b2ed2b9e45d60fe0e54d4753c9695"
-downloads = ["https://cdn.modrinth.com/data/vjGZJDu5/versions/9sxeaw7b/amber-fabric-11.1.2%2B26.2.jar"]
+requested_version = "11.4.0+26.3"
+path = "mods/amber-fabric-11.4.0+26.3.jar"
+file_size = 397951
+sha1 = "59085c9e354c95a1b2cfd53a482aa80b7891db93"
+sha512 = "687b14101ea475fad880c9c878add4aa24edaddf9eb3555148e8b1748ccf36ddc5b262355f224840e68d12501c171b27f87b720fcc3633e5817312626a5e40bf"
+downloads = ["https://cdn.modrinth.com/data/vjGZJDu5/versions/yc9jt1MD/amber-fabric-11.4.0%2B26.3.jar"]
 
 [file.env]
 client = "required"
@@ -167,38 +24,25 @@ server = "required"
 
 [[file]]
 id = "appleskin"
-requested_version = "3.0.10+mc26.2"
-path = "mods/appleskin-fabric-mc26.2-3.0.10.jar"
-file_size = 181627
-sha1 = "03a635bae2c5a5e66825a35ff130242752054b32"
-sha512 = "ddf31d8fe239f66760632606221a9ea55d31907a9f7f8667331929cad348457ec2199cb90d410ee1a06e36bafc01a3bf152a06fd3c9b9e46f50841240875832b"
-downloads = ["https://cdn.modrinth.com/data/EsAfCjCV/versions/uo5bAN1Y/appleskin-fabric-mc26.2-3.0.10.jar"]
+requested_version = "3.0.10+mc26.3"
+path = "mods/appleskin-fabric-mc26.3-3.0.10.jar"
+file_size = 180194
+sha1 = "3d19e40c5f97186857db98e622c01c2cd0030497"
+sha512 = "17d257af419b7530aa8617c2e8c0e4bbfabcf888f26655790e0188e7957e0bcd931f85f9a4c69fd27e889dee5082cf7b2b8741a14a6ed4425e9ef4bfe13a8b8c"
+downloads = ["https://cdn.modrinth.com/data/EsAfCjCV/versions/PHjDtQay/appleskin-fabric-mc26.3-3.0.10.jar"]
 
 [file.env]
 client = "required"
 server = "required"
 
 [[file]]
-id = "bobby"
-requested_version = "5.2.14+mc26.2"
-path = "mods/bobby-5.2.14+mc26.2.jar"
-file_size = 867211
-sha1 = "0a57a358795280386f8a20aad1de35efe4e5e5d1"
-sha512 = "7b3f7f1b31c0a3847f4551a65e0da8aacecd62915aebb94133db663ee4a8a06ba6e70b1bf6f145d0aa4a842a664aa3a3701659e993422c94282f2f1dd88677ea"
-downloads = ["https://cdn.modrinth.com/data/M08ruV16/versions/9O9VU4Wh/bobby-5.2.14%2Bmc26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
 id = "bonded"
-requested_version = "4.1.0+26.2"
-path = "mods/bonded-fabric-4.1.0+26.2.jar"
-file_size = 441313
-sha1 = "2af685d57a1f2774cd2305c6dfa3b48c54e47e0b"
-sha512 = "4d3a669df742b9a3bef882c7d93858506815e3c0a11fa14a19cdf267fda2b4fda1ea5e88a57479ea8ebd0c11159bfad90eb908b592650d8156932c11780865f4"
-downloads = ["https://cdn.modrinth.com/data/rTXmXcev/versions/ksUvW1N6/bonded-fabric-4.1.0%2B26.2.jar"]
+requested_version = "5.0.0+26.3"
+path = "mods/bonded-fabric-5.0.0+26.3.jar"
+file_size = 578324
+sha1 = "a34a6aff55855e2d15869ac645234459f8ce65d7"
+sha512 = "c4318aedd168c468985f8472b9846c78aea31c669bf980ccb1c087a5d36ed5001372304f41f7c09744d0863caf4eb0f6e2e338719b6007629a5be765942f4a69"
+downloads = ["https://cdn.modrinth.com/data/rTXmXcev/versions/nXdhKubj/bonded-fabric-5.0.0%2B26.3.jar"]
 
 [file.env]
 client = "required"
@@ -206,77 +50,25 @@ server = "required"
 
 [[file]]
 id = "c2me-fabric"
-requested_version = "0.4.2-alpha.0.13+26.2"
-path = "mods/c2me-fabric-mc26.2-0.4.2-alpha.0.13.jar"
-file_size = 3779880
-sha1 = "f531fb2c8774fd30c9fbeedc2d4a60bf9f59995f"
-sha512 = "052c79f8da23a4215a812e3c3fb592b3992d519e1c5daedd193d66742823855dac65365de31408c18b750bb58990f2650e4402a3abc32cf0e30aab7125adb15b"
-downloads = ["https://cdn.modrinth.com/data/VSNURh3q/versions/XQMx5J57/c2me-fabric-mc26.2-0.4.2-alpha.0.13.jar"]
+requested_version = "0.4.2-alpha.0.87+26.3"
+path = "mods/c2me-fabric-mc26.3-0.4.2-alpha.0.87.jar"
+file_size = 3949341
+sha1 = "7e75b4c146cfdcf5fbb5721ed3b17d0d8618f9c4"
+sha512 = "918fd0bfc25618c523374cfc7cafb6a386f71d7c47794747286a0989ed581f2b7f5251ab45760b5542e8495a8580c13c0951757326184616385a110c92906614"
+downloads = ["https://cdn.modrinth.com/data/VSNURh3q/versions/cfKRtp0m/c2me-fabric-mc26.3-0.4.2-alpha.0.87.jar"]
 
 [file.env]
 client = "required"
 server = "required"
-
-[[file]]
-id = "chat-heads"
-requested_version = "1.2.4"
-path = "mods/chat_heads-1.2.4-fabric-26.1.jar"
-file_size = 91940
-sha1 = "4a529510d0690adfa94df8e359fa444e2251a657"
-sha512 = "34c330e7f90ced829f9ab00fb476bd697473378efc921068fa0475119fc37bb1da82350d9013be3fe4f8adaffa37d1821a6b66cd9ece49a350bc0940d7cf5d0b"
-downloads = ["https://cdn.modrinth.com/data/Wb5oqrBJ/versions/ct4sHdcD/chat_heads-1.2.4-fabric-26.1.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "cubes-without-borders"
-requested_version = "4.1.0+26.2"
-path = "mods/cwb-4.1.0+26.2.jar"
-file_size = 91405
-sha1 = "9420614dd8f95a9ca1e1b2371f342e92855bb354"
-sha512 = "b63b07080cb6ff69f52afb1e33fc1664b25b04bcda54b482ca76d50851de76491238b4e6e4adaca5ed478dc67ea26ade69908aea268a75aae9d3f62d3cff19eb"
-downloads = ["https://cdn.modrinth.com/data/ETlrkaYF/versions/Zn8JbMkF/cwb-4.1.0%2B26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "entityculling"
-requested_version = "1.10.5"
-path = "mods/entityculling-fabric-1.10.5-mc26.2.jar"
-file_size = 1583775
-sha1 = "f66f9d8cbb1f76466aaf45e46fb11b18207e3aef"
-sha512 = "338813c344a2d924abbaaf249da2b52f5e162bd92407f3099c6ff1bce1c1efecde9df80efcc7b4de3b3a0044cc5735b96594b04da4594bb26793459fc6c960a6"
-downloads = ["https://cdn.modrinth.com/data/NNAgCjsB/versions/iiF6U3Ne/entityculling-fabric-1.10.5-mc26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
 
 [[file]]
 id = "fabric-api"
-requested_version = "0.154.2+26.2"
-path = "mods/fabric-api-0.154.2+26.2.jar"
-file_size = 2523877
-sha1 = "3b877ba08c963948290098cb4ab718046b011987"
-sha512 = "7cedad862e8105a7de8db090c0707c25a14a9472654090861dcf490f834862c3212723e762f6f797a0e4683104f4b3a20d3692fb29d7b5c0af437613283d34db"
-downloads = ["https://cdn.modrinth.com/data/P7dR8mSH/versions/Kr4WG5mG/fabric-api-0.154.2%2B26.2.jar"]
-
-[file.env]
-client = "required"
-server = "required"
-
-[[file]]
-id = "fabric-language-kotlin"
-requested_version = "1.13.12+kotlin.2.4.0"
-path = "mods/fabric-language-kotlin-1.13.12+kotlin.2.4.0.jar"
-file_size = 8076848
-sha1 = "2bc17bb4275cc70a12e4ac35d139a71a30845720"
-sha512 = "ca238ee480dfb237062200fd300be493d022e0837b6998c15807e01488b2a30d5ba4731e5c6d05a5333719c8923a1cb84c06fd6fa45aa88ced492ddb5b40906f"
-downloads = ["https://cdn.modrinth.com/data/Ha28R6CL/versions/Pd0xrHCw/fabric-language-kotlin-1.13.12%2Bkotlin.2.4.0.jar"]
+requested_version = "0.161.0+26.3"
+path = "mods/fabric-api-0.161.0+26.3.jar"
+file_size = 2620967
+sha1 = "53f9ee02c3702734d90520aa8c9719bf0e1c8d4f"
+sha512 = "ed6b2586d6fde11fde8472f5a527c51e99b67026e46f94d4bfd85e7e28ce5ee299173ee16ad576ceb51f39f98d30a811086a6deb1a86a524859cc16e12da109d"
+downloads = ["https://cdn.modrinth.com/data/P7dR8mSH/versions/bNnaTiuM/fabric-api-0.161.0%2B26.3.jar"]
 
 [file.env]
 client = "required"
@@ -296,78 +88,39 @@ client = "required"
 server = "required"
 
 [[file]]
-id = "gentlehurtcam"
-requested_version = "2.1.0+26.2"
-path = "mods/gentlehurtcam-fabric-2.1.0+26.2.jar"
-file_size = 29523
-sha1 = "5f3807d8affeb07e8f56ffdfd84499919a7e28a5"
-sha512 = "172481e0f731c43acb172cddb931bd455d93326ba349e98371c26500afe0dab6071e7c4514cd77107ec79b8fd242502acba2aa82820e48b49e5be01410fe431c"
-downloads = ["https://cdn.modrinth.com/data/WqioinYz/versions/5xEWPAMu/gentlehurtcam-fabric-2.1.0%2B26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
 id = "happyghastimprovements"
-requested_version = "2.1.0+26.2"
-path = "mods/happyghastimprovements-fabric-2.1.0+26.2.jar"
-file_size = 117213
-sha1 = "f77d715d65d432166ff8824b956cdef9cc2a9a99"
-sha512 = "396e8b98594574251e0a38537b9f03a5fddeb148abf3d95406555b31e60f42aeda68336d5904513f6f0f245384c3d134a79a784dfcf281923045e22c33c07077"
-downloads = ["https://cdn.modrinth.com/data/OhsFQ3v9/versions/wM7BDXB9/happyghastimprovements-fabric-2.1.0%2B26.2.jar"]
+requested_version = "2.2.0+26.3"
+path = "mods/happyghastimprovements-fabric-2.2.0+26.3.jar"
+file_size = 117269
+sha1 = "d30e1645939708cf208bb8f86f2b05bf0012976e"
+sha512 = "fdd983e486b49adcd1da66bee44bb98aa17fb18d3b6feb1102a417226c001715d6c0d22383851a46dd1cc94172ef6b14467d22b2fd9047b873e2781752c38c41"
+downloads = ["https://cdn.modrinth.com/data/OhsFQ3v9/versions/E9INDTpw/happyghastimprovements-fabric-2.2.0%2B26.3.jar"]
 
 [file.env]
 client = "required"
 server = "required"
-
-[[file]]
-id = "iris"
-requested_version = "1.11.2+26.2-fabric"
-path = "mods/iris-fabric-1.11.2+mc26.2.jar"
-file_size = 2820763
-sha1 = "f7d526b1062c4bfe2567113cf933d1de26eddd3f"
-sha512 = "c1b46bcd1a0068deab3ae364a7229d31e27b7d45aea960e47503b8514354426badf83f354529db35d83e6b55727a53895fb9f13085e51d8148ee6765affac924"
-downloads = ["https://cdn.modrinth.com/data/YL57xq9U/versions/oaD6KQls/iris-fabric-1.11.2%2Bmc26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
 
 [[file]]
 id = "jei"
-requested_version = "30.9.0.57"
-path = "mods/jei-26.2-fabric-30.9.0.57.jar"
-file_size = 1656279
-sha1 = "a69f5cd0855fefc7a6d341e3d2d8122c2473bdbd"
-sha512 = "2b5cf913e930a17dbc8128a6bd92dc1b14eefc15f99d6892b4ed80d5592cf137a6d1d0f1af4add0c9d05b37ebe2a385fad46dd6710a0b1ff79140c8ee642005c"
-downloads = ["https://cdn.modrinth.com/data/u6dRKJwZ/versions/IMZPwwh8/jei-26.2-fabric-30.9.0.57.jar"]
+requested_version = "31.4.0.19"
+path = "mods/jei-26.3-fabric-31.4.0.19.jar"
+file_size = 2281872
+sha1 = "764657a976cb5a9d7ed8606ee9d2612a47f5971a"
+sha512 = "c73788dbe80b1dcc2dd53b9c07a21067cef1b907d31bce72ae1dd095e4efb0a409efd7fec901819445b80e22af110d7b8970fd24d85ea917268a0ab951a95185"
+downloads = ["https://cdn.modrinth.com/data/u6dRKJwZ/versions/Yxl3rgIE/jei-26.3-fabric-31.4.0.19.jar"]
 
 [file.env]
 client = "required"
 server = "required"
 
 [[file]]
-id = "kaf-hud"
-requested_version = "6.1.0+26.2"
-path = "mods/kafhud-fabric-6.1.0+26.2.jar"
-file_size = 213319
-sha1 = "16381505d7a19699c0242487ea89cac0331f8fff"
-sha512 = "ec85b353a1f0c9214df9167810ee13f43bf4189a3361c968b2484bc158b726ada0e1f1944c7178f2a7a989566220934ac3ad47f2b53f99f49b0d8f582bbdbc77"
-downloads = ["https://cdn.modrinth.com/data/fKUQuZsL/versions/WoiTgjcy/kafhud-fabric-6.1.0%2B26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
 id = "kafs-valentine-special"
-requested_version = "5.1.0+26.2"
-path = "mods/kafvalentine-fabric-5.1.0+26.2.jar"
-file_size = 199371
-sha1 = "f72248ce1f232e297aca41243b564723dc5381d4"
-sha512 = "e3c343b34a4cd4bd6271ef174b2a75f31714eee57156a6864faab6954386ef8ae9196c6562052adbb58430fcbdfa11f87f9c7262fe3373fcc06db54852743102"
-downloads = ["https://cdn.modrinth.com/data/BAlSr7dy/versions/3k671Lx9/kafvalentine-fabric-5.1.0%2B26.2.jar"]
+requested_version = "5.3.0+26.3"
+path = "mods/kafvalentine-fabric-5.3.0+26.3.jar"
+file_size = 207932
+sha1 = "e75c536593aae02d4ac971fc5d473e1b150d3eba"
+sha512 = "ee3f0690a1a07bde4372c14381f81cd786440a008004529220c79dc2d2537324faf9ec41b2ddc41810288c02833eeaf69d5d16cdac46db354b3869a415d3a871"
+downloads = ["https://cdn.modrinth.com/data/BAlSr7dy/versions/W5AI9L3M/kafvalentine-fabric-5.3.0%2B26.3.jar"]
 
 [file.env]
 client = "required"
@@ -375,51 +128,25 @@ server = "required"
 
 [[file]]
 id = "konfig"
-requested_version = "0.5.0+26.2"
-path = "mods/konfig-fabric-0.5.0+26.2.jar"
-file_size = 960566
-sha1 = "722132d107f56729e61affdff629935c5a3d963d"
-sha512 = "c62a15970b5af1b98e040ecdd0751e8ef6d9646867f42f080b05b5f93d8dd3b4bbd9ecb473d44f31398afdba2608113050a0ef69a3ab9047b2432398ece5326c"
-downloads = ["https://cdn.modrinth.com/data/pp7kIrlM/versions/5WyNuHN5/konfig-fabric-0.5.0%2B26.2.jar"]
+requested_version = "0.8.1+26.3"
+path = "mods/konfig-fabric-0.8.1+26.3.jar"
+file_size = 1486584
+sha1 = "c1a9eca46737e239c85bbbff4890dc64f5295e29"
+sha512 = "c342cb3c40bcce3d36dc1384840ca503631dc51d86f628bc5398a651e5caec2f77cf01e454e36879496274a5f9769d8521a40d0920f5d9c5361538cd866aede5"
+downloads = ["https://cdn.modrinth.com/data/pp7kIrlM/versions/OnaC52J0/konfig-fabric-0.8.1%2B26.3.jar"]
 
 [file.env]
 client = "required"
 server = "required"
 
 [[file]]
-id = "lambdynamiclights"
-requested_version = "4.12.2+26.2"
-path = "mods/lambdynamiclights-4.12.2+26.2.jar"
-file_size = 1348440
-sha1 = "0667b3e1d203a54a0fcede02d97fc3b9f384711c"
-sha512 = "3c2ab4028e47da4155e860c9449231d7b17e10dc6d9d110ab58dc621ab806fcc0b21741c73a671c0d72fb9ae5021792cea18f09b515180ae33e86c4008c3d139"
-downloads = ["https://cdn.modrinth.com/data/yBW8D80W/versions/jBLH7Qy8/lambdynamiclights-4.12.2%2B26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "libipn"
-requested_version = "fabric-26.2-6.8.2"
-path = "mods/libIPN-fabric-26.2-6.8.2.jar"
-file_size = 630245
-sha1 = "0915dc94c81044025f43a1ab2118b2c6c8a97710"
-sha512 = "cf1ad33ea398bab7d44e0c61168cd4866d207d0ffca2a742583cf1943a4a8447f2609143b2a30326654699763094c196edae505cd7ab87b26c7b69c575fa2ebc"
-downloads = ["https://cdn.modrinth.com/data/onSQdWhM/versions/uRP0v1wY/libIPN-fabric-26.2-6.8.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
 id = "liteminer"
-requested_version = "4.1.1+26.2"
-path = "mods/liteminer-fabric-4.1.1+26.2.jar"
-file_size = 128318
-sha1 = "da27851c83d0b59042e69ca5aa2be727b0783f6e"
-sha512 = "e9808b6e6f5a7f79692045368a2b9088299584c150e12f1a10983f0d1de93e1eb773ebd387784e1a468a31f248e4c017129f487b03142968e4d1f5176fd2a6e7"
-downloads = ["https://cdn.modrinth.com/data/VTnHoofC/versions/kLvoTJYB/liteminer-fabric-4.1.1%2B26.2.jar"]
+requested_version = "4.3.1+26.3"
+path = "mods/liteminer-fabric-4.3.1+26.3.jar"
+file_size = 180138
+sha1 = "d95139b6c6e920821e762d32425ace086f37da93"
+sha512 = "c0705de9d7805897a35be9b610608d19c40c1065f97ef6b90ab116e958edcebe0e088f215eef568ceb0d2e0663cab1e97535a8f67d03cda1d1b1bd4dd6c386a8"
+downloads = ["https://cdn.modrinth.com/data/VTnHoofC/versions/J6UOieJ4/liteminer-fabric-4.3.1%2B26.3.jar"]
 
 [file.env]
 client = "required"
@@ -427,12 +154,12 @@ server = "required"
 
 [[file]]
 id = "lithium"
-requested_version = "mc26.2-0.25.2-fabric"
-path = "mods/lithium-fabric-0.25.2+mc26.2.jar"
-file_size = 911988
-sha1 = "3bcc94183d7068395de08915fd5fce8d199aaa50"
-sha512 = "db676376c05b7e912cdae5aad9e51f125adc1554ae2b204599ccb598751921aedbac98e97b9cba0333b6b52488c6b75c915a7dbd50436f97800387fe1aad1c50"
-downloads = ["https://cdn.modrinth.com/data/gvQqBUqZ/versions/UPNexAfy/lithium-fabric-0.25.2%2Bmc26.2.jar"]
+requested_version = "mc26.3-0.26.1-fabric"
+path = "mods/lithium-fabric-0.26.1+mc26.3.jar"
+file_size = 915429
+sha1 = "91e91c955650afaf98e4acebee060a58ac99ade5"
+sha512 = "acbb9b037a203f005e03a20bf1d9866019384abb5ad27664808a12b919639a2501ecb52f8f0d77d27e1409935b0dbdbb70e01ac466480c0ae421ee403f649c59"
+downloads = ["https://cdn.modrinth.com/data/gvQqBUqZ/versions/WXHRsMRl/lithium-fabric-0.26.1%2Bmc26.3.jar"]
 
 [file.env]
 client = "required"
@@ -440,77 +167,51 @@ server = "required"
 
 [[file]]
 id = "mochila"
-requested_version = "6.1.0+26.2"
-path = "mods/mochila-fabric-6.1.0+26.2.jar"
-file_size = 208111
-sha1 = "30a3941c0b9065374f9f052d607856265994125e"
-sha512 = "e574b34b50c4b5a59bc476b35dc2b135e6172c01096d69c5f28f54ff25bc175131b2d8681e11e70ac9c1205a02ea75c0efbc00e17376943a983f70b7090cdd58"
-downloads = ["https://cdn.modrinth.com/data/IWGxWQWM/versions/xlsDjBnf/mochila-fabric-6.1.0%2B26.2.jar"]
+requested_version = "6.2.0+26.3"
+path = "mods/mochila-fabric-6.2.0+26.3.jar"
+file_size = 231351
+sha1 = "9c688deb75d857f7a47dde787bb7f45dc837393c"
+sha512 = "2548bf76531c9f6c15ff3cbe91b16f325207ae18e9d233f7a8a97a8bab084befb1d3cbff28f48e8e59bff0e3bff4d63a0e6cdb298e07164272be276c7bebffa0"
+downloads = ["https://cdn.modrinth.com/data/IWGxWQWM/versions/op7wwkUJ/mochila-fabric-6.2.0%2B26.3.jar"]
 
 [file.env]
 client = "required"
 server = "required"
 
 [[file]]
-id = "modmenu"
-requested_version = "20.0.1"
-path = "mods/modmenu-20.0.1.jar"
-file_size = 614002
-sha1 = "8562dee49eae1a6bdd14b026be1b300aedb5ce0f"
-sha512 = "1aa297ab5e6fac71ad6af750fe6f8cd25281bd00c0340e5fe1c1e9d153d1198df03be1df55727a4a2116db97dcaad541d41754f3fc0063abfe4345b60f193fb4"
-downloads = ["https://cdn.modrinth.com/data/mOgUt4GM/versions/njXb639R/modmenu-20.0.1.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "mru"
-requested_version = "1.0.30+26.2-fabric"
-path = "mods/mru-1.0.30+26.2-fabric.jar"
-file_size = 119741
-sha1 = "42f17ea11eb2d71ae7aefe7173772427f86e3ae5"
-sha512 = "ca4e93e8a18f93bbbb56ef71ba3758cd3c7b10004bd06f265c7b6a438bd12488a402a1741a5bc4cd98d68b22578e740329dbd6e697bef87b4deffebbc87cafae"
-downloads = ["https://cdn.modrinth.com/data/SNVQ2c0g/versions/r5zz41M3/mru-1.0.30%2B26.2-fabric.jar"]
+id = "snapshears"
+requested_version = "5.2.0+26.3"
+path = "mods/snapshears-fabric-5.2.0+26.3.jar"
+file_size = 173726
+sha1 = "6527481898ed3939662b3fa79c8d266dc3eb538f"
+sha512 = "f3eef8f7ed872a403d1ce40c935016d6c415c5f871743a4bdbb41bf5a4fbe833300222a7b06d31b31c0ff94d9bd3f04779deb9b925fbbdb35ac6448e9b0b0845"
+downloads = ["https://cdn.modrinth.com/data/yiKUfwkf/versions/HcUgdrI0/snapshears-fabric-5.2.0%2B26.3.jar"]
 
 [file.env]
 client = "required"
 server = "required"
 
 [[file]]
-id = "placeholder-api"
-requested_version = "3.1.0-beta.1+26.2"
-path = "mods/placeholder-api-3.1.0-beta.1+26.2.jar"
-file_size = 254973
-sha1 = "99b57ccc1d4323c4ef71887828dac25ce4ce2103"
-sha512 = "07b6fc802559d54ec6577f6e2788926ef391d755206c2bfb0528280977885cae4bc0c517d8a53eb6f34092015ebe6c41210627d255aa6504662daefa8fb76397"
-downloads = ["https://cdn.modrinth.com/data/eXts2L7r/versions/NDqH16LT/placeholder-api-3.1.0-beta.1%2B26.2.jar"]
+id = "sound-physics-remastered"
+requested_version = "fabric-1.5.1+26.3"
+path = "mods/sound-physics-remastered-fabric-1.5.1+26.3.jar"
+file_size = 201641
+sha1 = "6259b275cda55f802cdb898729e88fd33f437310"
+sha512 = "c6bbe6e2018a19fa98e9590f17feeac17ccea4eb2327f23915a4c112f4a7ed99220f99b9d2a9ee3c9a9919a847a8965d9d82aaee67371d4d8d675b3fcf4b46a5"
+downloads = ["https://cdn.modrinth.com/data/qyVF9oeo/versions/9loJgQlO/sound-physics-remastered-fabric-1.5.1%2B26.3.jar"]
 
 [file.env]
 client = "required"
 server = "required"
 
 [[file]]
-id = "rrls"
-requested_version = "5.2.7+mc26.2"
-path = "mods/rrls-5.2.7+mc.26.2.jar"
-file_size = 117745
-sha1 = "81916517dcf9f2e9f015ef727b09b2f7c90b311c"
-sha512 = "a3540ad60af1ee2f274057f306d52a00d7bff2b37922a52db62e821e0e6d69b3fd73a13616dda343e21c75e60c53cda5bf314f8c58b5354285b70bd8d6c91cb6"
-downloads = ["https://cdn.modrinth.com/data/ZP7xHXtw/versions/MDNaKmgK/rrls-5.2.7%2Bmc.26.2.jar"]
-
-[file.env]
-client = "required"
-server = "unsupported"
-
-[[file]]
-id = "bl4cks-sit"
-requested_version = "v1.5.1"
-path = "mods/sit-fabric-26.1.1-1.5.1.jar"
-file_size = 71100
-sha1 = "9a60018b802781eadd45eb073328bfb8c2b3348f"
-sha512 = "3a2816e750b02606c80c7ef9b44d7b19812e8e864802e0bbaf4550c5b84171efbb7ba0de936a627e68ddb4188c2d1df1fb57a9062f5a3777002d189daf5ecf09"
-downloads = ["https://cdn.modrinth.com/data/VKXzIykF/versions/vU0mXH0A/sit-fabric-26.1.1-1.5.1.jar"]
+id = "torch-toss"
+requested_version = "5.3.0+26.3"
+path = "mods/torchtoss-fabric-5.3.0+26.3.jar"
+file_size = 210571
+sha1 = "88533c0b8cf6d33f7adbaa637c48d63216f7c34a"
+sha512 = "f19acde7715d953c4ab5adcbb875053caf5078d923c1e3e746caeb5417b6dc863d2868c4b0fffbe9f910d4b1bf429a807a37de55047444dcc099fd0fc8861fa6"
+downloads = ["https://cdn.modrinth.com/data/AIYW9sHq/versions/vjPuqVHC/torchtoss-fabric-5.3.0%2B26.3.jar"]
 
 [file.env]
 client = "required"
@@ -518,103 +219,311 @@ server = "required"
 
 [[file]]
 id = "3dskinlayers"
-requested_version = "1.11.2"
-path = "mods/skinlayers3d-fabric-1.11.2-mc26.2.jar"
-file_size = 1966389
-sha1 = "7c8a66d009051bab26f7489e1edef8b3c64f7b0e"
-sha512 = "ead4a257e5ec2b092db84aebc7f5146dfb667a01f5d1362485f9ea9835e4558172949bcfb40c7a0bfbfb36e6c746b96c580f855af4109c806e0fc3591d48ad80"
-downloads = ["https://cdn.modrinth.com/data/zV5r3pPn/versions/rJYtiDew/skinlayers3d-fabric-1.11.2-mc26.2.jar"]
+requested_version = "1.11.3"
+path = "mods/skinlayers3d-fabric-1.11.3-mc26.3.jar"
+file_size = 1890220
+sha1 = "31ee367d5900d20a77c9c610cdd6dc9361c26865"
+sha512 = "5217aac8fc55952d5837932fbad3eb2d8a2211a57ff602db9be7a0e2678ea90f11cc5c37d4e44abee835f7831508af770c1ba6334dd2933290fe6699978f4118"
+downloads = ["https://cdn.modrinth.com/data/zV5r3pPn/versions/G8BCRxv5/skinlayers3d-fabric-1.11.3-mc26.3.jar"]
 
 [file.env]
 client = "required"
 server = "unsupported"
 
 [[file]]
-id = "snapshears"
-requested_version = "5.1.0+26.2"
-path = "mods/snapshears-fabric-5.1.0+26.2.jar"
-file_size = 173161
-sha1 = "a321a99fbabba383af08434adf32b74abd02466c"
-sha512 = "4486701e3c62a63bed03963522d83b6c24e7124e6906aa7a0d5f5285f473cc66bcb0e1697c95c71b5de5a5e4e9dd2a9154a99bfc39bed046a8d93bb16bc62c06"
-downloads = ["https://cdn.modrinth.com/data/yiKUfwkf/versions/GJtVkYew/snapshears-fabric-5.1.0%2B26.2.jar"]
+id = "ambientsounds"
+requested_version = "6.3.6"
+path = "mods/AmbientSounds_FABRIC_v6.3.6_mc26.3.jar"
+file_size = 84821608
+sha1 = "2b2e14a4aad85da51bf11a3bd84bdff06a14260e"
+sha512 = "05b42fe2a86ef4e82958ee9a065b666e5a726c58affb0ef92bdea84a2598240dbef2dc2b83c476ece5a88d7365973f56c349175d90aaa04fc9d9241855854fea"
+downloads = ["https://cdn.modrinth.com/data/fM515JnW/versions/Rpue6AYp/AmbientSounds_FABRIC_v6.3.6_mc26.3.jar"]
 
 [file.env]
 client = "required"
-server = "required"
+server = "unsupported"
+
+[[file]]
+id = "borderless-fullscreen"
+requested_version = "2.5.0-26.3"
+path = "mods/BorderlessFullscreen-v2.5.0-mc26.3.jar"
+file_size = 190919
+sha1 = "45b18abe90621e9b92b6efb2dc2a3b2916e5da44"
+sha512 = "e7658cdf4099cce45df73fdd1ab713174f329d52e3dfd3e414edec7c0981007ae03df697f56c8a7bbc6abd36273f1b9185238becc7e5733d38eadbdc94575b3f"
+downloads = ["https://cdn.modrinth.com/data/UIexcMP1/versions/MIUZvHmM/BorderlessFullscreen-v2.5.0-mc26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "chat-heads"
+requested_version = "1.2.9"
+path = "mods/chat_heads-1.2.9-fabric-26.3.jar"
+file_size = 94700
+sha1 = "60d0415cbb9932789ff9ed03d3fcdee250a72d7c"
+sha512 = "48609b7e307c2176e933d3f4e93f0518be1a056b8ed3a1b10c1c1aea15bc486f7525f32d97e96db24e2a51cf197eae72e0f3e1a837b5666ac65c5d1b97a8e526"
+downloads = ["https://cdn.modrinth.com/data/Wb5oqrBJ/versions/R2zOq4xG/chat_heads-1.2.9-fabric-26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "cleancut"
+requested_version = "8.1.0+26.3-fabric"
+path = "mods/cleancut-fabric-26.3-8.1.0+26.3.jar"
+file_size = 17720
+sha1 = "7ef798be8ae3e3c6638ad36e3f363274eca2d8d8"
+sha512 = "dbc45bda09aa24ec0d00c17c7f00818cb1f2d7e416d0dfd1d7e0f4fe317c9bbb4b14f1c07efbd6aadadb60d3d7d12fe4fb85a76c9ee1b9324f798ec7f5bb9ac3"
+downloads = ["https://cdn.modrinth.com/data/CCNUnbXG/versions/eCcZrbpW/cleancut-fabric-26.3-8.1.0%2B26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "cloth-config"
+requested_version = "26.3.158+fabric"
+path = "mods/cloth-config-26.3.158.jar"
+file_size = 1134981
+sha1 = "41596f189fbea3bb835a8fd62619ee4092ff4882"
+sha512 = "baceff3b69ac4277831b7fc150a485e54492d987e778a33330a3b75354bcf2b3d0c968519645be919013243e766a35cf638caa418a46a9f81c9099f0728d3d03"
+downloads = ["https://cdn.modrinth.com/data/9s6osm5g/versions/eZ3xIIuk/cloth-config-26.3.158.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "controlling"
+requested_version = "26.3.3"
+path = "mods/Controlling-fabric-26.3-26.3.3.jar"
+file_size = 86861
+sha1 = "232a2b50b30b9922be9074a82e74f7424d885e33"
+sha512 = "63f1f0c9371281c272b9afc95d45d758f83d4a42c469f0fa4a95496856ca0d06afc3871e694f213b26be050a7df5d68bd7a7404eea0e86a239a59eb556d5fbd2"
+downloads = ["https://cdn.modrinth.com/data/xv94TkTM/versions/4QeVlQxd/Controlling-fabric-26.3-26.3.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "creativecore"
+requested_version = "2.14.16"
+path = "mods/CreativeCore_FABRIC_v2.14.16_mc26.3.jar"
+file_size = 1387375
+sha1 = "80a0fc2ac1269e037b044dc70b416a6e7a625647"
+sha512 = "49f6cf95952da04330759bb4df4875c15d775e0baf59b19a55e90446a73067f458c83a08b10945a8be815e1bb16cc19ec40c5f42d91331aae4a4de2e77ab5987"
+downloads = ["https://cdn.modrinth.com/data/OsZiaDHq/versions/cBV3NfW1/CreativeCore_FABRIC_v2.14.16_mc26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "entityculling"
+requested_version = "1.11.2"
+path = "mods/entityculling-fabric-1.11.2-mc26.3.jar"
+file_size = 1508273
+sha1 = "f2196e803fe77cfbb62c4a2acb64803d98b4f61c"
+sha512 = "c5d8947cb022f8baed4bf17e38ca598c56b8049871e7e47fb462bcecc9bc01e7eb75290494199fcb1aa73f5e37f93a296211ba78c9dd2a5bff30d5eed497ebcc"
+downloads = ["https://cdn.modrinth.com/data/NNAgCjsB/versions/F4loCvYt/entityculling-fabric-1.11.2-mc26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "gentlehurtcam"
+requested_version = "2.2.0+26.3"
+path = "mods/gentlehurtcam-fabric-2.2.0+26.3.jar"
+file_size = 29661
+sha1 = "57700a9e89abf5e2ef2b60b7478666ee40ad7ecd"
+sha512 = "25a66e2a8cd0f6786c4ec74fa1a1edbf07158b1ad7bcb25c62e1970dc60228614b32fa1d60df77944eca255a9d12b516f5da4207ce8c16aef870183d259ebbbd"
+downloads = ["https://cdn.modrinth.com/data/WqioinYz/versions/AIXEmANd/gentlehurtcam-fabric-2.2.0%2B26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "immediatelyfast"
+requested_version = "1.17.1+26.3-fabric"
+path = "mods/ImmediatelyFast-Fabric-1.17.1+26.3.jar"
+file_size = 99586
+sha1 = "f565bbeb201f2305e81761429d3f1f47e1c3a321"
+sha512 = "8e139589fd995bce3d485a34d92a07243964212f7ed2e4fc2f6de5b9a74d0f59b03252e7ce40c64e006cf3e21bed5de27b830d33ef048b286e041f6178ad8428"
+downloads = ["https://cdn.modrinth.com/data/5ZwdcRci/versions/3MP9UR23/ImmediatelyFast-Fabric-1.17.1%2B26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "iris"
+requested_version = "1.11.6+26.3-fabric"
+path = "mods/iris-fabric-1.11.6+mc26.3.jar"
+file_size = 2849091
+sha1 = "63493cf8c58754bf6b9db297b895aeb17393e4df"
+sha512 = "cd0fdc5a275a851b3d72e3e699c957671f293f5c87951736ad83adcdabaa58f533e9791110a227c7817b312269c32c063121b183a39d8c11a22e55d2c76cdb25"
+downloads = ["https://cdn.modrinth.com/data/YL57xq9U/versions/bAdKrpw8/iris-fabric-1.11.6%2Bmc26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "kaf-hud"
+requested_version = "6.2.0+26.3"
+path = "mods/kafhud-fabric-6.2.0+26.3.jar"
+file_size = 215098
+sha1 = "8aed1a006e42fbcdd6521a57ec9d8e373aa96e46"
+sha512 = "032bb604b6140a949571b4b18584d5b30b8407062cba6c7b215e8b2989c7b4be507fe61da1480b4cdf5f59707939434933233b9b200031b49f61a3a3ea0f6955"
+downloads = ["https://cdn.modrinth.com/data/fKUQuZsL/versions/bPPf3H7Q/kafhud-fabric-6.2.0%2B26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "lambdynamiclights"
+requested_version = "4.13.0+26.3"
+path = "mods/lambdynamiclights-4.13.0+26.3.jar"
+file_size = 1345715
+sha1 = "18c8ab40f03219bfcf809a83db6e3958ed8bb866"
+sha512 = "67c37ca7d619bd7f2b0dc02217070c20e34fb3bb3363d4e23f5ef9ca90b1b58adb223fab73639a3499d366497316f1eb297d2759f3ffb976467b4759f784619d"
+downloads = ["https://cdn.modrinth.com/data/yBW8D80W/versions/rylKnJ4M/lambdynamiclights-4.13.0%2B26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "modmenu"
+requested_version = "21.0.0-beta.1"
+path = "mods/modmenu-21.0.0-beta.1.jar"
+file_size = 856788
+sha1 = "e75cdab1860f1efd2ac29876512f6d7da9edefdb"
+sha512 = "f56cf8d2d1daaf5de33a9615d75fa70aae9502144c3c605973ae627c9c67750bf181e1a83b37583582414fb7626487a2850a3bc88c2b34ea54a46f91ca6802b4"
+downloads = ["https://cdn.modrinth.com/data/mOgUt4GM/versions/lcxkZSq6/modmenu-21.0.0-beta.1.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "mouse-tweaks"
+requested_version = "26.3-2.31-fabric"
+path = "mods/MouseTweaks-fabric-mc26.3-2.31.jar"
+file_size = 74569
+sha1 = "65c0f5588900e7ade476164ec4915bfab52c129a"
+sha512 = "61c011308b5d1d0b2163473cbbc1ad0f1b3ac873b77e3e9ff67ccb437a946fbe5f34077281ebd2b91647324969d319f6499ac4b319cfcb9ea027bac47a52c081"
+downloads = ["https://cdn.modrinth.com/data/aC3cM3Vq/versions/LeMuMhLv/MouseTweaks-fabric-mc26.3-2.31.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "mru"
+requested_version = "1.0.40+26.3-fabric"
+path = "mods/mru-1.0.40+26.3-fabric.jar"
+file_size = 155969
+sha1 = "3731f51bdf7cdaeb6d40da5ead6a04a13cbe0a97"
+sha512 = "e6e93df8665210d5799cfbc65e26de8d0aebe63bec967d1fc5141f2f2cbe18a96b6001f6eeca2f592c43bf75d001772b68ec659fd3c33b5b2828f31e4731b916"
+downloads = ["https://cdn.modrinth.com/data/SNVQ2c0g/versions/HkMgHjqJ/mru-1.0.40%2B26.3-fabric.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "ok-zoomer"
+requested_version = "19.0.0-beta.2"
+path = "mods/ok_zoomer-19.0.0-beta.2.jar"
+file_size = 228580
+sha1 = "ad77ff239ebee559f46d78f45faf86c4738a47c7"
+sha512 = "1e3b127e74f497c51ef0e99a08301ae9ce1778f4b2909c11fbc9ebc75c8051520f2a2b6f52af6e4171b0272d4f2237c6103571f001052df55b5ea8058e12abc4"
+downloads = ["https://cdn.modrinth.com/data/aXf2OSFU/versions/3UXOK2JF/ok_zoomer-19.0.0-beta.2.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "presence-footsteps"
+requested_version = "1.14.0+26.3"
+path = "mods/PresenceFootsteps-1.14.0+26.3.jar"
+file_size = 5760504
+sha1 = "2747a6c39d42ef4024a26bb43fc17be5f1eb86b5"
+sha512 = "70525da0c631f50608b67ecdfe62fd9410fdec7bc95510946716a6465cc109fe6b93be7c75022c47a0036f9954ff5912567a393e1356a75940e9b1da5580698b"
+downloads = ["https://cdn.modrinth.com/data/rcTfTZr3/versions/UUNiN7Tm/PresenceFootsteps-1.14.0%2B26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "rrls"
+requested_version = "5.2.8+mc26.3"
+path = "mods/rrls-5.2.8+mc.26.3.jar"
+file_size = 117764
+sha1 = "2b86b92f9c3ad773f5c7d751cee0512ebaccaf60"
+sha512 = "642eea5dac162c7273f2426cbe3c38d7239a4630924ce05e91ea43bb1e8bca4d780594c4bd8728bd9239eda6859c167b79e6dee3cdb4ed3f0b118186c4e311a9"
+downloads = ["https://cdn.modrinth.com/data/ZP7xHXtw/versions/CAVJGGfj/rrls-5.2.8%2Bmc.26.3.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
+
+[[file]]
+id = "searchables"
+requested_version = "1.0.2"
+path = "mods/Searchables-fabric-26.3-1.0.2.jar"
+file_size = 79608
+sha1 = "47372e0b6c78ca12651cac46d2cc0e9cdfa4dd7b"
+sha512 = "0c2afb2c00ceca7ecef5d4eefe63eda76b5383047c4673b81ee5ed3d19c7bb22eca75289263bf7d892ea87e7e47afc76874a139da73b56d05a130b79c4f8e195"
+downloads = ["https://cdn.modrinth.com/data/fuuu3xnx/versions/RlPMfNdS/Searchables-fabric-26.3-1.0.2.jar"]
+
+[file.env]
+client = "required"
+server = "unsupported"
 
 [[file]]
 id = "sodium"
-requested_version = "mc26.2-0.9.1-fabric"
-path = "mods/sodium-fabric-0.9.1+mc26.2.jar"
-file_size = 1834384
-sha1 = "14f3388694fa77f870d28262f74562de67eabcbe"
-sha512 = "627fbf9625a4b94693c789c84a0686ffe558c0b1ecbeccf2602a903caafa9e126548b644282aa9c391dc798930d378724a383bea6b4397c5294d59ba5c0a6936"
-downloads = ["https://cdn.modrinth.com/data/AANobbMI/versions/2Yom1N68/sodium-fabric-0.9.1%2Bmc26.2.jar"]
+requested_version = "mc26.3-0.9.2-fabric"
+path = "mods/sodium-fabric-0.9.2+mc26.3.jar"
+file_size = 1908068
+sha1 = "9acfe851e36f4fb27d7c5baa224e8bd4e0334283"
+sha512 = "f3f260f204b8ce5e8777c2c73f537956755ec61f3817b0b78b5e5568e8aa40f14891f146475075109747665c7c88a45ca0ca9a8df3c68d79c58ecdaa8d8c4b93"
+downloads = ["https://cdn.modrinth.com/data/AANobbMI/versions/bAZQdGpg/sodium-fabric-0.9.2%2Bmc26.3.jar"]
 
 [file.env]
 client = "required"
 server = "unsupported"
-
-[[file]]
-id = "sound-physics-remastered"
-requested_version = "fabric-1.5.1+26.2"
-path = "mods/sound-physics-remastered-fabric-1.5.1+26.2.jar"
-file_size = 201669
-sha1 = "63657ef05768d2a7a102549bc8ef5f5fc04e2fc4"
-sha512 = "5c3d11462848c15ddfd4b854c998ed55c13e4bcd033a9f01acbea56d55079f4795c67321af803cc1b1b0e0d81dfd6750532294c932e921288858c0d9ea06f97e"
-downloads = ["https://cdn.modrinth.com/data/qyVF9oeo/versions/d8iioMMp/sound-physics-remastered-fabric-1.5.1%2B26.2.jar"]
-
-[file.env]
-client = "required"
-server = "required"
 
 [[file]]
 id = "sound"
-requested_version = "2.5.1+edge+26.2-fabric"
-path = "mods/sounds-2.5.1+edge+26.2-fabric.jar"
-file_size = 8140184
-sha1 = "557183656b2a09545c7348507880c5f59293d16b"
-sha512 = "7563d48eea3c195b516130359199ec981826bf1c1aa757b23f5e6f1aca7afb27a5992ac2f37231f9101c5ccb0d13b737a9af37c47169846f826e0b0243188311"
-downloads = ["https://cdn.modrinth.com/data/ZouiUX7t/versions/kv2RxMQu/sounds-2.5.1%2Bedge%2B26.2-fabric.jar"]
+requested_version = "2.5.2+edge+26.3-fabric"
+path = "mods/sounds-2.5.2+edge+26.3-fabric.jar"
+file_size = 8141790
+sha1 = "babc5f6ef58c83795731681e26cc4c2012e4c581"
+sha512 = "05743eeaa79de02d72a1286d3a0c0ad44868ed8bc7ee51390c1af6149a2a94d900fdc3e6a5f81773ad36e748b666512a2e2695b7678c4ac411ea972d2415e761"
+downloads = ["https://cdn.modrinth.com/data/ZouiUX7t/versions/3LGfci4v/sounds-2.5.2%2Bedge%2B26.3-fabric.jar"]
 
 [file.env]
 client = "required"
 server = "unsupported"
 
 [[file]]
-id = "torch-toss"
-requested_version = "5.1.0+26.2"
-path = "mods/torchtoss-fabric-5.1.0+26.2.jar"
-file_size = 207177
-sha1 = "0c24bdcf770d87f5e2e87e7d5f1b4cde15167bd7"
-sha512 = "6db3e46c8f2e2f1cb919df5dfcf80516780eaf8e00fe8c39986d6fa66c34af7a492e38c5bb6560e8e922fe9feabd8e8e290e29d1aa1adfbd5eaf2d15b03f24d6"
-downloads = ["https://cdn.modrinth.com/data/AIYW9sHq/versions/QmbMtXgL/torchtoss-fabric-5.1.0%2B26.2.jar"]
-
-[file.env]
-client = "required"
-server = "required"
-
-[[file]]
 id = "yacl"
-requested_version = "3.9.5+26.2-fabric"
-path = "mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar"
-file_size = 1121528
-sha1 = "e5d90b4f2cc508056097249d71fc9482ae73c111"
-sha512 = "bf709e5d1db2f104abb1e45d27dec39f10e0e2d546ec1e5df3a49b464c6f2b2daf39633e26e94e7869ae2a555258e5c4ee2d796c7d6d0e26300052a8de15052a"
-downloads = ["https://cdn.modrinth.com/data/1eAoo2KR/versions/LlSShNCR/yet_another_config_lib_v3-3.9.5%2B26.2-fabric.jar"]
-
-[file.env]
-client = "required"
-server = "required"
-
-[[file]]
-id = "zoomify"
-requested_version = "2.16.1+26.2"
-path = "mods/zoomify-2.16.1+26.2.jar"
-file_size = 562176
-sha1 = "3303552e44587bb10c1d1c91b038dc7ace0fa376"
-sha512 = "0212fc1ded72d027df0d346546f45903b9c6cc37c521379724cf2d28eb8a9867a52f26391e690dcadeedcd32899d22b00b7405b2e6bbefd949fb9df383e3c5b4"
-downloads = ["https://cdn.modrinth.com/data/w7ThoJFB/versions/QWTzJNJY/zoomify-2.16.1%2B26.2.jar"]
+requested_version = "3.9.7+26.3-fabric"
+path = "mods/yet_another_config_lib_v3-3.9.7+26.3-fabric.jar"
+file_size = 1125377
+sha1 = "e54d86dd4a78f95cd6ec0309d96fae01e661c00d"
+sha512 = "f3957028dd31cae78f08aee3e768f61bd12c4c8423257d357bc3c1a2172047c769d37901f99775c7ffff1e5ee794025dc72738b2869cab06f1c2811841d68b24"
+downloads = ["https://cdn.modrinth.com/data/1eAoo2KR/versions/s9SjoFu1/yet_another_config_lib_v3-3.9.7%2B26.3-fabric.jar"]
 
 [file.env]
 client = "required"
@@ -622,136 +531,112 @@ server = "unsupported"
 
 [[file]]
 id = "complementary-unbound"
-requested_version = "r5.7.1"
-path = "shaderpacks/ComplementaryUnbound_r5.7.1.zip"
-file_size = 522973
-sha1 = "95883b516298ff4cf1a67ff512086eb67aeedd98"
-sha512 = "207ad92ab354e1be002e1ccce978da3860af69532ddcdecbc2a943ffe1ff7ac5eec6b021073ae68b93d78499c63d505de3abf63d9058cdf6cb80bed6528b7532"
-downloads = ["https://cdn.modrinth.com/data/R6NEzAwj/versions/d8rcvDTp/ComplementaryUnbound_r5.7.1.zip"]
+requested_version = "r5.9.3"
+path = "shaderpacks/ComplementaryUnbound_r5.9.3.zip"
+file_size = 553400
+sha1 = "2ee08300e1d6f039e63eae8484dddf57b3aaaf67"
+sha512 = "a085d1d8cda67cd17a2b414eeba48bbd809da069f269bab46246235ec8fe714a275013c70d0504527b0987d810deddddba4564332414ab3b3bd7435932ff808c"
+downloads = ["https://cdn.modrinth.com/data/R6NEzAwj/versions/B1kyfoUZ/ComplementaryUnbound_r5.9.3.zip"]
 
 [file.env]
 client = "required"
 server = "unsupported"
 
 [[curseforge]]
-path = "mods/AmbientSounds_FABRIC_v6.3.6_mc26.2.jar"
-sha1 = "b4fa62c189907192933fae4853eeebeb6d57d836"
+path = "mods/AmbientSounds_FABRIC_v6.3.6_mc26.3.jar"
+sha1 = "2b2e14a4aad85da51bf11a3bd84bdff06a14260e"
 project_id = 254284
-file_id = 8299375
+file_id = 8894331
 
 [[curseforge]]
-path = "mods/Controlling-fabric-26.2-26.2.2.jar"
-sha1 = "23da84738f49e75b6318a75eb98fe18c284798ff"
+path = "mods/Controlling-fabric-26.3-26.3.3.jar"
+sha1 = "232a2b50b30b9922be9074a82e74f7424d885e33"
 project_id = 250398
-file_id = 8268835
+file_id = 8925557
 
 [[curseforge]]
-path = "mods/CreativeCore_FABRIC_v2.14.16_mc26.2.jar"
-sha1 = "c9189bb8b0f760d3b84e73b77cf81ca809399c3d"
+path = "mods/CreativeCore_FABRIC_v2.14.16_mc26.3.jar"
+sha1 = "80a0fc2ac1269e037b044dc70b416a6e7a625647"
 project_id = 257814
-file_id = 8299367
+file_id = 8894326
 
 [[curseforge]]
-path = "mods/CutThrough-v26.2.0-mc26.2.x-Fabric.jar"
-sha1 = "fa4ca6a3945d23bd1bb98dde10db5e9b002974df"
-project_id = 969423
-file_id = 8269326
-
-[[curseforge]]
-path = "mods/ForgeConfigAPIPort-v26.2.1-mc26.2.x-Fabric.jar"
-sha1 = "a4083de0d8e0c19b993d21f7a576216efb5ceb23"
-project_id = 547434
-file_id = 8292030
-
-[[curseforge]]
-path = "mods/ImmediatelyFast-Fabric-1.16.1+26.2.jar"
-sha1 = "ef9347d232ede4c97799fa5dd3a6d2b5be9d7bd8"
+path = "mods/ImmediatelyFast-Fabric-1.17.1+26.3.jar"
+sha1 = "f565bbeb201f2305e81761429d3f1f47e1c3a321"
 project_id = 686911
-file_id = 8327973
+file_id = 8905047
 
 [[curseforge]]
-path = "mods/MouseTweaks-fabric-mc26.2-2.31.jar"
-sha1 = "ad5b7e4ad6dc734152d41f05902b65aedb448d64"
+path = "mods/MouseTweaks-fabric-mc26.3-2.31.jar"
+sha1 = "65c0f5588900e7ade476164ec4915bfab52c129a"
 project_id = 60089
-file_id = 8260318
+file_id = 8887995
 
 [[curseforge]]
-path = "mods/ParticleEffects-1.5.0+26.2+fabric.jar"
-sha1 = "80634b799b693044dfbddaf46fa139f1f98492a2"
-project_id = 1120746
-file_id = 8325468
+path = "mods/PresenceFootsteps-1.14.0+26.3.jar"
+sha1 = "2747a6c39d42ef4024a26bb43fc17be5f1eb86b5"
+project_id = 334259
+file_id = 8890634
 
 [[curseforge]]
-path = "mods/PuzzlesLib-v26.2.0-mc26.2.x-Fabric.jar"
-sha1 = "0b116d3b84970ece52d7e42a3b1cabf831b5e6df"
-project_id = 495476
-file_id = 8269329
-
-[[curseforge]]
-path = "mods/Searchables-fabric-26.2-1.0.1.jar"
-sha1 = "73c1917f4ff056254c95f50a5acb18d16384139a"
+path = "mods/Searchables-fabric-26.3-1.0.2.jar"
+sha1 = "47372e0b6c78ca12651cac46d2cc0e9cdfa4dd7b"
 project_id = 858542
-file_id = 8262513
+file_id = 8900504
 
 [[curseforge]]
-path = "mods/amber-fabric-11.1.2+26.2.jar"
-sha1 = "c7a271f2207f04414b9558a063288118418e092a"
+path = "mods/amber-fabric-11.4.0+26.3.jar"
+sha1 = "59085c9e354c95a1b2cfd53a482aa80b7891db93"
 project_id = 1139910
-file_id = 8396148
+file_id = 8927189
 
 [[curseforge]]
-path = "mods/appleskin-fabric-mc26.2-3.0.10.jar"
-sha1 = "03a635bae2c5a5e66825a35ff130242752054b32"
+path = "mods/appleskin-fabric-mc26.3-3.0.10.jar"
+sha1 = "3d19e40c5f97186857db98e622c01c2cd0030497"
 project_id = 248787
-file_id = 8271985
+file_id = 8907912
 
 [[curseforge]]
-path = "mods/bobby-5.2.14+mc26.2.jar"
-sha1 = "0a57a358795280386f8a20aad1de35efe4e5e5d1"
-project_id = 409301
-file_id = 8284769
-
-[[curseforge]]
-path = "mods/bonded-fabric-4.1.0+26.2.jar"
-sha1 = "2af685d57a1f2774cd2305c6dfa3b48c54e47e0b"
+path = "mods/bonded-fabric-5.0.0+26.3.jar"
+sha1 = "a34a6aff55855e2d15869ac645234459f8ce65d7"
 project_id = 1144849
-file_id = 8391414
+file_id = 8906511
 
 [[curseforge]]
-path = "mods/c2me-fabric-mc26.2-0.4.2-alpha.0.13.jar"
-sha1 = "f531fb2c8774fd30c9fbeedc2d4a60bf9f59995f"
+path = "mods/c2me-fabric-mc26.3-0.4.2-alpha.0.87.jar"
+sha1 = "7e75b4c146cfdcf5fbb5721ed3b17d0d8618f9c4"
 project_id = 533097
-file_id = 8405041
+file_id = 8940906
 
 [[curseforge]]
-path = "mods/chat_heads-1.2.4-fabric-26.1.jar"
-sha1 = "4a529510d0690adfa94df8e359fa444e2251a657"
+path = "mods/chat_heads-1.2.9-fabric-26.3.jar"
+sha1 = "60d0415cbb9932789ff9ed03d3fcdee250a72d7c"
 project_id = 407206
-file_id = 8174615
+file_id = 8893778
 
 [[curseforge]]
-path = "mods/cwb-4.1.0+26.2.jar"
-sha1 = "9420614dd8f95a9ca1e1b2371f342e92855bb354"
-project_id = 975120
-file_id = 8294489
+path = "mods/cleancut-fabric-26.3-8.1.0+26.3.jar"
+sha1 = "7ef798be8ae3e3c6638ad36e3f363274eca2d8d8"
+project_id = 392805
+file_id = 8888420
 
 [[curseforge]]
-path = "mods/entityculling-fabric-1.10.5-mc26.2.jar"
-sha1 = "f66f9d8cbb1f76466aaf45e46fb11b18207e3aef"
+path = "mods/cloth-config-26.3.158.jar"
+sha1 = "41596f189fbea3bb835a8fd62619ee4092ff4882"
+project_id = 348521
+file_id = 8884090
+
+[[curseforge]]
+path = "mods/entityculling-fabric-1.11.2-mc26.3.jar"
+sha1 = "f2196e803fe77cfbb62c4a2acb64803d98b4f61c"
 project_id = 448233
-file_id = 8287118
+file_id = 8942325
 
 [[curseforge]]
-path = "mods/fabric-api-0.154.2+26.2.jar"
-sha1 = "3b877ba08c963948290098cb4ab718046b011987"
+path = "mods/fabric-api-0.161.0+26.3.jar"
+sha1 = "53f9ee02c3702734d90520aa8c9719bf0e1c8d4f"
 project_id = 306612
-file_id = 8385873
-
-[[curseforge]]
-path = "mods/fabric-language-kotlin-1.13.12+kotlin.2.4.0.jar"
-sha1 = "2bc17bb4275cc70a12e4ac35d139a71a30845720"
-project_id = 308769
-file_id = 8190687
+file_id = 8913512
 
 [[curseforge]]
 path = "mods/ferritecore-9.0.0-fabric.jar"
@@ -760,157 +645,133 @@ project_id = 459857
 file_id = 7806040
 
 [[curseforge]]
-path = "mods/gentlehurtcam-fabric-2.1.0+26.2.jar"
-sha1 = "5f3807d8affeb07e8f56ffdfd84499919a7e28a5"
+path = "mods/gentlehurtcam-fabric-2.2.0+26.3.jar"
+sha1 = "57700a9e89abf5e2ef2b60b7478666ee40ad7ecd"
 project_id = 1450022
-file_id = 8263531
+file_id = 8906521
 
 [[curseforge]]
-path = "mods/happyghastimprovements-fabric-2.1.0+26.2.jar"
-sha1 = "f77d715d65d432166ff8824b956cdef9cc2a9a99"
+path = "mods/happyghastimprovements-fabric-2.2.0+26.3.jar"
+sha1 = "d30e1645939708cf208bb8f86f2b05bf0012976e"
 project_id = 1449981
-file_id = 8263524
+file_id = 8906525
 
 [[curseforge]]
-path = "mods/iris-fabric-1.11.2+mc26.2.jar"
-sha1 = "f7d526b1062c4bfe2567113cf933d1de26eddd3f"
+path = "mods/iris-fabric-1.11.6+mc26.3.jar"
+sha1 = "63493cf8c58754bf6b9db297b895aeb17393e4df"
 project_id = 455508
-file_id = 8396841
+file_id = 8888283
 
 [[curseforge]]
-path = "mods/jei-26.2-fabric-30.9.0.57.jar"
-sha1 = "a69f5cd0855fefc7a6d341e3d2d8122c2473bdbd"
+path = "mods/jei-26.3-fabric-31.4.0.19.jar"
+sha1 = "764657a976cb5a9d7ed8606ee9d2612a47f5971a"
 project_id = 238222
-file_id = 8407106
+file_id = 8941415
 
 [[curseforge]]
-path = "mods/kafhud-fabric-6.1.0+26.2.jar"
-sha1 = "16381505d7a19699c0242487ea89cac0331f8fff"
+path = "mods/kafhud-fabric-6.2.0+26.3.jar"
+sha1 = "8aed1a006e42fbcdd6521a57ec9d8e373aa96e46"
 project_id = 1145891
-file_id = 8263518
+file_id = 8906532
 
 [[curseforge]]
-path = "mods/kafvalentine-fabric-5.1.0+26.2.jar"
-sha1 = "f72248ce1f232e297aca41243b564723dc5381d4"
+path = "mods/kafvalentine-fabric-5.3.0+26.3.jar"
+sha1 = "e75c536593aae02d4ac971fc5d473e1b150d3eba"
 project_id = 974853
-file_id = 8263527
+file_id = 8906573
 
 [[curseforge]]
-path = "mods/konfig-fabric-0.5.0+26.2.jar"
-sha1 = "722132d107f56729e61affdff629935c5a3d963d"
+path = "mods/konfig-fabric-0.8.1+26.3.jar"
+sha1 = "c1a9eca46737e239c85bbbff4890dc64f5295e29"
 project_id = 1479633
-file_id = 8308820
+file_id = 8927222
 
 [[curseforge]]
-path = "mods/lambdynamiclights-4.12.2+26.2.jar"
-sha1 = "0667b3e1d203a54a0fcede02d97fc3b9f384711c"
+path = "mods/lambdynamiclights-4.13.0+26.3.jar"
+sha1 = "18c8ab40f03219bfcf809a83db6e3958ed8bb866"
 project_id = 393442
-file_id = 8286188
+file_id = 8890400
 
 [[curseforge]]
-path = "mods/libIPN-fabric-26.2-6.8.2.jar"
-sha1 = "0915dc94c81044025f43a1ab2118b2c6c8a97710"
-project_id = 679177
-file_id = 8346005
-
-[[curseforge]]
-path = "mods/liteminer-fabric-4.1.1+26.2.jar"
-sha1 = "da27851c83d0b59042e69ca5aa2be727b0783f6e"
+path = "mods/liteminer-fabric-4.3.1+26.3.jar"
+sha1 = "d95139b6c6e920821e762d32425ace086f37da93"
 project_id = 1133225
-file_id = 8313140
+file_id = 8930296
 
 [[curseforge]]
-path = "mods/lithium-fabric-0.25.2+mc26.2.jar"
-sha1 = "3bcc94183d7068395de08915fd5fce8d199aaa50"
+path = "mods/lithium-fabric-0.26.1+mc26.3.jar"
+sha1 = "91e91c955650afaf98e4acebee060a58ac99ade5"
 project_id = 360438
-file_id = 8409186
+file_id = 8895969
 
 [[curseforge]]
-path = "mods/mochila-fabric-6.1.0+26.2.jar"
-sha1 = "30a3941c0b9065374f9f052d607856265994125e"
+path = "mods/mochila-fabric-6.2.0+26.3.jar"
+sha1 = "9c688deb75d857f7a47dde787bb7f45dc837393c"
 project_id = 1140343
-file_id = 8263516
+file_id = 8906542
 
 [[curseforge]]
-path = "mods/modmenu-20.0.1.jar"
-sha1 = "8562dee49eae1a6bdd14b026be1b300aedb5ce0f"
+path = "mods/modmenu-21.0.0-beta.1.jar"
+sha1 = "e75cdab1860f1efd2ac29876512f6d7da9edefdb"
 project_id = 308702
-file_id = 8402669
+file_id = 8854511
 
 [[curseforge]]
-path = "mods/mru-1.0.30+26.2-fabric.jar"
-sha1 = "42f17ea11eb2d71ae7aefe7173772427f86e3ae5"
+path = "mods/mru-1.0.40+26.3-fabric.jar"
+sha1 = "3731f51bdf7cdaeb6d40da5ead6a04a13cbe0a97"
 project_id = 669659
-file_id = 8378877
+file_id = 8913418
 
 [[curseforge]]
-path = "mods/placeholder-api-3.1.0-beta.1+26.2.jar"
-sha1 = "99b57ccc1d4323c4ef71887828dac25ce4ce2103"
-project_id = 1037459
-file_id = 8271471
+path = "mods/ok_zoomer-19.0.0-beta.2.jar"
+sha1 = "ad77ff239ebee559f46d78f45faf86c4738a47c7"
+project_id = 354047
+file_id = 8899781
 
 [[curseforge]]
-path = "mods/rrls-5.2.7+mc.26.2.jar"
-sha1 = "81916517dcf9f2e9f015ef727b09b2f7c90b311c"
+path = "mods/rrls-5.2.8+mc.26.3.jar"
+sha1 = "2b86b92f9c3ad773f5c7d751cee0512ebaccaf60"
 project_id = 833233
-file_id = 8271763
+file_id = 8903738
 
 [[curseforge]]
-path = "mods/sit-fabric-26.1.1-1.5.1.jar"
-sha1 = "9a60018b802781eadd45eb073328bfb8c2b3348f"
-project_id = 328163
-file_id = 7886688
-
-[[curseforge]]
-path = "mods/skinlayers3d-fabric-1.11.2-mc26.2.jar"
-sha1 = "7c8a66d009051bab26f7489e1edef8b3c64f7b0e"
+path = "mods/skinlayers3d-fabric-1.11.3-mc26.3.jar"
+sha1 = "31ee367d5900d20a77c9c610cdd6dc9361c26865"
 project_id = 521480
-file_id = 8274848
+file_id = 8906462
 
 [[curseforge]]
-path = "mods/snapshears-fabric-5.1.0+26.2.jar"
-sha1 = "a321a99fbabba383af08434adf32b74abd02466c"
+path = "mods/snapshears-fabric-5.2.0+26.3.jar"
+sha1 = "6527481898ed3939662b3fa79c8d266dc3eb538f"
 project_id = 1275720
-file_id = 8263522
+file_id = 8906553
 
 [[curseforge]]
-path = "mods/sodium-fabric-0.9.1+mc26.2.jar"
-sha1 = "14f3388694fa77f870d28262f74562de67eabcbe"
+path = "mods/sodium-fabric-0.9.2+mc26.3.jar"
+sha1 = "9acfe851e36f4fb27d7c5baa224e8bd4e0334283"
 project_id = 394468
-file_id = 8396428
+file_id = 8888037
 
 [[curseforge]]
-path = "mods/sound-physics-remastered-fabric-1.5.1+26.2.jar"
-sha1 = "63657ef05768d2a7a102549bc8ef5f5fc04e2fc4"
+path = "mods/sound-physics-remastered-fabric-1.5.1+26.3.jar"
+sha1 = "6259b275cda55f802cdb898729e88fd33f437310"
 project_id = 535489
-file_id = 8271003
+file_id = 8909383
 
 [[curseforge]]
-path = "mods/sounds-2.5.1+edge+26.2-fabric.jar"
-sha1 = "557183656b2a09545c7348507880c5f59293d16b"
-project_id = 925889
-file_id = 8343098
-
-[[curseforge]]
-path = "mods/torchtoss-fabric-5.1.0+26.2.jar"
-sha1 = "0c24bdcf770d87f5e2e87e7d5f1b4cde15167bd7"
+path = "mods/torchtoss-fabric-5.3.0+26.3.jar"
+sha1 = "88533c0b8cf6d33f7adbaa637c48d63216f7c34a"
 project_id = 1191803
-file_id = 8263520
+file_id = 8906560
 
 [[curseforge]]
-path = "mods/yet_another_config_lib_v3-3.9.5+26.2-fabric.jar"
-sha1 = "e5d90b4f2cc508056097249d71fc9482ae73c111"
+path = "mods/yet_another_config_lib_v3-3.9.7+26.3-fabric.jar"
+sha1 = "e54d86dd4a78f95cd6ec0309d96fae01e661c00d"
 project_id = 667299
-file_id = 8307149
+file_id = 8935498
 
 [[curseforge]]
-path = "mods/zoomify-2.16.1+26.2.jar"
-sha1 = "3303552e44587bb10c1d1c91b038dc7ace0fa376"
-project_id = 574741
-file_id = 8301179
-
-[[curseforge]]
-path = "shaderpacks/ComplementaryUnbound_r5.7.1.zip"
-sha1 = "95883b516298ff4cf1a67ff512086eb67aeedd98"
+path = "shaderpacks/ComplementaryUnbound_r5.9.3.zip"
+sha1 = "2ee08300e1d6f039e63eae8484dddf57b3aaaf67"
 project_id = 385587
-file_id = 7574260
+file_id = 8884656

@@ -1,0 +1,203 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+config=tests/teakit/modstage.toml
+instance=forever-world-pair
+run_timeout=7200s
+startup_timeout=180
+log_dir=build/play
+server_log="$log_dir/server.log"
+client_log="$log_dir/client.log"
+server_marker="$log_dir/server.started"
+client_marker="$log_dir/client.started"
+
+server_pid=
+client_pid=
+server_metadata=
+client_metadata=
+
+for command in modstage curl jq setsid; do
+    if ! command -v "$command" >/dev/null 2>&1; then
+        echo "$command is required to run the acceptance pair" >&2
+        exit 1
+    fi
+done
+
+teakit_request() {
+    local metadata=$1
+    local method=$2
+    local path=$3
+    local body=${4:-}
+    local timeout=${5:-5}
+    local port token
+
+    port=$(jq -er '.port | tonumber' "$metadata") || return 1
+    token=$(jq -er '.token | strings | select(length > 0)' "$metadata") || return 1
+
+    if [[ "$method" == GET ]]; then
+        printf 'X-TeaKit-Token: %s\n' "$token" |
+            curl --fail --silent --show-error \
+                --connect-timeout 1 \
+                --max-time "$timeout" \
+                --header @- \
+                "http://127.0.0.1:$port$path"
+    else
+        printf 'X-TeaKit-Token: %s\n' "$token" |
+            curl --fail --silent --show-error \
+                --connect-timeout 1 \
+                --max-time "$timeout" \
+                --header @- \
+                --header 'Content-Type: application/json' \
+                --request "$method" \
+                --data "$body" \
+                "http://127.0.0.1:$port$path"
+    fi
+}
+
+stop_process() {
+    local pid=$1
+
+    [[ -n "$pid" ]] || return 0
+    kill -0 "$pid" 2>/dev/null || return 0
+
+    kill -TERM -- "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
+    for _ in {1..20}; do
+        kill -0 "$pid" 2>/dev/null || return 0
+        sleep 0.25
+    done
+
+    kill -KILL -- "-$pid" 2>/dev/null || kill -KILL "$pid" 2>/dev/null || true
+}
+
+show_logs() {
+    local log
+
+    for log in "$server_log" "$client_log"; do
+        if [[ -s "$log" ]]; then
+            echo >&2
+            echo "Last lines from $log:" >&2
+            tail -n 30 "$log" >&2
+        fi
+    done
+}
+
+cleanup() {
+    local status=$?
+    trap - EXIT
+    set +e
+
+    if [[ -n "$client_pid" ]] && kill -0 "$client_pid" 2>/dev/null; then
+        [[ -n "$client_metadata" ]] &&
+            teakit_request "$client_metadata" POST /runtime/shutdown '{"delayMs":250}' 5 >/dev/null 2>&1
+        stop_process "$client_pid"
+    fi
+    if [[ -n "$server_pid" ]] && kill -0 "$server_pid" 2>/dev/null; then
+        [[ -n "$server_metadata" ]] &&
+            teakit_request "$server_metadata" POST /runtime/shutdown '{"delayMs":250}' 5 >/dev/null 2>&1
+        stop_process "$server_pid"
+    fi
+
+    (( status == 0 )) || show_logs
+    exit "$status"
+}
+
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+wait_for_endpoint() {
+    local side=$1
+    local game_dir=$2
+    local marker=$3
+    local pid=$4
+    local deadline=$((SECONDS + startup_timeout))
+    local metadata response
+
+    while (( SECONDS < deadline )); do
+        if ! kill -0 "$pid" 2>/dev/null; then
+            echo "$side exited before TeaKit became ready" >&2
+            return 1
+        fi
+
+        while IFS= read -r -d '' metadata; do
+            [[ "$metadata" -nt "$marker" ]] || continue
+
+            if [[ "$side" == server ]]; then
+                if response=$(teakit_request "$metadata" GET /health '' 2 2>/dev/null) &&
+                    jq -e '.status.worldLoaded == true' >/dev/null <<<"$response"; then
+                    printf '%s\n' "$metadata"
+                    return 0
+                fi
+            elif response=$(teakit_request "$metadata" GET /client/screen '' 2 2>/dev/null) &&
+                jq -e '.screenClass | strings | endswith(".TitleScreen")' >/dev/null <<<"$response"; then
+                printf '%s\n' "$metadata"
+                return 0
+            fi
+        done < <(find "$game_dir" -maxdepth 3 -type f -path '*/teakit/instance.json' -print0 2>/dev/null)
+
+        sleep 0.25
+    done
+
+    echo "timed out waiting for the $side to become ready" >&2
+    return 1
+}
+
+mkdir -p "$log_dir"
+
+echo "Resolving the acceptance pair..."
+modstage --config "$config" resolve "$instance"
+
+instance_dir=$(
+    modstage --config "$config" inspect instance "$instance" |
+        sed -n 's/^instance_dir = "\(.*\)"$/\1/p'
+)
+if [[ -z "$instance_dir" ]]; then
+    echo "modstage did not report the pair instance directory" >&2
+    exit 1
+fi
+
+touch "$server_marker"
+echo "Starting the server..."
+setsid modstage --config "$config" run server "$instance" \
+    --locked --keep-alive --timeout "$run_timeout" >"$server_log" 2>&1 &
+server_pid=$!
+server_metadata=$(wait_for_endpoint server "$instance_dir/server/game" "$server_marker" "$server_pid")
+
+touch "$client_marker"
+echo "Starting Minecraft..."
+setsid modstage --config "$config" run client "$instance" \
+    --locked --timeout "$run_timeout" >"$client_log" 2>&1 &
+client_pid=$!
+client_metadata=$(wait_for_endpoint client "$instance_dir/client/game" "$client_marker" "$client_pid")
+
+echo "Connecting to the server..."
+connection=$(
+    teakit_request "$client_metadata" POST /client/world/connect \
+        '{"address":"127.0.0.1:25565","timeoutMs":120000}' 125
+)
+if ! jq -e '.worldLoaded == true and .playerLoaded == true' >/dev/null <<<"$connection"; then
+    echo "Minecraft did not finish connecting to the server" >&2
+    exit 1
+fi
+
+echo "Forever World is ready. Close Minecraft to stop the server."
+client_status=0
+wait "$client_pid" || client_status=$?
+client_pid=
+
+echo "Minecraft closed; stopping the server..."
+teakit_request "$server_metadata" POST /runtime/shutdown '{"delayMs":250}' 5 >/dev/null
+server_status=0
+wait "$server_pid" || server_status=$?
+server_pid=
+
+if (( client_status != 0 )); then
+    echo "the client exited with status $client_status; see $client_log" >&2
+    exit "$client_status"
+fi
+if (( server_status != 0 )); then
+    echo "the server exited with status $server_status; see $server_log" >&2
+    exit "$server_status"
+fi
+
+echo "Acceptance pair stopped cleanly."

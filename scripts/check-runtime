@@ -7,7 +7,7 @@ mkdir -p build/teakit
 xvfb-run -a ./teakitw pair \
   --no-sync-sdk \
   --config tests/teakit/teakit.toml \
-  --node 26.2-fabric \
+  --node 26.3-fabric \
   --modstage-config tests/teakit/modstage.toml \
   --modstage-instance forever-world-pair \
   --test-file tests/teakit/startup.test.ts \
